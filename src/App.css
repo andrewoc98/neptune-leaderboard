@@ -1,0 +1,177 @@
+/* App.css */
+
+body {
+  margin: 0;
+  background-color: #2c2f2c;
+  color: #111;
+}
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: #000; /* Fallback */
+  background-image: linear-gradient(
+          180deg,
+          rgba(0, 51, 51, 0.4) 0%,
+          rgba(0, 102, 102, 0.4) 50%,
+          rgba(0, 51, 51, 0.4) 100%
+  ),
+  url('https://transparenttextures.com/patterns/diagonal-waves.png'); /* Optional texture */
+  background-size: 6%;
+  animation: flowingWater 30s linear infinite;
+}
+
+/* Water flow animation */
+@keyframes flowingWater {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 0 100%;
+  }
+}
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.title {
+  text-align: center;
+  font-size: 2.5rem;
+  color: #00cc44; /* Neptune green */
+  margin-bottom: 2rem;
+  font-weight: 700;
+}
+
+.tabs {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.tab-button {
+  padding: 0.75rem 1.5rem;
+  border: 2px solid #00cc44;
+  background-color: black;
+  color: #00cc44;
+  font-size: 1rem;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.tab-button:hover {
+  background-color: #004d00;
+  color: white;
+}
+
+.tab-button.active {
+  background-color: #00cc44;
+  color: black;
+  font-weight: bold;
+  border-color: black;
+}
+
+.table-container {
+  background-color: #ffffff;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead {
+  background-color: #d9f2dd;
+  color: #004d00;
+}
+
+th, td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid #ccc;
+}
+
+tr:hover {
+  background-color: #f0fff4;
+}
+
+/* Modal styles */
+.modal {
+  position: fixed;
+  top: 20%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  border: 2px solid #004d00;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+  z-index: 1000;
+  width: 30%;
+  height: 30%;
+}
+
+.modal-content {
+  height: 80%;
+  position: relative;
+}
+
+.close-button {
+  position: absolute;
+  top: 4px;
+  right: 8px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: #004d00;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid #004d00; /* outer border */
+}
+
+th, td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-right: 1px solid #004d00; /* vertical lines */
+  border-bottom: 1px solid #004d00; /* horizontal lines */
+}
+
+th:last-child,
+td:last-child {
+  border-right: none; /* remove extra line on the last column */
+}
+
+thead {
+  background-color: #d9f2dd;
+  color: #004d00;
+}
+
+.quote-section{
+  color: white;
+  text-align: center;
+
+}
+
+.sorted-column {
+  background-color: black;
+  border: 2px solid #00cc44;
+  color: #00cc44;
+}
+
+th.sortable {
+  transition: background-color 0.3s ease, border 0.3s ease, color 0.3s ease;
+}
+
+th.sortable:hover {
+  cursor: pointer;
+  background-color: black;
+  border: 2px solid #00cc44;
+  color: #00cc44;
+}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import './App.css';
 import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
@@ -8,7 +8,6 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, T
 
 export default function LeaderboardApp() {
     const [activeTab, setActiveTab] = useState("erg");
-    const [selectedErgColumn, setSelectedErgColumn] = useState("adjustedSplit");
     const [hoveredName, setHoveredName] = useState(null);
     const [ergSortKey, setErgSortKey] = useState("adjustedSplit");
     const [waterSortKey, setWaterSortKey] = useState("goldPercentage");

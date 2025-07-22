@@ -222,7 +222,7 @@ export default function LeaderboardApp() {
                 <div className="modal">
                     <div className="modal-content">
                         <span className="close-button" onClick={() => setHoveredName(null)}>&times;</span>
-                        <h2>{hoveredName}'s Rank History</h2>
+                        <h2>{hoveredName}'s Rank</h2>
                         <Line
                             data={{
                                 labels: dates,

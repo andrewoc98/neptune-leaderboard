@@ -17,7 +17,6 @@ export default function LeaderboardApp() {
     const prev = leaderboardHistory.length > 1 ? leaderboardHistory[leaderboardHistory.length - 2] : null;
 
     const parseTime = (timeStr) => {
-        // Converts "1:38.4" -> total seconds as float
         const parts = timeStr.split(":");
         if (parts.length === 2) {
             const [min, sec] = parts;

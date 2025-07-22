@@ -175,3 +175,50 @@ th.sortable:hover {
   border: 2px solid #00cc44;
   color: #00cc44;
 }
+
+.table-container {
+  overflow-x: auto;
+  width: 100%;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px; /* allow scrolling if screen is smaller */
+}
+
+th, td {
+  padding: 8px 12px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+@media screen and (max-width: 600px) {
+  .title {
+    font-size: 1.5rem;
+    text-align: center;
+  }
+
+  .tabs {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .tab-button {
+    font-size: 1rem;
+    padding: 10px;
+    width: 100%;
+  }
+
+  .modal-content {
+    width: 90%;
+    height: 70%
+  }
+}
+
+.tab-button {
+  font-size: 1.1rem;
+  padding: 10px 15px;
+  border-radius: 8px;
+}

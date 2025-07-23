@@ -5,7 +5,7 @@ const leaderboardHistory = [
       {name:"Andrew O'Connor", weight:85, split:"1:30"}
     ],
     waterData:[
-        {name:"Andrew O'Connor", boatClass:"1x", time:"6:29",distance:2000}
+      {name:"Andrew O'Connor", boatClass:"1x", time:"6:29",distance:2000}
     ]
   }
 ];

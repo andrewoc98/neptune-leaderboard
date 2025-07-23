@@ -233,6 +233,7 @@ export default function LeaderboardApp() {
                                         data: rankMap[hoveredName],
                                         borderColor: "#004d99",
                                         backgroundColor: "#e6b800",
+
                                     },
                                 ],
                             }}
@@ -241,6 +242,10 @@ export default function LeaderboardApp() {
                                 maintainAspectRatio: false,
                                 scales: {
                                     y: {
+                                        min: 1,
+                                        max: (leaderboardHistory[(leaderboardHistory.length-1)].ergData.length > leaderboardHistory[(leaderboardHistory.length-1)].waterData.length
+                                            ? (leaderboardHistory.ergData.length[(leaderboardHistory.length-1)] > 5 ? leaderboardHistory[(leaderboardHistory.length-1)].ergData.length : 5)
+                                            : (leaderboardHistory[(leaderboardHistory.length-1)].waterData.length > 5 ? leaderboardHistory[(leaderboardHistory.length-1)].waterData.length : 5)),
                                         reverse: true,
                                         ticks: {
                                             stepSize: 1,

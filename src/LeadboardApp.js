@@ -95,12 +95,12 @@ export default function LeaderboardApp() {
     const { dates, rankMap } = getRankingsOverTime(leaderboardHistory, activeTab === 'erg' ? 'ergData' : 'waterData', activeTab === 'erg' ? 'adjustedSplit' : 'goldPercentage');
 
     const getDelta = (name, index, currentList, prevList, key, sortAsc = true) => {
-        if (!prevList) return null;
+        if (!prevList) return "-";
         const sortedPrev = [...prevList].sort((a, b) => sortAsc ? a[key] - b[key] : b[key] - a[key]);
         const prevIndex = sortedPrev.findIndex(r => r.name === name);
-        if (prevIndex === -1) return null;
+        if (prevIndex === -1) return "-";
         const diff = prevIndex - index;
-        return diff === 0 ? null : diff > 0 ? `↑ ${diff}` : `↓ ${-diff}`;
+        return diff === 0 ? "-" : diff > 0 ? `↑ ${diff}` : `↓ ${-diff}`;
     };
 
     return (

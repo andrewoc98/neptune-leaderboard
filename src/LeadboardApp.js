@@ -3,6 +3,7 @@ import './App.css';
 import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
 import leaderboardHistory from "./Data";
+import {adjustedErgScore, goldMedalPercentage} from "./Util";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
@@ -147,7 +148,7 @@ export default function LeaderboardApp() {
                                 <td>{rower.name}</td>
                                 <td>{rower.weight}</td>
                                 <td>{rower.split}</td>
-                                <td>{rower.adjustedSplit}</td>
+                                <td>{adjustedErgScore(rower.split, rower.weight)}</td>
                                 <td>{getDelta(
                                     rower.name,
                                     index,
@@ -199,7 +200,7 @@ export default function LeaderboardApp() {
                                 <td>{rower.name}</td>
                                 <td>{rower.boatClass}</td>
                                 <td>{rower.time}</td>
-                                <td>{rower.goldPercentage}%</td>
+                                <td>{goldMedalPercentage(rower.time,rower.boatClass,rower.distance)}</td>
                                 <td>{getDelta(
                                         rower.name,
                                     index,

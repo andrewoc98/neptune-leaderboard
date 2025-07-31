@@ -110,3 +110,54 @@ export const getSessionStats = (period) => {
 };
 
 
+export const getDistanceForLastPeriod = (period) => {
+    const today = new Date();
+
+    // Helper to get start of last month
+    const getLastMonthStart = (date) => {
+        return new Date(date.getFullYear(), date.getMonth() - 1, 1);
+    };
+
+    const getLastWeekStart = (date) => {
+        const currentWeekStart = new Date(date);
+        currentWeekStart.setDate(currentWeekStart.getDate() - currentWeekStart.getDay()); // Sunday of current week
+        currentWeekStart.setHours(0, 0, 0, 0);
+        // Last week start is 7 days before current week start
+        const lastWeekStart = new Date(currentWeekStart);
+        lastWeekStart.setDate(currentWeekStart.getDate() - 7);
+        return lastWeekStart;
+    };
+
+    let startDate, endDate;
+
+    if (period === "month") {
+        startDate = getLastMonthStart(today);
+        // End of last month is one day before this month starts
+        endDate = new Date(today.getFullYear(), today.getMonth(), 0, 23, 59, 59, 999);
+    } else if (period === "week") {
+        startDate = getLastWeekStart(today);
+        // End of last week is one day before this week starts (Saturday 23:59:59)
+        endDate = new Date(startDate);
+        endDate.setDate(startDate.getDate() + 6);
+        endDate.setHours(23, 59, 59, 999);
+    } else {
+        return {}
+    }
+
+    const distanceMap = {};
+
+    sessionHistory.forEach(entry => {
+        const entryDate = parseDate(entry.date);
+        if (entryDate >= startDate && entryDate <= endDate) {
+            const { name, distance } = entry;
+            if (!distanceMap[name]) {
+                distanceMap[name] = 0;
+            }
+            distanceMap[name] += distance;
+        }
+    });
+    return distanceMap;
+};
+
+
+

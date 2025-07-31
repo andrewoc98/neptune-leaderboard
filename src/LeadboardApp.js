@@ -3,7 +3,7 @@ import './App.css';
 import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
 import leaderboardHistory from "./Data";
-import {adjustedErgScore, goldMedalPercentage, getSessionStats} from "./Util";
+import {adjustedErgScore, goldMedalPercentage, getSessionStats, getDistanceForLastPeriod} from "./Util";
 import ThreeWaySwitch from "./ThreeWaySwitch";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
@@ -108,7 +108,7 @@ export default function LeaderboardApp() {
         const diff = prevIndex - index;
         return diff === 0 ? "-" : diff > 0 ? `↑ ${diff}` : `↓ ${-diff}`;
     };
-
+    const changePerRower = getDistanceForLastPeriod(timeScale)
     return (
         <div className="container">
             <h1 className="title">Neptune Boat Club Leaderboard</h1>
@@ -235,9 +235,10 @@ export default function LeaderboardApp() {
                         <tr>
                             <th>Rank</th>
                             <th>Name</th>
-                            <th>Distance (m)</th>
                             <th>Steady %</th>
                             <th>Intensity %</th>
+                            <th>Distance (m)</th>
+                            <th>Change</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -245,14 +246,22 @@ export default function LeaderboardApp() {
                             const { totalDistance, totalSessions, steadyCount, intensityCount } = rower;
                             const steadyPercent = totalSessions > 0 ? ((steadyCount / totalSessions) * 100).toFixed(1) + "%" : "-";
                             const intensityPercent = totalSessions > 0 ? ((intensityCount / totalSessions) * 100).toFixed(1) + "%" : "-";
-
                             return (
                                 <tr key={rower.name}>
                                     <td>{index + 1}</td>
                                     <td>{rower.name}</td>
-                                    <td>{totalDistance}</td>
                                     <td>{steadyPercent}</td>
                                     <td>{intensityPercent}</td>
+                                    <td>{totalDistance}</td>
+                                    <td>
+                                    {changePerRower[rower.name] != null && changePerRower[rower.name] !== 0 ? (
+                                        <>
+                                            {totalDistance - changePerRower[rower.name]}{" "}
+                                            {totalDistance - changePerRower[rower.name] > 0 ? "▲" : "▼"}
+                                        </>
+                                    ) : (
+                                        "-"
+                                    )}</td>
                                 </tr>
                             );
                         })}

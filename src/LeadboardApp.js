@@ -237,21 +237,24 @@ export default function LeaderboardApp() {
                             <th>Name</th>
                             <th>Steady %</th>
                             <th>Intensity %</th>
+                            <th>Weights %</th>
                             <th>Distance (m)</th>
                             <th>Change</th>
                         </tr>
                         </thead>
                         <tbody>
                         {getSessionStats(timeScale).map((rower, index) => {
-                            const { totalDistance, totalSessions, steadyCount, intensityCount } = rower;
+                            const { totalDistance, totalSessions, steadyCount, intensityCount, weightsCount } = rower;
                             const steadyPercent = totalSessions > 0 ? ((steadyCount / totalSessions) * 100).toFixed(1) + "%" : "-";
                             const intensityPercent = totalSessions > 0 ? ((intensityCount / totalSessions) * 100).toFixed(1) + "%" : "-";
+                            const weightsPercent = totalSessions > 0 ? ((weightsCount / totalSessions) * 100).toFixed(1) + "%" : "-";
                             return (
                                 <tr key={rower.name}>
                                     <td>{index + 1}</td>
                                     <td>{rower.name}</td>
                                     <td>{steadyPercent}</td>
                                     <td>{intensityPercent}</td>
+                                    <td>{weightsPercent}</td>
                                     <td>{totalDistance}</td>
                                     <td>
                                     {changePerRower[rower.name] != null && changePerRower[rower.name] !== 0 ? (

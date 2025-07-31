@@ -96,7 +96,7 @@ export const getSessionStats = (period) => {
     sessionHistory.forEach(entry => {
         const entryDate = parseDate(entry.date);
         if (entryDate >= startDate && entryDate <= today) {
-            const { name, distance, intensity } = entry;
+            const { name, distance, intensity, weights } = entry;
 
             if (!stats[name]) {
                 stats[name] = {
@@ -104,7 +104,8 @@ export const getSessionStats = (period) => {
                     totalDistance: 0,
                     totalSessions: 0,
                     steadyCount: 0,
-                    intensityCount: 0
+                    intensityCount: 0,
+                    weightsCount: 0
                 };
             }
 
@@ -113,6 +114,8 @@ export const getSessionStats = (period) => {
 
             if (intensity) {
                 stats[name].intensityCount += 1;
+            } else if (weights) {
+                stats[name].weightsCount += 1;
             } else {
                 stats[name].steadyCount += 1;
             }

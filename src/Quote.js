@@ -5,9 +5,9 @@ class Quote extends Component {
         return (
             <div className="quote-section">
                 <blockquote>
-                    "Hard work beats talent when talent doesn't work hard."
+                    "UUUUGGGGGHHHHH"
                 </blockquote>
-                <cite>- Tim Notke</cite>
+                <cite>- Wooly Hat Man</cite>
             </div>
         );
     }

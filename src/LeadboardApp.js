@@ -3,7 +3,8 @@ import './App.css';
 import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
 import leaderboardHistory from "./Data";
-import {adjustedErgScore, goldMedalPercentage} from "./Util";
+import {adjustedErgScore, goldMedalPercentage, getSessionStats} from "./Util";
+import ThreeWaySwitch from "./ThreeWaySwitch";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
@@ -12,6 +13,7 @@ export default function LeaderboardApp() {
     const [hoveredName, setHoveredName] = useState(null);
     const [ergSortKey, setErgSortKey] = useState("adjustedSplit");
     const [waterSortKey, setWaterSortKey] = useState("goldPercentage");
+    const [timeScale, setTimeScale] = useState("total");
 
 
     const latest = leaderboardHistory[leaderboardHistory.length - 1];
@@ -90,6 +92,10 @@ export default function LeaderboardApp() {
         return 0;
     });
 
+    const handleSettingChange = (newSetting) => {
+        setTimeScale(newSetting.toLowerCase());
+    };
+
 
 
     const { dates, rankMap } = getRankingsOverTime(leaderboardHistory, activeTab === 'erg' ? 'ergData' : 'waterData', activeTab === 'erg' ? 'adjustedSplit' : 'goldPercentage');
@@ -109,11 +115,12 @@ export default function LeaderboardApp() {
             <div className="tabs">
                 <button className={`tab-button ${activeTab === "erg" ? "active" : ""}`} onClick={() => setActiveTab("erg")}>Erg Scores</button>
                 <button className={`tab-button ${activeTab === "water" ? "active" : ""}`} onClick={() => setActiveTab("water")}>On the Water</button>
+                <button className={`tab-button ${activeTab === "sessions" ? "active" : ""}`} onClick={() => setActiveTab("sessions")}>Sessions</button>
             </div>
-
             {activeTab === "erg" && (
                 <div className="table-container">
                     <p style={ {textAlign: "center"}}><b>This Week Session:</b> 10*500m 1 min rest</p> <p style={ {textAlign: "center"}}> <b>Next Week Session:</b> 8*500m 1 min rest </p>
+
                     <table>
                         <thead>
                         <tr>
@@ -214,6 +221,41 @@ export default function LeaderboardApp() {
                                     )}</td>
                             </tr>
                         ))}
+                        </tbody>
+                    </table>
+                </div>
+            )}
+            {activeTab === "sessions" && (
+                <div className="table-container">
+                        <div style={{ alignItems: 'right', padding:'6px'}}>
+                            <ThreeWaySwitch onChange={handleSettingChange}/>
+                        </div>
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Name</th>
+                            <th>Distance (m)</th>
+                            <th>Steady %</th>
+                            <th>Intensity %</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {getSessionStats(timeScale).map((rower, index) => {
+                            const { totalDistance, totalSessions, steadyCount, intensityCount } = rower;
+                            const steadyPercent = totalSessions > 0 ? ((steadyCount / totalSessions) * 100).toFixed(1) + "%" : "-";
+                            const intensityPercent = totalSessions > 0 ? ((intensityCount / totalSessions) * 100).toFixed(1) + "%" : "-";
+
+                            return (
+                                <tr key={rower.name}>
+                                    <td>{index + 1}</td>
+                                    <td>{rower.name}</td>
+                                    <td>{totalDistance}</td>
+                                    <td>{steadyPercent}</td>
+                                    <td>{intensityPercent}</td>
+                                </tr>
+                            );
+                        })}
                         </tbody>
                     </table>
                 </div>

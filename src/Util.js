@@ -66,33 +66,6 @@ function getWeekStart(date) {
     return start;
 }
 
-function getTotalDistanceByName(data, period) {
-    const today = new Date();
-    let startDate = null;
-    let endDate = today;
-
-    if (period === "month") {
-        startDate = getMonthStart(today);
-    } else if (period === "week") {
-        startDate = getWeekStart(today);
-    } else if (period === "total") {
-        startDate = new Date(-8640000000000000); // earliest possible date
-    } else {
-        throw new Error('Invalid period. Use "total", "month", or "week".');
-    }
-
-    const totals = {};
-
-    data.forEach(entry => {
-        const entryDate = parseDate(entry.date);
-        if (entryDate >= startDate && entryDate <= endDate) {
-            totals[entry.name] = (totals[entry.name] || 0) + entry.distance;
-        }
-    });
-
-    return totals;
-}
-
 export const getSessionStats = (period) => {
     const today = new Date();
     let startDate;

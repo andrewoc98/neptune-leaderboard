@@ -56,7 +56,20 @@ function parseDate(dateStr) {
 }
 
 function getMonthStart(date) {
-    return new Date(date.getFullYear(), date.getMonth(), 1);
+    const year = date.getFullYear();
+    const month = date.getMonth(); // 0-indexed (0 = Jan, 1 = Feb, etc.)
+    const day = date.getDate();
+
+    // Move to the previous month
+    const prevMonthDate = new Date(year, month - 1, day);
+
+    // If the month rolled over (e.g., from March 31 to March 3), fix by setting day to last day of previous month
+    if (prevMonthDate.getMonth() !== (month - 1 + 12) % 12) {
+        // Set day to 0 of current month to get last day of previous month
+        return new Date(year, month, 0);
+    }
+
+    return prevMonthDate;
 }
 
 function getWeekStart(date) {
@@ -115,16 +128,28 @@ export const getDistanceForLastPeriod = (period) => {
 
     // Helper to get start of last month
     const getLastMonthStart = (date) => {
-        return new Date(date.getFullYear(), date.getMonth() - 1, 1);
+        const year = date.getFullYear();
+        const month = date.getMonth()-1; // 0-indexed (0 = Jan, 1 = Feb, etc.)
+        const day = date.getDate();
+
+        // Move to the previous month
+        const prevMonthDate = new Date(year, month - 1, day);
+
+        // If the month rolled over (e.g., from March 31 to March 3), fix by setting day to last day of previous month
+        if (prevMonthDate.getMonth() !== (month - 1 + 12) % 12) {
+            // Set day to 0 of current month to get last day of previous month
+            return new Date(year, month, 0);
+        }
+
+        return prevMonthDate;
     };
 
     const getLastWeekStart = (date) => {
         const currentWeekStart = new Date(date);
-        currentWeekStart.setDate(currentWeekStart.getDate() - currentWeekStart.getDay()); // Sunday of current week
         currentWeekStart.setHours(0, 0, 0, 0);
         // Last week start is 7 days before current week start
         const lastWeekStart = new Date(currentWeekStart);
-        lastWeekStart.setDate(currentWeekStart.getDate() - 7);
+        lastWeekStart.setDate(currentWeekStart.getDate() - 14);
         return lastWeekStart;
     };
 

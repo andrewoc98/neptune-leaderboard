@@ -11,9 +11,11 @@ const leaderboardHistory = [
 ];
 
 export const sessionHistory = [
-  {name:"Andrew O'Connor",distance: 25000, intensity:false, date:"31/07/2025"},
-  {name:"Andrew O'Connor",distance: 25000, intensity:false, date:"25/07/2025"},
+  {name:"Andrew O'Connor",distance: 25001, intensity:false, date:"31/07/2025"},
+  {name:"Andrew O'Connor",distance: 25000, intensity:false, date:"21/07/2025"},
   {name:"Andrew O'Connor",distance: 25000, intensity:true, date:"03/07/2025"},
+  {name:"Andrew O'Connor",distance: 5000, intensity:false, date:"21/06/2025"},
+  {name:"Andrew O'Connor",distance: 5000, intensity:true, date:"03/06/2025"},
   {name:"Andrew O'Connor",distance: 25000, intensity:false, date:"31/07/2024"}
 
 ]

@@ -1,6 +1,5 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
 import {collection, getDocs, getFirestore} from "firebase/firestore";
 import { doc, setDoc, deleteDoc } from "firebase/firestore";
 import {v4 as uuidv4} from 'uuid';

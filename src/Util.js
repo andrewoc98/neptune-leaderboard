@@ -1,8 +1,6 @@
 import {collection, getDocs} from "firebase/firestore";
 import { database } from "./firebase";
 
-let sessionHistory = collection(database, "items");
-
 export function adjustedErgScore(split, weight) {
 
     const [minutesStr, secTenthsStr] = split.split(':')

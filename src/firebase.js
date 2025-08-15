@@ -97,5 +97,3 @@ export const waterScores = async () =>{
 
 }
 
-
-const analytics = getAnalytics(app);

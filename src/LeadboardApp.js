@@ -1,20 +1,42 @@
-import React, { useState } from "react";
+import React, {useEffect, useState} from "react";
 import './App.css';
 import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
 import leaderboardHistory from "./Data";
 import {adjustedErgScore, goldMedalPercentage, getSessionStats, getDistanceForLastPeriod} from "./Util";
 import ThreeWaySwitch from "./ThreeWaySwitch";
+import {rowerSession} from "./firebase";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
-export default function LeaderboardApp() {
+export default function LeaderboardApp({setOpenModal}) {
     const [activeTab, setActiveTab] = useState("erg");
     const [hoveredName, setHoveredName] = useState(null);
     const [ergSortKey, setErgSortKey] = useState("adjustedSplit");
     const [waterSortKey, setWaterSortKey] = useState("goldPercentage");
     const [timeScale, setTimeScale] = useState("total");
+    const [data, setData] = useState([])
+    const handleOpen = () =>{
+        setOpenModal(true)
+    }
 
+    const onSubmitSession = (entry) =>{
+        rowerSession(entry)
+    }
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const stats = await getSessionStats(timeScale);
+                setData(stats);
+
+            } catch (error) {
+                console.error("Error fetching session stats:", error);
+            }
+        };
+
+        fetchData();
+    }, [timeScale]);
 
     const latest = leaderboardHistory[leaderboardHistory.length - 1];
     const prev = leaderboardHistory.length > 1 ? leaderboardHistory[leaderboardHistory.length - 2] : null;
@@ -227,9 +249,14 @@ export default function LeaderboardApp() {
             )}
             {activeTab === "sessions" && (
                 <div className="table-container">
-                        <div style={{ alignItems: 'right', padding:'6px'}}>
+                        <div style={{display:'flex', padding:'6px'}}>
                             <ThreeWaySwitch onChange={handleSettingChange}/>
+                            <button className="session-button" onClick={handleOpen} onSubmit={onSubmitSession}>Submit a Session</button>
+
                         </div>
+                    <div>
+
+                    </div>
                     <table>
                         <thead>
                         <tr>
@@ -243,7 +270,7 @@ export default function LeaderboardApp() {
                         </tr>
                         </thead>
                         <tbody>
-                        {getSessionStats(timeScale).map((rower, index) => {
+                        {data.map((rower, index) => {
                             const { totalDistance, totalSessions, steadyCount, intensityCount, weightsCount } = rower;
                             const steadyPercent = totalSessions > 0 ? ((steadyCount / totalSessions) * 100).toFixed(1) + "%" : "-";
                             const intensityPercent = totalSessions > 0 ? ((intensityCount / totalSessions) * 100).toFixed(1) + "%" : "-";
@@ -259,8 +286,15 @@ export default function LeaderboardApp() {
                                     <td>
                                     {changePerRower[rower.name] != null && changePerRower[rower.name] !== 0 ? (
                                         <>
-                                            {totalDistance - changePerRower[rower.name]}{" "}
-                                            {totalDistance - changePerRower[rower.name] > 0 ? "▲" : "▼"}
+                                            {totalDistance - changePerRower[rower.name] !== 0
+                                                ? totalDistance - changePerRower[rower.name]
+                                                : ""}
+                                            {" "}
+                                            {totalDistance - changePerRower[rower.name] === 0
+                                                ? "-"
+                                                : totalDistance - changePerRower[rower.name] > 0
+                                                    ? "▲"
+                                                    : "▼"}
                                         </>
                                     ) : (
                                         "-"
@@ -314,4 +348,5 @@ export default function LeaderboardApp() {
             )}
         </div>
     );
+
 }

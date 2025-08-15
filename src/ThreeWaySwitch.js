@@ -16,8 +16,6 @@ function ThreeWaySwitch({ onChange }) {
             borderRadius: '9999px',
             padding: '6px',
             backgroundColor: '#fff',
-            width: 'fit-content',
-            alignItems: 'right',
         }}>
             {options.map(option => {
                 const isSelected = selected === option;

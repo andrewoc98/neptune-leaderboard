@@ -1,0 +1,58 @@
+/* exerciseTable.css */
+
+.exercise-table {
+    border-collapse: collapse;
+    width: 100%;
+    font-family: Arial, sans-serif;
+}
+
+.exercise-table th,
+.exercise-table td {
+    border: 1px solid green;
+    padding: 8px 12px;
+    text-align: center;
+    color: black;
+}
+
+.exercise-table th {
+    background-color: #d4edc9; /* light green header background */
+    color: black;
+    font-weight: bold;
+}
+
+.exercise-table th.highlight {
+    background-color: black;
+    color: limegreen; /* matches your screenshot’s green text */
+}
+
+.exercise-table tbody tr:nth-child(even) {
+    background-color: #f9fff9; /* very light green tint for alternating rows */
+}
+
+.exercise-table td img {
+    display: block;
+    margin: 0 auto;
+    border-radius: 4px;
+}
+
+button {
+    cursor: pointer;
+    font-size: 14px;
+    padding: 4px 8px;
+    border: none;
+    border-radius: 4px;
+}
+
+button.green {
+    background-color: green;
+    color: white;
+}
+
+button.red {
+    background-color: red;
+    color: white;
+}
+
+.table-container{
+    background-color: white;
+}

@@ -1,12 +1,16 @@
 import './App.css';
-import LeaderboardApp from "./LeadboardApp";
-import Quote from "./Quote";
+import Admin from "./Admin";
+import { Routes, Route } from "react-router-dom";
+import User from "./User";
 
 function App() {
+
   return (
     <div className="App">
-      <LeaderboardApp/>
-        <Quote />
+        <Routes>
+            <Route path='/' element={<User/>}/>
+            <Route path="/admin" element={<Admin />}/>
+        </Routes>
     </div>
   );
 }

@@ -1,4 +1,8 @@
-import {sessionHistory} from "./Data";
+import {collection, getDocs} from "firebase/firestore";
+import { database } from "./firebase";
+
+let sessionHistory = collection(database, "items");
+
 export function adjustedErgScore(split, weight) {
 
     const [minutesStr, secTenthsStr] = split.split(':')
@@ -51,6 +55,7 @@ export function goldMedalPercentage(time, boatClass, distance) {
 }
 
 function parseDate(dateStr) {
+    console.log(dateStr)
     const [day, month, year] = dateStr.split("/").map(Number);
     return new Date(year, month - 1, day);
 }
@@ -79,7 +84,23 @@ function getWeekStart(date) {
     return start;
 }
 
-export const getSessionStats = (period) => {
+async function getAllSessionHistory() {
+    const result = [];
+    const snapshot = await getDocs(collection(database, "sessionHistory"));
+
+    snapshot.forEach(doc => {
+        result.push({
+            id: doc.id,
+            ...doc.data()
+        });
+
+    });
+
+    return result;
+}
+
+
+export async function getSessionStats(period) {
     const today = new Date();
     let startDate;
 
@@ -88,71 +109,55 @@ export const getSessionStats = (period) => {
     } else if (period === "week") {
         startDate = getWeekStart(today);
     } else {
-        startDate = new Date(-8640000000000000); // total
+        startDate = new Date(-8640000000000000); // earliest possible date
     }
 
     const stats = {};
+    const allSessions = await getAllSessionHistory();
+    allSessions.forEach(entry => {
+        if(entry.approved) {
+            const entryDate = parseDate(entry.date);
+            if (entryDate >= startDate && entryDate <= today) {
+                const {name, distance, intensity, weights} = entry;
+                console.log('running stats for ' + name)
+                if (!stats[name]) {
+                    console.log('adding ' + name)
+                    stats[name] = {
+                        name,
+                        totalDistance: 0,
+                        totalSessions: 0,
+                        steadyCount: 0,
+                        intensityCount: 0,
+                        weightsCount: 0
+                    };
+                }
 
-    sessionHistory.forEach(entry => {
-        const entryDate = parseDate(entry.date);
-        if (entryDate >= startDate && entryDate <= today) {
-            const { name, distance, intensity, weights } = entry;
+                stats[name].totalDistance += distance;
+                stats[name].totalSessions += 1;
 
-            if (!stats[name]) {
-                stats[name] = {
-                    name,
-                    totalDistance: 0,
-                    totalSessions: 0,
-                    steadyCount: 0,
-                    intensityCount: 0,
-                    weightsCount: 0
-                };
+                if (intensity) {
+                    stats[name].intensityCount += 1;
+                } else if (weights) {
+                    stats[name].weightsCount += 1;
+                } else {
+                    stats[name].steadyCount += 1;
+                }
             }
+        }});
+    const output = Object.values(stats).sort((a, b) => b.totalDistance - a.totalDistance);
+    return output
+}
 
-            stats[name].totalDistance += distance;
-            stats[name].totalSessions += 1;
-
-            if (intensity) {
-                stats[name].intensityCount += 1;
-            } else if (weights) {
-                stats[name].weightsCount += 1;
-            } else {
-                stats[name].steadyCount += 1;
-            }
-        }
-    });
-
-    return Object.values(stats).sort((a, b) => b.totalDistance - a.totalDistance);
-};
-
-
-export const getDistanceForLastPeriod = (period) => {
+export async function getDistanceForLastPeriod(period) {
     const today = new Date();
 
-    // Helper to get start of last month
-    const getLastMonthStart = (date) => {
-        const year = date.getFullYear();
-        const month = date.getMonth()-1; // 0-indexed (0 = Jan, 1 = Feb, etc.)
-        const day = date.getDate();
-
-        // Move to the previous month
-        const prevMonthDate = new Date(year, month - 1, day);
-
-        // If the month rolled over (e.g., from March 31 to March 3), fix by setting day to last day of previous month
-        if (prevMonthDate.getMonth() !== (month - 1 + 12) % 12) {
-            // Set day to 0 of current month to get last day of previous month
-            return new Date(year, month, 0);
-        }
-
-        return prevMonthDate;
-    };
-
+    const getLastMonthStart = (date) => new Date(date.getFullYear(), date.getMonth() - 1, 1);
     const getLastWeekStart = (date) => {
-        const currentWeekStart = new Date(date);
-        currentWeekStart.setHours(0, 0, 0, 0);
-        // Last week start is 7 days before current week start
-        const lastWeekStart = new Date(currentWeekStart);
-        lastWeekStart.setDate(currentWeekStart.getDate() - 14);
+        const startOfThisWeek = new Date(date);
+        startOfThisWeek.setHours(0, 0, 0, 0);
+        startOfThisWeek.setDate(startOfThisWeek.getDate() - startOfThisWeek.getDay());
+        const lastWeekStart = new Date(startOfThisWeek);
+        lastWeekStart.setDate(lastWeekStart.getDate() - 7);
         return lastWeekStart;
     };
 
@@ -160,21 +165,20 @@ export const getDistanceForLastPeriod = (period) => {
 
     if (period === "month") {
         startDate = getLastMonthStart(today);
-        // End of last month is one day before this month starts
         endDate = new Date(today.getFullYear(), today.getMonth(), 0, 23, 59, 59, 999);
     } else if (period === "week") {
         startDate = getLastWeekStart(today);
-        // End of last week is one day before this week starts (Saturday 23:59:59)
         endDate = new Date(startDate);
         endDate.setDate(startDate.getDate() + 6);
         endDate.setHours(23, 59, 59, 999);
     } else {
-        return {}
+        return {};
     }
 
     const distanceMap = {};
+    const allSessions = await getAllSessionHistory();
 
-    sessionHistory.forEach(entry => {
+    allSessions.forEach(entry => {
         const entryDate = parseDate(entry.date);
         if (entryDate >= startDate && entryDate <= endDate) {
             const { name, distance } = entry;
@@ -184,8 +188,19 @@ export const getDistanceForLastPeriod = (period) => {
             distanceMap[name] += distance;
         }
     });
+
     return distanceMap;
-};
+}
+
+export async function  getUnApprovedSessions(){
+
+    const allSessions = await getAllSessionHistory();
+
+    return allSessions.filter(item => item.approved === false);
+
+}
+
+
 
 
 

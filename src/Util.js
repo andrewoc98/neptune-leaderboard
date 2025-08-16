@@ -198,6 +198,42 @@ export async function  getUnApprovedSessions(){
 
 }
 
+export function getPreviousSunday(dateStr) {
+    const [day, month, year] = dateStr.split("/").map(Number);
+    const date = new Date(year, month - 1, day);
+
+    const dayOfWeek = date.getDay();
+
+    date.setDate(date.getDate() - dayOfWeek);
+
+    const dd = String(date.getDate()).padStart(2, "0");
+    const mm = String(date.getMonth() + 1).padStart(2, "0");
+    const yyyy = date.getFullYear();
+    return `${dd}/${mm}/${yyyy}`;
+}
+
+export function upsertEntry(entries, newEntry) {
+    const { date, ergData, waterData } = newEntry;
+
+    // Find if an entry with the same date already exists
+    const existing = entries.find(entry => entry.date === date);
+
+    if (existing) {
+        // Update only the provided fields
+        if (ergData !== undefined) existing.ergData = ergData;
+        if (waterData !== undefined) existing.waterData = waterData;
+    } else {
+        // Add a new entry (keeping missing field as null or undefined)
+        entries.push({
+            date,
+            ergData: ergData ?? null,
+            waterData: waterData ?? null
+        });
+    }
+
+    return entries;
+}
+
 
 
 

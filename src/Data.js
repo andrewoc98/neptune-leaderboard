@@ -1,4 +1,4 @@
-const leaderboardHistory = [
+const template = [
   {
     date: "2025-07-23",
     ergData:[
@@ -10,4 +10,4 @@ const leaderboardHistory = [
   }
 ];
 
-export default leaderboardHistory;
+export default template;

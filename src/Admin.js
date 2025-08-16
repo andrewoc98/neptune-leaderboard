@@ -1,6 +1,8 @@
 import { useState } from "react";
 import './App.css'
 import SubmissionTable from "./SubmissionTable";
+import LeaderboardModal from "./LeaderboardModal";
+import WaterLeaderBoardModal from "./WaterLeaderBoardModal";
 
 export default function Admin() {
     const [isAuthorized, setIsAuthorized] = useState(false);
@@ -39,6 +41,10 @@ export default function Admin() {
     return (
         <div style={{ padding: "2rem", color:'white' }}>
             <SubmissionTable/>
+            <div style={{display: 'flex'}}>
+            <LeaderboardModal/>
+                <WaterLeaderBoardModal/>
+            </div>
         </div>
     );
 }

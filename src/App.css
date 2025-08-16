@@ -304,15 +304,45 @@ th, td {
     border: none;
 }
 
+/*.session-button {*/
+/*    background: transparent;*/
+/*    border: 2px solid black;*/
+/*    border-radius: 5px;*/
+/*    padding-left: 10px;*/
+/*    width: 10%;*/
+/*    margin-left: 5px;*/
+/*    color: darkgray;*/
+/*    transition: all 0.3s ease;*/
+/*}*/
+
 .session-button {
-    background: transparent;
+    background: transparent; /* Default button color */
+    color: gray;
     border: 2px solid black;
-    border-radius: 5px;
-    padding-left: 10px;
-    width: 10%;
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    border-radius: 0.35rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    white-space: nowrap; /* Prevents text from wrapping on larger screens */
     margin-left: 5px;
-    color: darkgray;
-    transition: all 0.3s ease;
+}
+
+/* Flash effect */
+.session-button.flash {
+    background-color: #28a745; /* Green flash */
+    color: white;
+}
+
+/* Responsive for small screens */
+@media screen and (max-width: 480px) {
+    .session-button {
+        padding: 0.4rem 0.6rem;
+        font-size: 0.9rem;
+        width: 100%; /* Fill available width */
+        white-space: normal; /* Allow wrapping if needed */
+        text-align: center;
+    }
 }
 
 .session-button:hover {

@@ -11,7 +11,7 @@ export default function SessionModal({ isOpen, onClose, onSubmit }) {
         notes:''
     });
 
-    const names = ['Andrew'];
+    const names = ["Ali G", "Andrew", "Ben", "Devon", "Garrett", "Gavin", "John", "Luke", "Mark", "Matt", "Odhran", "Ryan", "Tommy"];
     const [errors, setErrors] = useState({});
 
     const validate = () => {

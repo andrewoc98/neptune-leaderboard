@@ -2,10 +2,10 @@ import React, {useEffect, useState} from "react";
 import './App.css';
 import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
-import leaderboardHistory from "./Data";
+import {loadLeaderboardHistory, rowerSession} from "./firebase";
 import {adjustedErgScore, goldMedalPercentage, getSessionStats, getDistanceForLastPeriod} from "./Util";
 import ThreeWaySwitch from "./ThreeWaySwitch";
-import {rowerSession} from "./firebase";
+import template from "./Data";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
@@ -16,7 +16,17 @@ export default function LeaderboardApp({setOpenModal}) {
     const [waterSortKey, setWaterSortKey] = useState("goldPercentage");
     const [timeScale, setTimeScale] = useState("total");
     const [data, setData] = useState([])
-    const handleOpen = () =>{
+    const [leaderboardHistory,setLeaderboardHistory] = useState(template)
+    const [flash, setFlash] = useState(false);
+
+    const handleClick = () => {
+        setFlash(true);
+        handleOpen();
+        onSubmitSession?.();
+        setTimeout(() => setFlash(false), 300); // Remove flash after transition
+    };
+
+    const handleOpen = () => {
         setOpenModal(true)
     }
 
@@ -29,17 +39,49 @@ export default function LeaderboardApp({setOpenModal}) {
             try {
                 const stats = await getSessionStats(timeScale);
                 setData(stats);
-
             } catch (error) {
                 console.error("Error fetching session stats:", error);
             }
         };
 
+        const fetchLeaderBoard = async ()  => {
+            try {
+                const lb = await loadLeaderboardHistory();
+                setLeaderboardHistory(lb)
+            } catch (error) {
+                console.error("Error leaderboard:", error);
+            }
+        }
+
         fetchData();
+        fetchLeaderBoard();
     }, [timeScale]);
 
-    const latest = leaderboardHistory[leaderboardHistory.length - 1];
-    const prev = leaderboardHistory.length > 1 ? leaderboardHistory[leaderboardHistory.length - 2] : null;
+    // === New helpers to always pick latest non-empty snapshot per type ===
+    const findLatestWithData = (history, type) => {
+        for (let i = history.length - 1; i >= 0; i--) {
+            if (history[i][type] && history[i][type].length > 0) {
+                return history[i];
+            }
+        }
+        return null;
+    };
+
+    const findPrevWithData = (history, type, latest) => {
+        const latestIndex = history.indexOf(latest);
+        if (latestIndex <= 0) return null;
+        for (let i = latestIndex - 1; i >= 0; i--) {
+            if (history[i][type] && history[i][type].length > 0) {
+                return history[i];
+            }
+        }
+        return null;
+    };
+
+    const latestErg = findLatestWithData(leaderboardHistory, "ergData");
+    const latestWater = findLatestWithData(leaderboardHistory, "waterData");
+    const prevErg = latestErg ? findPrevWithData(leaderboardHistory, "ergData", latestErg) : null;
+    const prevWater = latestWater ? findPrevWithData(leaderboardHistory, "waterData", latestWater) : null;
 
     const parseTime = (timeStr) => {
         const parts = timeStr.split(":");
@@ -71,7 +113,7 @@ export default function LeaderboardApp({setOpenModal}) {
                     const aVal = typeof a[key] === "string" ? parseTime(a[key]) : a[key];
                     const bVal = typeof b[key] === "string" ? parseTime(b[key]) : b[key];
 
-                    // Ascending for time-based (split/adjustedSplit/time), descending otherwise
+                    // Ascending for time-based, descending otherwise
                     const sortAsc = ["split", "adjustedSplit", "time"].includes(key);
                     return sortAsc ? aVal - bVal : bVal - aVal;
                 });
@@ -90,13 +132,11 @@ export default function LeaderboardApp({setOpenModal}) {
         return parseInt(min, 10) * 60 + parseFloat(sec);
     };
 
-    const sortedErg = [...latest.ergData].sort((a, b) => {
+    const sortedErg = [...(latestErg?.ergData || [])].sort((a, b) => {
         return parseSplitTime(a[ergSortKey]) - parseSplitTime(b[ergSortKey]);
     });
 
-
     const handleErgSort = (key) => setErgSortKey(key);
-    ;
     const handleWaterSort = (key) => setWaterSortKey(key);
 
     const parseTimeToSeconds = (timeStr) => {
@@ -105,11 +145,11 @@ export default function LeaderboardApp({setOpenModal}) {
         return parseInt(minutes, 10) * 60 + seconds;
     };
 
-    const sortedWater = [...latest.waterData].sort((a, b) => {
+    const sortedWater = [...(latestWater?.waterData || [])].sort((a, b) => {
         if (waterSortKey === "goldPercentage") {
             return b.goldPercentage - a.goldPercentage;
         } else if (waterSortKey === "time") {
-            return parseTimeToSeconds(a.time) - parseTimeToSeconds(b.time); // ascending
+            return parseTimeToSeconds(a.time) - parseTimeToSeconds(b.time);
         }
         return 0;
     });
@@ -118,9 +158,11 @@ export default function LeaderboardApp({setOpenModal}) {
         setTimeScale(newSetting.toLowerCase());
     };
 
-
-
-    const { dates, rankMap } = getRankingsOverTime(leaderboardHistory, activeTab === 'erg' ? 'ergData' : 'waterData', activeTab === 'erg' ? 'adjustedSplit' : 'goldPercentage');
+    const { dates, rankMap } = getRankingsOverTime(
+        leaderboardHistory,
+        activeTab === 'erg' ? 'ergData' : 'waterData',
+        activeTab === 'erg' ? 'adjustedSplit' : 'goldPercentage'
+    );
 
     const getDelta = (name, index, currentList, prevList, key, sortAsc = true) => {
         if (!prevList) return "-";
@@ -130,7 +172,9 @@ export default function LeaderboardApp({setOpenModal}) {
         const diff = prevIndex - index;
         return diff === 0 ? "-" : diff > 0 ? `↑ ${diff}` : `↓ ${-diff}`;
     };
-    const changePerRower = getDistanceForLastPeriod(timeScale)
+
+    const changePerRower = getDistanceForLastPeriod(timeScale);
+
     return (
         <div className="container">
             <h1 className="title">Neptune Boat Club Leaderboard</h1>
@@ -139,40 +183,25 @@ export default function LeaderboardApp({setOpenModal}) {
                 <button className={`tab-button ${activeTab === "water" ? "active" : ""}`} onClick={() => setActiveTab("water")}>On the Water</button>
                 <button className={`tab-button ${activeTab === "sessions" ? "active" : ""}`} onClick={() => setActiveTab("sessions")}>Sessions</button>
             </div>
-            {activeTab === "erg" && (
-                <div className="table-container">
-                    <p style={ {textAlign: "center"}}><b>This Week Session:</b> 10*500m 1 min rest</p> <p style={ {textAlign: "center"}}> <b>Next Week Session:</b> 8*500m 1 min rest </p>
 
+            {activeTab === "erg" && latestErg && (
+                <div className="table-container">
+                    <p style={{ textAlign: "center" }}><b>This Week Session:</b> 10*500m 1 min rest</p>
+                    <p style={{ textAlign: "center" }}><b>Next Week Session:</b> 8*500m 1 min rest</p>
                     <table>
                         <thead>
                         <tr>
                             <th>Rank</th>
                             <th>Name</th>
                             <th>Weight (kg)</th>
-                            <th
-                                onClick={() => handleErgSort("split")}
-                                className={`sortable ${ergSortKey === "split" ? "sorted-column" : ""}`}
-                            >
-                                Split /500m
-                            </th>
-                            <th
-                                onClick={() => handleErgSort("adjustedSplit")}
-                                className={`sortable ${ergSortKey === "adjustedSplit" ? "sorted-column" : ""}`}
-                            >
-                                Adj. Split /500m
-                            </th>
+                            <th onClick={() => handleErgSort("split")} className={`sortable ${ergSortKey === "split" ? "sorted-column" : ""}`}>Split /500m</th>
+                            <th onClick={() => handleErgSort("adjustedSplit")} className={`sortable ${ergSortKey === "adjustedSplit" ? "sorted-column" : ""}`}>Adj. Split /500m</th>
                             <th>Change</th>
-
                         </tr>
                         </thead>
                         <tbody>
                         {sortedErg.map((rower, index) => (
-                            <tr
-                                key={rower.name}
-                                onMouseEnter={() => setHoveredName(rower.name)}
-                                onMouseLeave={() => setHoveredName(null)}
-                            >
-
+                            <tr key={rower.name} onMouseEnter={() => setHoveredName(rower.name)} onMouseLeave={() => setHoveredName(null)}>
                                 <td>{index + 1}</td>
                                 <td>{rower.name}</td>
                                 <td>{rower.weight}</td>
@@ -182,15 +211,14 @@ export default function LeaderboardApp({setOpenModal}) {
                                     rower.name,
                                     index,
                                     sortedErg,
-                                    prev?.ergData?.map(row => ({
+                                    prevErg?.ergData?.map(row => ({
                                         ...row,
                                         split: parseSplitTime(row.split),
                                         adjustedSplit: parseSplitTime(row.adjustedSplit)
                                     })),
                                     ergSortKey,
                                     true
-                                )
-                                }</td>
+                                )}</td>
                             </tr>
                         ))}
                         </tbody>
@@ -198,27 +226,18 @@ export default function LeaderboardApp({setOpenModal}) {
                 </div>
             )}
 
-            {activeTab === "water" && (
+            {activeTab === "water" && latestWater && (
                 <div className="table-container">
-                    <p style={ {textAlign: "center"}}><b>This Week Session:</b> 1*2km</p> <p style={ {textAlign: "center"}}> <b>Next Week Session:</b> 6*1km</p>
+                    <p style={{ textAlign: "center" }}><b>This Week Session:</b> 1*2km</p>
+                    <p style={{ textAlign: "center" }}><b>Next Week Session:</b> 6*1km</p>
                     <table>
                         <thead>
                         <tr>
                             <th>Rank</th>
                             <th>Name</th>
                             <th>Boat Class</th>
-                            <th
-                                onClick={() => handleWaterSort("time")}
-                                className={`sortable ${waterSortKey === "time" ? "sorted-column" : ""}`}
-                            >
-                                Time
-                            </th>
-                            <th
-                                onClick={() => handleWaterSort("goldPercentage")}
-                                className={`sortable ${waterSortKey === "goldPercentage" ? "sorted-column" : ""}`}
-                            >
-                                Gold Medal %
-                            </th>
+                            <th onClick={() => handleWaterSort("time")} className={`sortable ${waterSortKey === "time" ? "sorted-column" : ""}`}>Time</th>
+                            <th onClick={() => handleWaterSort("goldPercentage")} className={`sortable ${waterSortKey === "goldPercentage" ? "sorted-column" : ""}`}>Gold Medal %</th>
                             <th>Change</th>
                         </tr>
                         </thead>
@@ -231,31 +250,33 @@ export default function LeaderboardApp({setOpenModal}) {
                                 <td>{rower.time}</td>
                                 <td>{goldMedalPercentage(rower.time,rower.boatClass,rower.distance)}</td>
                                 <td>{getDelta(
-                                        rower.name,
+                                    rower.name,
                                     index,
                                     sortedWater,
-                                    prev?.waterData?.map(row => ({
-                                    ...row,
-                                    time: parseTimeToSeconds(row.time)
-                                })),
+                                    prevWater?.waterData?.map(row => ({
+                                        ...row,
+                                        time: parseTimeToSeconds(row.time)
+                                    })),
                                     waterSortKey,
                                     waterSortKey !== "goldPercentage"
-                                    )}</td>
+                                )}</td>
                             </tr>
                         ))}
                         </tbody>
                     </table>
                 </div>
             )}
+
             {activeTab === "sessions" && (
                 <div className="table-container">
-                        <div style={{display:'flex', padding:'6px'}}>
-                            <ThreeWaySwitch onChange={handleSettingChange}/>
-                            <button className="session-button" onClick={handleOpen} onSubmit={onSubmitSession}>Submit a Session</button>
-
-                        </div>
-                    <div>
-
+                    <div style={{display:'flex', padding:'6px'}}>
+                        <ThreeWaySwitch onChange={handleSettingChange}/>
+                        <button
+                            className={`session-button ${flash ? "flash" : ""}`}
+                            onClick={handleClick}
+                        >
+                            Submit a Session
+                        </button>
                     </div>
                     <table>
                         <thead>
@@ -284,21 +305,21 @@ export default function LeaderboardApp({setOpenModal}) {
                                     <td>{weightsPercent}</td>
                                     <td>{totalDistance}</td>
                                     <td>
-                                    {changePerRower[rower.name] != null && changePerRower[rower.name] !== 0 ? (
-                                        <>
-                                            {totalDistance - changePerRower[rower.name] !== 0
-                                                ? totalDistance - changePerRower[rower.name]
-                                                : ""}
-                                            {" "}
-                                            {totalDistance - changePerRower[rower.name] === 0
-                                                ? "-"
-                                                : totalDistance - changePerRower[rower.name] > 0
-                                                    ? "▲"
-                                                    : "▼"}
-                                        </>
-                                    ) : (
-                                        "-"
-                                    )}</td>
+                                        {changePerRower[rower.name] != null && changePerRower[rower.name] !== 0 ? (
+                                            <>
+                                                {totalDistance - changePerRower[rower.name] !== 0
+                                                    ? totalDistance - changePerRower[rower.name]
+                                                    : ""}
+                                                {" "}
+                                                {totalDistance - changePerRower[rower.name] === 0
+                                                    ? "-"
+                                                    : totalDistance - changePerRower[rower.name] > 0
+                                                        ? "▲"
+                                                        : "▼"}
+                                            </>
+                                        ) : (
+                                            "-"
+                                        )}</td>
                                 </tr>
                             );
                         })}
@@ -321,7 +342,6 @@ export default function LeaderboardApp({setOpenModal}) {
                                         data: rankMap[hoveredName],
                                         borderColor: "#004d99",
                                         backgroundColor: "#e6b800",
-
                                     },
                                 ],
                             }}
@@ -331,9 +351,11 @@ export default function LeaderboardApp({setOpenModal}) {
                                 scales: {
                                     y: {
                                         min: 1,
-                                        max: (leaderboardHistory[(leaderboardHistory.length-1)].ergData.length > leaderboardHistory[(leaderboardHistory.length-1)].waterData.length
-                                            ? (leaderboardHistory.ergData.length[(leaderboardHistory.length-1)] > 5 ? leaderboardHistory[(leaderboardHistory.length-1)].ergData.length : 5)
-                                            : (leaderboardHistory[(leaderboardHistory.length-1)].waterData.length > 5 ? leaderboardHistory[(leaderboardHistory.length-1)].waterData.length : 5)),
+                                        max: Math.max(
+                                            (latestErg?.ergData?.length || 0),
+                                            (latestWater?.waterData?.length || 0),
+                                            5
+                                        ),
                                         reverse: true,
                                         ticks: {
                                             stepSize: 1,
@@ -348,5 +370,4 @@ export default function LeaderboardApp({setOpenModal}) {
             )}
         </div>
     );
-
 }

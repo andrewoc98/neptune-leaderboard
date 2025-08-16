@@ -2,7 +2,9 @@
 import { initializeApp } from "firebase/app";
 import {collection, getDocs, getFirestore} from "firebase/firestore";
 import { doc, setDoc, deleteDoc } from "firebase/firestore";
+import { getDoc, updateDoc } from "firebase/firestore";
 import {v4 as uuidv4} from 'uuid';
+import {getPreviousSunday} from "./Util";
 
 
 // Your web app's Firebase configuration
@@ -39,7 +41,7 @@ export const approveSession = async (entry) => {
  */
 export const rejectSession = async (entry) => {
     try {
-        const entryRef = doc(database, "sessions", entry.id.toString());
+        const entryRef = doc(database, "sessionHistory", entry.id.toString());
         await deleteDoc(entryRef);
         console.log(`Entry ${entry.id} rejected and deleted from Firebase`);
         return true;
@@ -64,9 +66,9 @@ export const rowerSession = async (entry) => {
     }
 };
 
-export const ergScores = async () =>{
+export const loadLeaderboardHistory = async () =>{
     const result = [];
-    const snapshot = await getDocs(collection(database, "ergScores"));
+    const snapshot = await getDocs(collection(database, "leaderboardHistory"));
 
     snapshot.forEach(doc => {
         result.push({
@@ -76,23 +78,33 @@ export const ergScores = async () =>{
 
     });
 
-    return result;
+    return result[0].entries
 
 }
 
-export const waterScores = async () =>{
-    const result = [];
-    const snapshot = await getDocs(collection(database, "waterScores"));
+export async function saveLeaderBoardtoDB(newEntry) {
+    const ref = doc(database, "leaderboardHistory", '7ybV6j8crv0G67snO4Io');
+    const snap = await getDoc(ref);
 
-    snapshot.forEach(doc => {
-        result.push({
-            id: doc.id,
-            ...doc.data()
+    if (!snap.exists()) throw new Error("Document not found");
+
+    let entries = snap.data().entries || [];
+    const index = entries.findIndex(e => e.date === newEntry.date);
+
+    if (index >= 0) {
+        // Update only provided fields
+        if (newEntry.ergData !== undefined) entries[index].ergData = newEntry.ergData;
+        if (newEntry.waterData !== undefined) entries[index].waterData = newEntry.waterData;
+    } else {
+        entries.push({
+            date: newEntry.date,
+            ergData: newEntry.ergData ?? [],
+            waterData: newEntry.waterData ?? []
         });
+    }
 
-    });
-
-    return result;
-
+    await updateDoc(ref, { entries });
 }
+
+
 

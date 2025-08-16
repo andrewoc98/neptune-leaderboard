@@ -56,3 +56,75 @@ button.red {
 .table-container{
     background-color: white;
 }
+
+/* Container should allow horizontal scrolling on small screens */
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Table styling */
+.exercise-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed; /* Ensures cells are consistent */
+}
+
+/* Table cells */
+.exercise-table th,
+.exercise-table td {
+    border: 1px solid #ddd;
+    padding: 0.5rem;
+    text-align: left;
+    word-wrap: break-word; /* Prevent long text overflow */
+}
+
+/* Inputs inside table cells */
+.exercise-table input[type="text"],
+.exercise-table input[type="number"],
+.exercise-table select,
+.exercise-table textarea {
+    width: 100%;
+    box-sizing: border-box; /* Ensures padding doesn't break alignment */
+    padding: 0.25rem;
+    font-size: 0.9rem;
+}
+
+/* Buttons */
+.exercise-table button.green {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 0.25rem 0.5rem;
+    cursor: pointer;
+}
+
+.exercise-table button.red {
+    background-color: #f44336;
+    color: white;
+    border: none;
+    padding: 0.25rem 0.5rem;
+    cursor: pointer;
+}
+
+/* Responsive adjustments for mobile */
+@media screen and (max-width: 768px) {
+    .exercise-table th,
+    .exercise-table td {
+        padding: 0.3rem;
+        font-size: 0.70rem;
+    }
+
+    .exercise-table select,
+    .exercise-table input,
+    .exercise-table textarea {
+        font-size: 0.85rem;
+    }
+
+    .exercise-table button {
+        padding: 0.2rem 0.4rem;
+        font-size: 0.85rem;
+    }
+}
+

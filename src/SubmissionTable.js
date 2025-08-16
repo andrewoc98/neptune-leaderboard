@@ -138,7 +138,7 @@ export default function ExerciseTable() {
                                     onKeyDown={handleKeyDown}
                                     autoFocus
                                 >
-                                    {["Ali G", "Andrew", "Ben", "Devon", "Garrett", "Gavin", "John", "Luke", "Mark", "Matt", "Odhran", "Ryan", "Tommy"].map((name) => (
+                                    {["Andrew", "Matt"].map((name) => (
                                         <option key={name} value={name}>
                                             {name}
                                         </option>
@@ -232,19 +232,8 @@ export default function ExerciseTable() {
                                 onChange={(e) => handleNewEntryChange('name', e.target.value)}
                             >
                                 <option value="">Select Name</option>
-                                <option value="Ali G">Ali G</option>
                                 <option value="Andrew">Andrew</option>
-                                <option value="Ben">Ben</option>
-                                <option value="Devon">Devon</option>
-                                <option value="Garrett">Garrett</option>
-                                <option value="Gavin">Gavin</option>
-                                <option value="John">John</option>
-                                <option value="Luke">Luke</option>
-                                <option value="Mark">Mark</option>
                                 <option value="Matt">Matt</option>
-                                <option value="Odhran">Odhran</option>
-                                <option value="Ryan">Ryan</option>
-                                <option value="Tommy">Tommy</option>
                             </select>
                         </td>
                         <td>

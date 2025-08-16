@@ -89,6 +89,10 @@ export async function saveLeaderBoardtoDB(newEntry) {
     if (!snap.exists()) throw new Error("Document not found");
 
     let entries = snap.data().entries || [];
+
+    // Set the date to the previous Sunday using your function
+    newEntry.date = getPreviousSunday(newEntry.date);
+
     const index = entries.findIndex(e => e.date === newEntry.date);
 
     if (index >= 0) {

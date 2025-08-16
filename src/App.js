@@ -1,6 +1,5 @@
 import './App.css';
 import Admin from "./Admin";
-import { Routes, Route } from "react-router-dom";
 import User from "./User";
 import {useState} from "react";
 

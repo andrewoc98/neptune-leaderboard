@@ -66,63 +66,66 @@ export default function WaterLeaderBoardModal() {
                         <div className="modal-body">
                             <input type={'date'} onChange={(e)=>setDate(e.target.value.replaceAll('-','/'))}/>
                             {rows.map((row, index) => (
-                                <div key={index} className="row">
-                                    <div className="field">
-                                        <label>Name</label>
-                                        <select
-                                            value={row.name}
-                                            onChange={(e) => handleRowChange(index, "name", e.target.value)}
-                                        >
-                                            <option value="">Select name</option>
-                                            <option value="Andrew">Andrew</option>
-                                            <option value="Matt">Matt</option>
-                                        </select>
-                                        {errors[index]?.name && <p className="error">{errors[index].name}</p>}
-                                    </div>
+                            <div key={index} className="row">
+                            <div className="field">
+                                <label>Name</label>
+                                <select
+                                value={row.name}
+                                onChange={(e) => handleRowChange(index, "name", e.target.value)}
+                                >
+                                <option value="">Select name</option>
+                                <option value="Andrew">Andrew</option>
+                                <option value="Matt">Matt</option>
+                                </select>
+                                {errors[index]?.name && <p className="error">{errors[index].name}</p>}
+                            </div>
 
-                                    <div className="field">
-                                        <label>Boat Class</label>
-                                        <select
-                                            value={row.boatClass}
-                                            onChange={(e) => handleRowChange(index, "boatClass", e.target.value)}
-                                        >
-                                            <option value="">Select boat class</option>
-                                            <option value="1x">1x</option>
-                                            <option value="2x">2x</option>
-                                            <option value="4x-">4x-</option>
-                                            <option value="4x+">4x+</option>
-                                            <option value="2-">2-</option>
-                                            <option value="4-">4-</option>
-                                            <option value="4+">4+</option>
-                                            <option value="8+">8+</option>
-                                        </select>
-                                        {errors[index]?.boatClass && <p className="error">{errors[index].boatClass}</p>}
-                                    </div>
+                            <div className="field">
+                                <label>Boat Class</label>
+                                <select
+                                value={row.boatClass}
+                                onChange={(e) => handleRowChange(index, "boatClass", e.target.value)}
+                                >
+                                <option value="">Select boat class</option>
+                                <option value="1x">1x</option>
+                                <option value="2x">2x</option>
+                                <option value="4x-">4x-</option>
+                                <option value="4x+">4x+</option>
+                                <option value="2-">2-</option>
+                                <option value="4-">4-</option>
+                                <option value="4+">4+</option>
+                                <option value="8+">8+</option>
+                                </select>
+                                {errors[index]?.boatClass && <p className="error">{errors[index].boatClass}</p>}
+                            </div>
 
-                                    <div className="field">
-                                        <label>Time</label>
-                                        <input
-                                            type="text"
-                                            value={row.time}
-                                            onChange={(e) => handleRowChange(index, "time", e.target.value)}
-                                            placeholder="Time: mm:ss.s"
-                                        />
-                                        {errors[index]?.time && <p className="error">{errors[index].time}</p>}
-                                    </div>
+                            <div className="field">
+                                <label>Time</label>
+                                <input
+                                type="text"
+                                value={row.time}
+                                onChange={(e) => handleRowChange(index, "time", e.target.value)}
+                                placeholder="mm:ss.s"
+                                />
+                                {errors[index]?.time && <p className="error">{errors[index].time}</p>}
+                            </div>
 
-                                    <div className="field">
-                                        <label>Distance</label>
-                                        <input
-                                            type="number"
-                                            value={row.distance}
-                                            onChange={(e) => handleRowChange(index, "distance", e.target.value)}
-                                            placeholder="Distance (m)"
-                                        />
-                                        {errors[index]?.distance && <p className="error">{errors[index].distance}</p>}
-                                    </div>
+                            <div className="field">
+                                <label>Distance</label>
+                                <input
+                                type="number"
+                                value={row.distance}
+                                onChange={(e) => handleRowChange(index, "distance", e.target.value)}
+                                placeholder="Distance (m)"
+                                />
+                                {errors[index]?.distance && <p className="error">{errors[index].distance}</p>}
+                            </div>
 
-                                    <button className="btn btn-danger" onClick={() => removeRow(index)}>Remove</button>
-                                </div>
+                            <div className="row-actions">
+                                <button className="btn btn-danger" onClick={() => removeRow(index)}>Remove</button>
+                            </div>
+                            </div>
+
                             ))}
 
                             <button className="btn btn-outline" onClick={addRow}>+ Add Row</button>

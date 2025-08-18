@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import './App.css';
+import './modal.css';
 import {rowerSession} from "./firebase";
 
 export default function SessionModal({ isOpen, onClose, onSubmit }) {
@@ -65,24 +65,28 @@ export default function SessionModal({ isOpen, onClose, onSubmit }) {
                 </div>
 
                 {/* Checkboxes */}
-                <div className="modal-field">
+                <div className="modal-field checkbox-field">
+                <label className="checkbox-label">
                     <input
-                        type="checkbox"
-                        className="modal-checkbox"
-                        checked={formData.weights}
-                        onChange={(e) => setFormData({ ...formData, weights: e.target.checked })}
+                    type="checkbox"
+                    checked={formData.weights}
+                    onChange={(e) => setFormData({ ...formData, weights: e.target.checked })}
                     />
-                    <label>Weights session</label>
+                    Weights session
+                </label>
                 </div>
-                <div className="modal-field">
+
+                <div className="modal-field checkbox-field">
+                <label className="checkbox-label">
                     <input
-                        type="checkbox"
-                        className="modal-checkbox"
-                        checked={formData.intense}
-                        onChange={(e) => setFormData({ ...formData, intense: e.target.checked })}
+                    type="checkbox"
+                    checked={formData.intense}
+                    onChange={(e) => setFormData({ ...formData, intense: e.target.checked })}
                     />
-                    <label>Intense session</label>
+                    Intense session
+                </label>
                 </div>
+
                 <div className="modal-field">
                     <label className="modal-label">Notes</label>
                     <textarea style={{width:'100%', height:'100px'}} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} ></textarea>

@@ -188,7 +188,7 @@ export default function LeaderboardApp({ setOpenModal }) {
 
 
   return (
-    <div className="container">
+    <div className="container">{/*TODO align to the left on mobile*/}
       <h1 className="title">Neptune Boat Club Leaderboard</h1>
 
       {/* Tabs */}
@@ -200,12 +200,12 @@ export default function LeaderboardApp({ setOpenModal }) {
 
       {/* Erg Table */}
       {activeTab === "erg" && latestErg && (
-        <div className="table-container">
-          <p style={{ textAlign: "center", marginBottom: "0.5rem" }}>
-            <b>This Week Session:</b> 10×500m (1 min rest)
+        <div className="table-container">{/*TODO align to the left on mobile*/}
+          <p style={{ textAlign: "center", marginBottom: "0.5rem", color:"dimgray" }}>
+            <b>This Week Session:</b> 10×500m (1 min rest) {/*TODO Make this customizable*/}
           </p>
-          <p style={{ textAlign: "center", marginBottom: "1rem" }}>
-            <b>Next Week Session:</b> 8×500m (1 min rest)
+          <p style={{ textAlign: "center", marginBottom: "1rem", color:"dimgray" }}>
+            <b>Next Week Session:</b> 8×500m (1 min rest) {/*TODO Make this customizable*/}
           </p>
           <table>
             <table>
@@ -258,12 +258,12 @@ export default function LeaderboardApp({ setOpenModal }) {
 
       {/* Water Table */}
       {activeTab === "water" && latestWater && (
-        <div className="table-container">
-          <p style={{ textAlign: "center", marginBottom: "0.5rem" }}>
-            <b>This Week Session:</b> 1×2km
+        <div className="table-container">{/*TODO align to the left on mobile*/}
+          <p style={{ textAlign: "center", marginBottom: "0.5rem", color:"dimgray"}}>
+            <b>This Week Session:</b> 1×2km {/*TODO Make this customizable*/}
           </p>
-          <p style={{ textAlign: "center", marginBottom: "1rem" }}>
-            <b>Next Week Session:</b> 6×1km
+          <p style={{ textAlign: "center", marginBottom: "1rem",color:"dimgray" }}>
+            <b>Next Week Session:</b> 6×1km {/*TODO Make this customizable*/}
           </p>
           <table>
             <table>

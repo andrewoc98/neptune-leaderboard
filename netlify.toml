@@ -1,10 +1,11 @@
-# netlify.toml
+
 [build]
-# Build command: clean install then build
-command = "npm ci && npm run build"
-# Directory where Vite outputs the built files
+command = "npm install && npm run build"
 publish = "dist"
 
 [build.environment]
-# Use a stable Node version
-NODE_VERSION = "18"
+NODE_VERSION = "18"  # ensures compatibility with Vite/Rollup native modules
+
+[dev]
+command = "npm run dev"
+port = 5173

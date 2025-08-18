@@ -143,6 +143,9 @@ export async function getSessionStats(period) {
             }
         }});
     const output = Object.values(stats).sort((a, b) => b.totalDistance - a.totalDistance);
+    console.log("------------------------------")
+    console.log(output)
+    console.log("------------------------------")
     return output
 }
 

@@ -218,10 +218,11 @@ th.sortable:hover {
 
   th, td {
     padding: 0.5rem;
-    font-size: 0.8rem;
+    font-size: 0.6rem;
   }
 .sessions-table th {
   padding: 0.25rem; 
+  font-size: 0.6rem;
 }
 
 .sessions-table td {

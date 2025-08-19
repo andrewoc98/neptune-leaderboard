@@ -11,13 +11,16 @@ export default function SessionModal({ isOpen, onClose, onSubmit }) {
         notes:''
     });
 
-    const names = ["Andrew","Matt"];
+    const names = ["Alex","Andrew","Ben","Devon", "Gav", "John", "Luke", "Mark","Matt", "Odhran","Ryan","Tommy"];
     const [errors, setErrors] = useState({});
 
     const validate = () => {
         let newErrors = {};
-        if (!formData.name) newErrors.name = 'Name is required';
-        if (!formData.distance) newErrors.distance = 'Distance is required';
+        if (!formData.name || formData === "" ) newErrors.name = 'Name is required';
+        if (!formData.distance && !formData.weights) newErrors.distance = 'Distance is required';
+        if(formData.weights){
+            formData.distance = 0
+        }
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -53,6 +56,7 @@ export default function SessionModal({ isOpen, onClose, onSubmit }) {
                 </div>
 
                 {/* Distance Input */}
+                {!formData.weights &&
                 <div className="modal-field">
                     <label className="modal-label">Distance (m)</label>
                     <input
@@ -63,7 +67,7 @@ export default function SessionModal({ isOpen, onClose, onSubmit }) {
                     />
                     {errors.distance && <p className="modal-error">{errors.distance}</p>}
                 </div>
-
+}
                 {/* Checkboxes */}
                 <div className="modal-field checkbox-field">
                 <label className="checkbox-label">
@@ -86,7 +90,15 @@ export default function SessionModal({ isOpen, onClose, onSubmit }) {
                     Intense session
                 </label>
                 </div>
-
+                 <div className="modal-field">
+                <input
+                className='modal-input'
+                    type="date"
+                    placeholder="Date dd/mm/yyyy"
+                    onChange={(e) => setFormData({...formData, date: e.target.value.replaceAll('-','/')})}
+                
+                />
+                </div>
                 <div className="modal-field">
                     <label className="modal-label">Notes</label>
                     <textarea style={{width:'100%', height:'100px'}} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} ></textarea>

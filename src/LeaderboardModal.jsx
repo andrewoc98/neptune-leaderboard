@@ -1,6 +1,6 @@
 import { useState } from "react";
 import "./LeadboardModal.css"
-import {saveLeaderBoardtoDB} from "./firebase";
+import { saveLeaderBoardtoDB } from "./firebase";
 
 export default function LeaderboardModal() {
     const [open, setOpen] = useState(false);
@@ -31,7 +31,7 @@ export default function LeaderboardModal() {
             if (!row.split.match(/^\d+:\d{2}(\.\d)?$/)) {
                 msg.split = "Split must be in format mm:ss.s";
             }
-            if(!row.weight){
+            if (!row.weight) {
                 msg.weight = "Weight is required"
             }
             return msg;
@@ -45,7 +45,7 @@ export default function LeaderboardModal() {
             return; // stop if invalid
         }
         console.log(rows);
-        saveLeaderBoardtoDB({date:date,waterData:rows}) // Replace with DB post
+        saveLeaderBoardtoDB({ date: date, waterData: rows }) // Replace with DB post
         setOpen(false);
         setRows([{ name: "", weight: "", split: "" }]);
         setErrors([])
@@ -62,7 +62,7 @@ export default function LeaderboardModal() {
                         </div>
 
                         <div className="modal-body">
-                            <input type={'date'} onChange={(e)=>setDate(e.target.value.replaceAll('-','/'))}/>
+                            <input type={'date'} onChange={(e) => setDate(e.target.value.replaceAll('-', '/'))} />
                             {rows.map((row, index) => (
                                 <div key={index} className="row">
                                     <div className="field">
@@ -72,8 +72,18 @@ export default function LeaderboardModal() {
                                             onChange={(e) => handleRowChange(index, "name", e.target.value)}
                                         >
                                             <option value="">Select name</option>
+                                            <option value="Alex">Alex</option>
                                             <option value="Andrew">Andrew</option>
+                                            <option value="Ben">Ben</option>
+                                            <option value="Devon">Devon</option>
+                                            <option value="Gav">Gav</option>
+                                            <option value="John">John</option>
+                                            <option value="Luke">Luke</option>
+                                            <option value="Mark">Andrew</option>
                                             <option value="Matt">Matt</option>
+                                            <option value="Odhran">Odhran</option>
+                                            <option value="Ryan">Ryan</option>
+                                            <option value="Tommy">Tommy</option>
                                         </select>
                                         {errors[index]?.name && (
                                             <p className="error">{errors[index].name}</p>

@@ -4,6 +4,7 @@ import { getUnApprovedSessions } from "./Util";
 import { approveSession, rejectSession } from './firebase';
 import {v4 as uuidv4} from 'uuid';
 
+
 export default function ExerciseTable() {
     const [data, setData] = useState([]);
 
@@ -138,7 +139,7 @@ export default function ExerciseTable() {
                                     onKeyDown={handleKeyDown}
                                     autoFocus
                                 >
-                                    {["Andrew", "Matt"].map((name) => (
+                                    {["Alex","Andrew","Ben","Devon","Gav","John","Luke","Mark", "Matt", "Odhran","Ryan","Tommy"].map((name) => (
                                         <option key={name} value={name}>
                                             {name}
                                         </option>
@@ -192,9 +193,9 @@ export default function ExerciseTable() {
                         <td onDoubleClick={() => handleDoubleClick(row.id, 'date')}>
                             {editCell.id === row.id && editCell.field === 'date' ? (
                                 <input
-                                    type="text"
-                                    value={row.date}
-                                    onChange={(e) => handleEditChange(row.id, 'date', e.target.value)}
+                                    type="date"
+                                    value={row.date.replaceAll('/','-')}
+                                    onChange={(e) => handleEditChange(row.id, 'date', e.target.value.replaceAll('/','-'))}
                                     onBlur={handleBlur}
                                     onKeyDown={handleKeyDown}
                                     autoFocus
@@ -232,8 +233,17 @@ export default function ExerciseTable() {
                                 onChange={(e) => handleNewEntryChange('name', e.target.value)}
                             >
                                 <option value="">Select Name</option>
+                                <option value="Alex">Alex</option>
                                 <option value="Andrew">Andrew</option>
+                                <option value="Bem">Ben</option>
+                                <option value="Devon">Devpn</option>
+                                <option value="Gav">Gav</option>
+                                <option value="John">John</option>
+                                <option value="Mark">Mark</option>
                                 <option value="Matt">Matt</option>
+                                <option value="Odhran">Odhran</option>
+                                <option value="Ryan">Ryan</option>
+                                <option value="Tommy">Tommy</option>
                             </select>
                         </td>
                         <td>
@@ -269,10 +279,10 @@ export default function ExerciseTable() {
                         </td>
                         <td>
                             <input
-                                type="text"
+                                type="date"
                                 placeholder="Date dd/mm/yyyy"
                                 value={newEntry.date}
-                                onChange={(e) => handleNewEntryChange('date', e.target.value)}
+                                onChange={(e) => handleNewEntryChange('date', e.target.value.replaceAll('-','/'))}
                             />
                         </td>
                         <td colSpan={2}>
@@ -290,18 +300,16 @@ export default function ExerciseTable() {
             </table>
 
             {!showNewEntryForm && (
-                <button
-                    onClick={() => setShowNewEntryForm(true)}
-                    style={{
-                        marginTop: '1rem',
-                        padding: '0.25rem 0.75rem',
-                        cursor: 'pointer',
-                    }}
-                    aria-label="Add new entry"
-                    title="Add new entry"
-                >
-                    + Add New Entry
-                </button>
+                <div className="add-entry-container">
+                    <button
+                    className="add-entry-btn"
+                        onClick={() => setShowNewEntryForm(true)}
+                        aria-label="Add new entry"
+                        title="Add new entry"
+                    >
+                        +
+                    </button>
+                </div>
             )}
         </div>
     );

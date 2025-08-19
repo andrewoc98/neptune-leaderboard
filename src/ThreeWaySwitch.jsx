@@ -29,7 +29,7 @@ function ThreeWaySwitch({ onChange }) {
                             margin: '0 6px',
                             borderRadius: '50%',
                             border: 'none',
-                            backgroundColor: isSelected ? '#28a745' : 'transparent',
+                            backgroundColor: isSelected ? '#28a745' : '#fff',
                             color: isSelected ? '#fff' : '#7f8c8d',
                             display: 'flex',
                             alignItems: 'center',

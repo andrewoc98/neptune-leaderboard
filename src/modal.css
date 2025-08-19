@@ -145,3 +145,11 @@
   height: 18px;
   flex-shrink: 0;
 }
+
+
+/* Optional: Firefox (as of now, very limited styling support) */
+input {
+  color-scheme: dark; 
+  cursor: pointer; /* ensures white icon/text in Firefox */
+}
+

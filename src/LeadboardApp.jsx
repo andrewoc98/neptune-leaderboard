@@ -200,13 +200,16 @@ export default function LeaderboardApp({ setOpenModal }) {
 
       {/* Erg Table */}
       {activeTab === "erg" && latestErg && (
-        <div className="table-container">{/*TODO align to the left on mobile*/}
-          <p style={{ textAlign: "center", marginBottom: "0.5rem", color:"dimgray" }}>
+        <div className="table-container" style={{width:"90%"}}>{/*TODO align to the left on mobile*/}
+          <div className="table-section">
+            <div className="table-description">
+          <p style={{textAlign: "center", marginBottom: "0.5rem", color:"white" }}>
             <b>This Week Session:</b> 10×500m (1 min rest) {/*TODO Make this customizable*/}
           </p>
-          <p style={{ textAlign: "center", marginBottom: "1rem", color:"dimgray" }}>
+          <p style={{ textAlign: "center", marginBottom: "1rem", color:"white" }}>
             <b>Next Week Session:</b> 8×500m (1 min rest) {/*TODO Make this customizable*/}
           </p>
+        </div>
           <table>
             <table>
   <thead>
@@ -228,8 +231,7 @@ export default function LeaderboardApp({ setOpenModal }) {
   <tbody>
     {sortedErg.map((rower, index) => (
       <tr key={rower.name}
-        onMouseEnter={() => handleMouseEnter(rower.name)}
-        onMouseLeave={handleMouseLeave}>
+        onClick={() => handleMouseEnter(rower.name)}>
         <td>{index + 1}</td>
         <td>{rower.name}</td>
         <td>{rower.weight}</td>
@@ -253,18 +255,22 @@ export default function LeaderboardApp({ setOpenModal }) {
 </table>
 
           </table>
+          </div>
         </div>
       )}
 
       {/* Water Table */}
       {activeTab === "water" && latestWater && (
-        <div className="table-container">{/*TODO align to the left on mobile*/}
-          <p style={{ textAlign: "center", marginBottom: "0.5rem", color:"dimgray"}}>
+        <div className="table-container"style={{width:"90%"}}>{/*TODO align to the left on mobile*/}
+                  <div className="table-section">
+            <div className="table-description">
+          <p style={{ textAlign: "center", marginBottom: "0.5rem", color:"white"}}>
             <b>This Week Session:</b> 1×2km {/*TODO Make this customizable*/}
           </p>
-          <p style={{ textAlign: "center", marginBottom: "1rem",color:"dimgray" }}>
+          <p style={{ textAlign: "center", marginBottom: "1rem",color:"white" }}>
             <b>Next Week Session:</b> 6×1km {/*TODO Make this customizable*/}
           </p>
+          </div>
           <table>
             <table>
   <thead>
@@ -286,8 +292,7 @@ export default function LeaderboardApp({ setOpenModal }) {
   <tbody>
     {sortedWater.map((rower, index) => (
       <tr key={rower.name}
-        onMouseEnter={() => handleMouseEnter(rower.name)}
-        onMouseLeave={handleMouseLeave}>
+        onClick={() => handleMouseEnter(rower.name)}>
         <td>{index + 1}</td>
         <td>{rower.name}</td>
         <td>{rower.boatClass}</td>
@@ -311,11 +316,14 @@ export default function LeaderboardApp({ setOpenModal }) {
 
           </table>
         </div>
+        </div>
       )}
 
       {/* Sessions Table */}
       {activeTab === "sessions" && (
-        <div className="table-container">
+                <div className="table-container sessions-table"style={{width:"90%"}}>{/*TODO align to the left on mobile*/}
+                  <div className="table-section">
+            <div className="table-description">
           <div style={{ display: 'flex', justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
             <ThreeWaySwitch onChange={handleSettingChange} />
             <button
@@ -324,6 +332,7 @@ export default function LeaderboardApp({ setOpenModal }) {
             >
               Submit Session
             </button>
+            </div>
           </div>
           <table>
            <table>
@@ -335,7 +344,7 @@ export default function LeaderboardApp({ setOpenModal }) {
       <th>Intensity %</th>
       <th>Weights %</th>
       <th>Distance (m)</th>
-      <th>Change</th>
+      <th className="end-tab">Change</th>
     </tr>
   </thead>
   <tbody>
@@ -351,12 +360,12 @@ export default function LeaderboardApp({ setOpenModal }) {
           <td>{steadyPercent}</td>
           <td>{intensityPercent}</td>
           <td>{weightsPercent}</td>
-          <td>{totalDistance}</td>
+          <td>{totalDistance.toLocaleString('en-US')}</td>
           <td>
             {changePerRower[rower.name] != null && changePerRower[rower.name] !== 0 ? (
               <>
                 {totalDistance - changePerRower[rower.name] !== 0
-                  ? totalDistance - changePerRower[rower.name]
+                  ? (totalDistance - changePerRower[rower.name]).toLocaleString('en-US')
                   : ""}
                 {" "}
                 {totalDistance - changePerRower[rower.name] === 0
@@ -376,21 +385,18 @@ export default function LeaderboardApp({ setOpenModal }) {
 </table>
 
           </table>
-        </div>
+          </div>
+          </div>
       )}
 
       {/* Modal with Chart */}
       {hoveredName && (
         <div
             className="modal"
-            onMouseEnter={() => {
-                if (hoverTimeout) clearTimeout(hoverTimeout);
-            }}
-            onMouseLeave={handleMouseLeave}
             >
 
           <div className="modal-content">
-            <span className="close-button" onClick={() => setHoveredName(null)}>&times;</span>
+            <span className="close-button" style={{color:"white"}} onClick={() => setHoveredName(null)}>&times;</span>
             <h2 style={{ marginBottom: "1rem" }}>{hoveredName}'s Progress</h2>
             <Line
             data={{
@@ -404,10 +410,10 @@ export default function LeaderboardApp({ setOpenModal }) {
                 },
                 ],
             }}
-            height={300} // set fixed height
+            height={"300%"} // set fixed height
             options={{
                 responsive: true,
-                maintainAspectRatio: false,
+                maintainAspectRatio: true,
                 scales: {
                 y: {
                     min: 1,

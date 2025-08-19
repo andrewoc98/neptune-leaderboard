@@ -130,7 +130,7 @@ export async function getSessionStats(period) {
                     };
                 }
 
-                stats[name].totalDistance += distance;
+                stats[name].totalDistance += Number(distance);
                 stats[name].totalSessions += 1;
 
                 if (intensity) {

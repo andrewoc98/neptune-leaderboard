@@ -41,9 +41,9 @@ export default function Admin() {
     return (
         <div style={{ padding: "2rem", color:'white' }}>
             <SubmissionTable/>
-            <div style={{display: 'flex'}}>
+            <div style={{display: 'flex', justifyContent:'center'}}>
             <LeaderboardModal/>
-                <WaterLeaderBoardModal/>
+            <WaterLeaderBoardModal/>
             </div>
         </div>
     );

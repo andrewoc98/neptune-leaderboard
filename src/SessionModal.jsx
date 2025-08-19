@@ -8,19 +8,30 @@ export default function SessionModal({ isOpen, onClose, onSubmit }) {
         distance: '',
         weights: false,
         intense: false,
-        notes:''
+        notes:'',
+        type:'Other'
     });
 
     const names = ["Alex","Andrew","Ben","Devon", "Gav", "John", "Luke", "Mark","Matt", "Odhran","Ryan","Tommy"];
     const [errors, setErrors] = useState({});
+
+    const distanceMultiplier = {
+        'Erg':1,
+        'Bike':0.5,
+        'Run':1,
+        'Water':1,
+        'Other':1
+    }
 
     const validate = () => {
         let newErrors = {};
         if (!formData.name || formData === "" ) newErrors.name = 'Name is required';
         if (!formData.distance && !formData.weights) newErrors.distance = 'Distance is required';
         if(formData.weights){
-            formData.distance = 0
+            setFormData({...formData, distance:0, type:'Other'})
         }
+        setFormData({...formData, 
+            distance:(formData.distance*(distanceMultiplier[formData.type]))})
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -57,6 +68,7 @@ export default function SessionModal({ isOpen, onClose, onSubmit }) {
 
                 {/* Distance Input */}
                 {!formData.weights &&
+                <>
                 <div className="modal-field">
                     <label className="modal-label">Distance (m)</label>
                     <input
@@ -67,6 +79,22 @@ export default function SessionModal({ isOpen, onClose, onSubmit }) {
                     />
                     {errors.distance && <p className="modal-error">{errors.distance}</p>}
                 </div>
+                <div className="modal-field">
+                    <label className="modal-label">Type</label>
+                    <select
+                        className="modal-select"
+                        value={formData.type}
+                        onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                    >
+
+                        {Object.keys(distanceMultiplier).map((key) => (
+                            <option key={key} value={key}>
+                            {key}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+                </>
 }
                 {/* Checkboxes */}
                 <div className="modal-field checkbox-field">

@@ -286,12 +286,12 @@ export default function ExerciseTable() {
                             />
                         </td>
                         <td colSpan={2}>
-                            <button onClick={handleAddEntry}>Add</button>
+                            <button onClick={handleAddEntry}>✓</button>
                             <button
                                 onClick={() => setShowNewEntryForm(false)}
                                 style={{ marginLeft: '0.5rem' }}
                             >
-                                Cancel
+                                X
                             </button>
                         </td>
                     </tr>

@@ -6,6 +6,7 @@ body {
   color: #f8f9fa;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+  width: 100%;
 }
 
 /* Container */
@@ -172,9 +173,14 @@ th.sortable:hover {
 /* Responsive */
 @media (max-width: 900px) {
   .container {
-    align-items: center;
-    padding: 0.5rem;
-  }
+    align-items: left;
+    padding: 0rem;
+    max-width: 1100px;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: left;
+}
 
   .table-container {
     justify-content: center;
@@ -212,6 +218,7 @@ th.sortable:hover {
 
   th, td {
     padding: 0.5rem;
+    font-size: 0.8rem;
   }
 .sessions-table th {
   padding: 0.25rem; 

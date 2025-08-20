@@ -62,7 +62,7 @@ export default function LeaderboardModal() {
                         </div>
 
                         <div className="modal-body">
-                            <input type={'date'} onChange={(e) => setDate(e.target.value.replaceAll('-', '/'))} />
+                            <input type={'date'} onChange={(e) => setDate(formatDate(e.target.value.replaceAll('-', '/')))} />
                             {rows.map((row, index) => (
                                 <div key={index} className="row">
                                     <div className="field">

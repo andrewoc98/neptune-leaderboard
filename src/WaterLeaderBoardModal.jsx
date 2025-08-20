@@ -1,6 +1,7 @@
 import { useState } from "react";
 import "./LeadboardModal.css"
 import { saveLeaderBoardtoDB } from "./firebase";
+import { formatDate } from "./Util";
 
 export default function WaterLeaderBoardModal() {
     const [open, setOpen] = useState(false);
@@ -64,7 +65,7 @@ export default function WaterLeaderBoardModal() {
                         </div>
 
                         <div className="modal-body">
-                            <input type={'date'} onChange={(e) => setDate(e.target.value.replaceAll('-', '/'))} />
+                            <input type={'date'} onChange={(e) => setDate(formatDate(e.target.value.replaceAll('-', '/')))} />
                             {rows.map((row, index) => (
                                 <div key={index} className="row">
                                     <div className="field">

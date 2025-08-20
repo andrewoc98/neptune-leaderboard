@@ -53,7 +53,6 @@ export function goldMedalPercentage(time, boatClass, distance) {
 }
 
 function parseDate(dateStr) {
-    console.log(dateStr)
     const [day, month, year] = dateStr.split("/").map(Number);
     return new Date(year, month - 1, day);
 }
@@ -97,6 +96,11 @@ async function getAllSessionHistory() {
     return result;
 }
 
+export function formatDate(date){
+    const [year, month, day] = date.split('/');
+    return`${day}/${month}/${year}`;
+}
+
 
 export async function getSessionStats(period) {
     const today = new Date();
@@ -112,14 +116,15 @@ export async function getSessionStats(period) {
 
     const stats = {};
     const allSessions = await getAllSessionHistory();
+
     allSessions.forEach(entry => {
         if(entry.approved) {
             const entryDate = parseDate(entry.date);
             if (entryDate >= startDate && entryDate <= today) {
                 const {name, distance, intensity, weights} = entry;
-                console.log('running stats for ' + name)
+        
                 if (!stats[name]) {
-                    console.log('adding ' + name)
+                
                     stats[name] = {
                         name,
                         totalDistance: 0,
@@ -143,9 +148,7 @@ export async function getSessionStats(period) {
             }
         }});
     const output = Object.values(stats).sort((a, b) => b.totalDistance - a.totalDistance);
-    console.log("------------------------------")
-    console.log(output)
-    console.log("------------------------------")
+
     return output
 }
 

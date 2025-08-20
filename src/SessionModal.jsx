@@ -3,6 +3,7 @@ import './modal.css';
 import {rowerSession} from "./firebase";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { formatDate } from './Util';
 
 export default function SessionModal({ isOpen, onClose, onSubmit }) {
     const [formData, setFormData] = useState({
@@ -33,7 +34,7 @@ export default function SessionModal({ isOpen, onClose, onSubmit }) {
             setFormData({...formData, distance:0, type:'Other'})
         }
         setFormData({...formData, 
-            distance:(formData.distance*(distanceMultiplier[formData.type])).toFixed(0)})
+            distance:Number(formData.distance*(distanceMultiplier[formData.type])).toFixed(0)})
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -127,7 +128,9 @@ export default function SessionModal({ isOpen, onClose, onSubmit }) {
                 className='modal-input'
                     type="date"
                     placeholder="Date dd/mm/yyyy"
-                    onChange={(e) => setFormData({...formData, date: e.target.value.replaceAll('-','/')})}
+                    onChange={(e) => {
+                        setFormData({...formData, date: formatDate(e.target.value.replaceAll('-','/'))})}
+                    }
                 
                 />
                 </div>

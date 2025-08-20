@@ -58,7 +58,7 @@ export const rowerSession = async (entry) => {
         }
         const entryRef = doc(database, "sessionHistory", entry.id.toString());
         await setDoc(entryRef, { ...entry, approved: false });
-        console.log(`Entry ${entry.id} approved and saved to Firebase`);
+        console.log(`Entry ${entry.id} sent for approval`);
         return true;
     } catch (err) {
         console.error("Error approving entry:", err);

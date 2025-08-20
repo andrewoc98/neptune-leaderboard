@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './SubmissionTable.css';
-import { getUnApprovedSessions } from "./Util";
+import { formatDate, getUnApprovedSessions } from "./Util";
 import { approveSession, rejectSession } from './firebase';
 import {v4 as uuidv4} from 'uuid';
 
@@ -195,7 +195,7 @@ export default function ExerciseTable() {
                                 <input
                                     type="date"
                                     value={row.date.replaceAll('/','-')}
-                                    onChange={(e) => handleEditChange(row.id, 'date', e.target.value.replaceAll('/','-'))}
+                                    onChange={(e) => handleEditChange(row.id, 'date', formatDate(e.target.value.replaceAll('/','-')))}
                                     onBlur={handleBlur}
                                     onKeyDown={handleKeyDown}
                                     autoFocus
@@ -252,7 +252,7 @@ export default function ExerciseTable() {
                                 type="number"
                                 placeholder="Distance"
                                 value={newEntry.distance}
-                                onChange={(e) => handleNewEntryChange('distance', e.target.value)}
+                                onChange={(e) => handleNewEntryChange('distance', Number(e.target.value))}
                                 style={{ width: '100%' }}
                             />
                         </td>
@@ -283,7 +283,7 @@ export default function ExerciseTable() {
                                 type="date"
                                 placeholder="Date dd/mm/yyyy"
                                 value={newEntry.date}
-                                onChange={(e) => handleNewEntryChange('date', e.target.value.replaceAll('-','/'))}
+                                onChange={(e) => handleNewEntryChange('date', formatDate(e.target.value.replaceAll('-','/')))}
                             />
                         </td>
                         <td colSpan={2}>

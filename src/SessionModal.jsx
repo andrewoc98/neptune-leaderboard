@@ -14,7 +14,7 @@ export default function SessionModal({ isOpen, onClose, onSubmit }) {
         type:'Other'
     });
 
-    const names = ["Alex","Andrew","Ben","Devon", "Gav", "John", "Luke", "Mark","Matt", "Odhran","Ryan","Tommy"];
+    const names = ["Alex Gillick","Andrew O'Connor","Ben Brennan","Devon Goldrick","Gavin O'Dwyer","John Giles","Luke Keating","Mark Connolly", "Matt Malone", "Odhran Hegarty","Ryan Farrell","Tommy Gillick"];
     const [errors, setErrors] = useState({});
 
     const distanceMultiplier = {

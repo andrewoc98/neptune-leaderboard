@@ -74,18 +74,18 @@ export default function WaterLeaderBoardModal() {
                                             onChange={(e) => handleRowChange(index, "name", e.target.value)}
                                         >
                                             <option value="">Select name</option>
-                                            <option value="Alex">Alex</option>
-                                            <option value="Andrew">Andrew</option>
-                                            <option value="Ben">Ben</option>
-                                            <option value="Devon">Devon</option>
-                                            <option value="Gav">Gav</option>
-                                            <option value="John">John</option>
-                                            <option value="Luke">Luke</option>
-                                            <option value="Mark">Andrew</option>
-                                            <option value="Matt">Matt</option>
-                                            <option value="Odhran">Odhran</option>
-                                            <option value="Ryan">Ryan</option>
-                                            <option value="Tommy">Tommy</option>
+                                            <option value="Alex Gillick">Alex Gillick</option>
+                                            <option value="Andrew O'Connor">Andrew O'Connor</option>
+                                            <option value="Ben Brennan">Ben Brennan</option>
+                                            <option value="Devon Goldrick">Devon Goldrick</option>
+                                            <option value="Gavin O'Dwyer">Gavin O'Dwyer</option>
+                                            <option value="John Giles">John Giles</option>
+                                            <option value="Luke Keating">Luke Keating</option>
+                                            <option value="Mark Connolly">Mark Connolly</option>
+                                            <option value="Matt Malone">Matt Malone</option>
+                                            <option value="Odhran Hegarty">Odhran Hegarty</option>
+                                            <option value="Ryan Farrell">Ryan Farrell</option>
+                                            <option value="Tommy Gillick">Tommy Gillick</option>
                                         </select>
                                         {errors[index]?.name && <p className="error">{errors[index].name}</p>}
                                     </div>

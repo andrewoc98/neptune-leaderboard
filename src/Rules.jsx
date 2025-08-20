@@ -40,7 +40,7 @@ return (
                 <ul className="rules" style={{ listStyle: "disc", paddingLeft: "1.5rem" }}>
                 <h3>Erg Scores</h3>
                 <li>Each week, members will complete one agreed-upon intense session together.</li>
-                <li>All participants must complete the exact same session for scores to count.</li>
+                <li>Weekly pieces will only be recorded if all sets are completed as per programmed. Any more or less will result in a DFN/DNS</li>
                 <li>Failure to complete the session, or making changes to it, will result in a DNF/DNS.</li>
                 <li>Your score is based on the average split across the entire session.</li>
                 <li>The session counts toward your weekly mileage total.</li>

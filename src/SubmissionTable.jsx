@@ -139,7 +139,7 @@ export default function ExerciseTable() {
                                     onKeyDown={handleKeyDown}
                                     autoFocus
                                 >
-                                    {["Alex","Andrew","Ben","Devon","Gav","John","Luke","Mark", "Matt", "Odhran","Ryan","Tommy"].map((name) => (
+                                    {["Alex Gillick","Andrew O'Connor","Ben Brennan","Devon Goldrick","Gavin O'Dwyer","John Giles","Luke Keating","Mark Connolly", "Matt Malone", "Odhran Hegarty","Ryan Farrell","Tommy Gillick"].map((name) => (
                                         <option key={name} value={name}>
                                             {name}
                                         </option>
@@ -232,18 +232,19 @@ export default function ExerciseTable() {
                                 value={newEntry.name}
                                 onChange={(e) => handleNewEntryChange('name', e.target.value)}
                             >
-                                <option value="">Select Name</option>
-                                <option value="Alex">Alex</option>
-                                <option value="Andrew">Andrew</option>
-                                <option value="Bem">Ben</option>
-                                <option value="Devon">Devpn</option>
-                                <option value="Gav">Gav</option>
-                                <option value="John">John</option>
-                                <option value="Mark">Mark</option>
-                                <option value="Matt">Matt</option>
-                                <option value="Odhran">Odhran</option>
-                                <option value="Ryan">Ryan</option>
-                                <option value="Tommy">Tommy</option>
+                                            <option value="">Select name</option>
+                                            <option value="Alex Gillick">Alex Gillick</option>
+                                            <option value="Andrew O'Connor">Andrew O'Connor</option>
+                                            <option value="Ben Brennan">Ben Brennan</option>
+                                            <option value="Devon Goldrick">Devon Goldrick</option>
+                                            <option value="Gavin O'Dwyer">Gavin O'Dwyer</option>
+                                            <option value="John Giles">John Giles</option>
+                                            <option value="Luke Keating">Luke Keating</option>
+                                            <option value="Mark Connolly">Mark Connolly</option>
+                                            <option value="Matt Malone">Matt Malone</option>
+                                            <option value="Odhran Hegarty">Odhran Hegarty</option>
+                                            <option value="Ryan Farrell">Ryan Farrell</option>
+                                            <option value="Tommy Gillick">Tommy Gillick</option>
                             </select>
                         </td>
                         <td>

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import './modal.css';
 import {rowerSession} from "./firebase";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function SessionModal({ isOpen, onClose, onSubmit }) {
     const [formData, setFormData] = useState({
@@ -31,7 +33,7 @@ export default function SessionModal({ isOpen, onClose, onSubmit }) {
             setFormData({...formData, distance:0, type:'Other'})
         }
         setFormData({...formData, 
-            distance:(formData.distance*(distanceMultiplier[formData.type]))})
+            distance:(formData.distance*(distanceMultiplier[formData.type])).toFixed(0)})
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -40,12 +42,14 @@ export default function SessionModal({ isOpen, onClose, onSubmit }) {
         if (!validate()) return;
         console.log(formData)
         rowerSession(formData)
+        toast.success("Your Session has been submitted for review");
         onClose();
     };
 
-    if (!isOpen) return null;
 
     return (
+        <>
+        {isOpen && (
         <div className="modal-overlay">
             <div className="modal-content">
                 <h2 className="modal-title">New Session</h2>
@@ -138,6 +142,8 @@ export default function SessionModal({ isOpen, onClose, onSubmit }) {
                     <button onClick={handleSubmit} className="modal-button submit">Submit</button>
                 </div>
             </div>
-        </div>
+        </div>)}
+        <ToastContainer position="top-right" autoClose={3000} />
+        </>
     );
 }

@@ -19,7 +19,7 @@
   max-width: 500px;
   box-shadow: 0 12px 24px rgba(0,0,0,0.6);
   color: #f8f9fa;
-  animation: fadeIn 0.25s ease;
+  animation: fadeIn 0.25s ease;  
 }
 
 /* Title */
@@ -153,3 +153,10 @@ input {
   cursor: pointer; /* ensures white icon/text in Firefox */
 }
 
+.modal-body {
+  overflow-y: auto;         /* allow scrolling */
+  flex-grow: 1;             /* take up remaining space */
+  margin-bottom: 1rem;
+  padding-right: 0.5rem; 
+  font-size: 0.6rem;   /* avoids scrollbar overlap */
+}

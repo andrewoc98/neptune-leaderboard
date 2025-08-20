@@ -5,7 +5,6 @@ import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement
 import { loadLeaderboardHistory, rowerSession } from "./firebase";
 import { adjustedErgScore, goldMedalPercentage, getSessionStats, getDistanceForLastPeriod } from "./Util";
 import ThreeWaySwitch from "./ThreeWaySwitch";
-import template from "./Data";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
@@ -16,7 +15,7 @@ export default function LeaderboardApp({ setOpenModal }) {
     const [waterSortKey, setWaterSortKey] = useState("goldPercentage");
     const [timeScale, setTimeScale] = useState("total");
     const [data, setData] = useState([])
-    const [leaderboardHistory,setLeaderboardHistory] = useState(template)
+    const [leaderboardHistory,setLeaderboardHistory] = useState([])
     const [flash, setFlash] = useState(false);
     const [hoverTimeout, setHoverTimeout] = useState(null);
 

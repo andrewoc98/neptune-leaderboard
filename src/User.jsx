@@ -3,6 +3,7 @@ import './App.css';
 import SessionModal from "./SessionModal";
 import Quote from "./Quote";
 import LeaderboardApp from "./LeadboardApp";
+import Rules from "./Rules";
 
 export default function User() {
 
@@ -13,10 +14,13 @@ export default function User() {
     const onSubmit = () =>{
         setOpenModal(false)
     }
+
+    
     return(
     <>
         <LeaderboardApp setOpenModal={setOpenModal}/>
           <Quote />
+            <Rules/>
           <SessionModal isOpen={openModal} onClose={onClose} onSubmit={onSubmit} setOpen/>
-    </>);
+          </>);
 }

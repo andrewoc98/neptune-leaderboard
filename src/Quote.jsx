@@ -1,16 +1,14 @@
-import React, {Component} from 'react';
-
-class Quote extends Component {
-    render() {
-        return (
-            <div className="quote-section">
-                <blockquote>
-                    "UUUUGGGGGHHHHH"
-                </blockquote>
-                <cite>- Wooly Hat Man</cite>
-            </div>
-        );
-    }
-}
+import React from "react";
+import "./quote.css"
+const Quote = () => {
+  return (
+    <figure className="quote">
+      <blockquote>
+        UUUUGGGGGHHHHH
+      </blockquote>
+      <figcaption>- Wooly Hat Man</figcaption>
+    </figure>
+  );
+};
 
 export default Quote;

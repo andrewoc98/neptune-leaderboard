@@ -1,0 +1,32 @@
+.quote {
+  margin: 2rem auto;
+  max-width: 600px;
+  text-align: center;
+  font-style: italic;
+  color: #9ca3af; /* subtle gray */
+  line-height: 1.6;
+  position: relative;
+  padding: 0;
+}
+
+.quote blockquote {
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: #e5e7eb;
+  margin: 0 0 0 0;
+}
+
+.quote blockquote::before,
+.quote blockquote::after {
+  content: '"';
+  color: #e5e7eb; /* neon green accent */
+  font-size: 1.5rem;
+  font-weight: bold;
+  vertical-align: top;
+}
+
+.quote figcaption {
+  font-size: 0.9rem;
+  color: #22c55e;
+  font-style: normal;
+}

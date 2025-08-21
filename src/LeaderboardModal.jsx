@@ -44,7 +44,7 @@ export default function LeaderboardModal() {
     };
 
     const handleSubmit = () => {
-        if (!validate()) {
+        if (!validate() || !date) {
             return; // stop if invalid
         }
         console.log(rows);

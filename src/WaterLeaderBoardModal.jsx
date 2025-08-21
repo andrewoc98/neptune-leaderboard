@@ -47,7 +47,7 @@ export default function WaterLeaderBoardModal() {
     };
 
     const handleSubmit = () => {
-        if (!validate()) {
+        if (!validate() || !date) {
             return; // stop submission if errors exist
         }
         saveLeaderBoardtoDB({ date: date, waterData: rows }) // Replace with DB post
@@ -68,7 +68,7 @@ export default function WaterLeaderBoardModal() {
                         </div>
 
                         <div className="modal-body">
-                            <input className="modal-input" type={'date'} onChange={(e) => setDate(formatDate(e.target.value.replaceAll('-', '/')))} />
+                            <input type={'date'} onChange={(e) => setDate(formatDate(e.target.value.replaceAll('-', '/')))} />
                             {rows.map((row, index) => (
                                 <div key={index} className="row">
                                     <div className="field">

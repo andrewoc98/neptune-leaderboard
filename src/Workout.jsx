@@ -35,7 +35,7 @@ export default function Workout() {
         console.log(data)
         updateOrAppendWorkout(data)
         setOpen(false)
-        setData({week: '', type: 'Erg', workout: ''})
+        setData({ week: '', type: 'Erg', workout: '' })
         toast.success("Workout has been Uploaded");
     }
     return (
@@ -50,6 +50,9 @@ export default function Workout() {
                 {open && (
                     <div className="modal-overlay">
                         <div className="modal-content">
+                            <div className="modal-header">
+                                <h2>Create a Workout</h2>
+                            </div>
                             <button
                                 onClick={closeModal}
                                 style={{

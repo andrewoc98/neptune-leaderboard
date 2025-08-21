@@ -34,7 +34,7 @@ export default function QuoteModal() {
         console.log(data)
         setOpen(false)
         addQuote(data)
-        setData({ quote: '', author: 'Anon' })
+        setData({ quote: '', author: 'Anon', approved:false })
         toast.success("Quote has been sent for Approval");
     }
     return (

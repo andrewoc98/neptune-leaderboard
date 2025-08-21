@@ -18,7 +18,6 @@
 
 .quote blockquote::before,
 .quote blockquote::after {
-  content: '"';
   color: #e5e7eb; /* neon green accent */
   font-size: 1.5rem;
   font-weight: bold;

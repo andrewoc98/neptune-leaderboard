@@ -236,4 +236,17 @@ export async function addQuote(newQuote) {
   }
 }
 
+export async function getQuote() {
+  try {
+    const ref = doc(database, "quotes", "hHwBYh833CPbxMBvwdZt");
+
+    // Add the new quote to the 'quotes' array
+   const snap = await getDoc(ref)
+   console.log(snap.data().quotes)
+    return snap.data().quotes
+  } catch (error) {
+    console.error("Error adding quote: ", error);
+  }
+}
+
 

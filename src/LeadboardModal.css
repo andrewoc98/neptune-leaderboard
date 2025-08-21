@@ -48,6 +48,7 @@
 
 /* Base button styling */
 .btn {
+  margin-left: 0.5rem;
   margin-top: 0.5rem;
   padding: 0.5rem 1rem;
   border-radius: 6px;
@@ -100,4 +101,15 @@
 
 .modal{
   flex-direction: column;
+}
+.modal-input{
+  padding: 0.5rem 0.75rem;
+  border-radius: 10px;
+  border: 1px solid #22c55e;
+  background: #111827;
+  color: #f8f9fa;
+  font-size: 1rem;
+  outline: none;
+  transition: border 0.2s ease, box-shadow 0.2s ease;
+  margin-bottom: 0.5rem;
 }

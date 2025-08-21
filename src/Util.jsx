@@ -240,6 +240,15 @@ export function upsertEntry(entries, newEntry) {
     return entries;
 }
 
+export function getISOWeek(date) {
+    const tempDate = new Date(date.getTime());
+    // Set to Thursday in current week to calculate ISO week number
+    tempDate.setUTCDate(tempDate.getUTCDate() + 4 - (tempDate.getUTCDay() || 7));
+    const yearStart = new Date(Date.UTC(tempDate.getUTCFullYear(), 0, 1));
+    const weekNo = Math.ceil((((tempDate - yearStart) / 86400000) + 1) / 7);
+    return { year: tempDate.getUTCFullYear(), week: weekNo };
+}
+
 
 
 

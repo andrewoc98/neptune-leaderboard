@@ -2,6 +2,8 @@ import { useState } from "react";
 import "./LeadboardModal.css"
 import { saveLeaderBoardtoDB } from "./firebase";
 import { formatDate } from "./Util";
+import {Kayak} from 'lucide-react'
+import { ToastContainer, toast } from "react-toastify";
 
 export default function WaterLeaderBoardModal() {
     const [open, setOpen] = useState(false);
@@ -52,20 +54,21 @@ export default function WaterLeaderBoardModal() {
         setOpen(false);
         setRows([{ name: "", boatClass: "", time: "", distance: "" }])
         setErrors([])
+        toast.success("Leaderboard Uploaded");
     };
 
     return (
         <>
-            <button className="btn" onClick={() => setOpen(true)}>Create Water Score Leaderboard</button>
+            <button className="btn" onClick={() => setOpen(true)}><Kayak/></button>
             {open && (
                 <div className="modal-overlay">
                     <div className="modal">
                         <div className="modal-header">
-                            <h2>Create Leaderboard</h2>
+                            <h2>Water Leaderboard</h2>
                         </div>
 
                         <div className="modal-body">
-                            <input type={'date'} onChange={(e) => setDate(formatDate(e.target.value.replaceAll('-', '/')))} />
+                            <input className="modal-input" type={'date'} onChange={(e) => setDate(formatDate(e.target.value.replaceAll('-', '/')))} />
                             {rows.map((row, index) => (
                                 <div key={index} className="row">
                                     <div className="field">
@@ -149,6 +152,7 @@ export default function WaterLeaderBoardModal() {
                     </div>
                 </div>
             )}
+            <ToastContainer position="top-right" autoClose={3000} />
         </>
     );
 }

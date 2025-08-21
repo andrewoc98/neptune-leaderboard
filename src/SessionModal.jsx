@@ -12,7 +12,7 @@ export default function SessionModal({ isOpen, onClose, onSubmit }) {
         weights: false,
         intense: false,
         notes:'',
-        type:'Other'
+        type:'Erg'
     });
 
     const names = ["Alex Gillick","Andrew O'Connor","Ben Brennan","Devon Goldrick","Gavin O'Dwyer","John Giles","Luke Keating","Mark Connolly", "Matt Malone", "Odhran Hegarty","Ryan Farrell","Tommy Gillick"];
@@ -133,6 +133,7 @@ export default function SessionModal({ isOpen, onClose, onSubmit }) {
                     }
                 
                 />
+                {errors.date && <p className="modal-error">{errors.date}</p>}
                 </div>
                 <div className="modal-field">
                     <label className="modal-label">Notes</label>

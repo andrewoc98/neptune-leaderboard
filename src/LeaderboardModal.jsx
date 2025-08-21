@@ -1,6 +1,9 @@
 import { useState } from "react";
 import "./LeadboardModal.css"
 import { saveLeaderBoardtoDB } from "./firebase";
+import {BicepsFlexed} from 'lucide-react'
+import { ToastContainer, toast } from "react-toastify";
+import { formatDate } from "./Util";
 
 export default function LeaderboardModal() {
     const [open, setOpen] = useState(false);
@@ -45,24 +48,25 @@ export default function LeaderboardModal() {
             return; // stop if invalid
         }
         console.log(rows);
-        saveLeaderBoardtoDB({ date: date, waterData: rows }) // Replace with DB post
+        saveLeaderBoardtoDB({ date: date, ergData: rows }) // Replace with DB post
         setOpen(false);
         setRows([{ name: "", weight: "", split: "" }]);
         setErrors([])
+        toast.success("Leaderboard Uploaded");
     };
 
     return (
         <>
-            <button className="btn" onClick={() => setOpen(true)}>Create Erg Score Leaderboard</button>
+            <button className="btn" onClick={() => setOpen(true)}><BicepsFlexed/></button>
             {open && (
                 <div className="modal-overlay">
                     <div className="modal">
                         <div className="modal-header">
-                            <h2>Create Leaderboard</h2>
+                            <h2>Erg Leaderboard</h2>
                         </div>
 
                         <div className="modal-body">
-                            <input type={'date'} onChange={(e) => setDate(formatDate(e.target.value.replaceAll('-', '/')))} />
+                            <input className="modal-input" type={'date'} onChange={(e) => setDate(formatDate(e.target.value.replaceAll('-', '/')))} />
                             {rows.map((row, index) => (
                                 <div key={index} className="row">
                                     <div className="field">
@@ -127,6 +131,7 @@ export default function LeaderboardModal() {
                     </div>
                 </div>
             )}
+            <ToastContainer position="top-right" autoClose={3000} />
         </>
     );
 }

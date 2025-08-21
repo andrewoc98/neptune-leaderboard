@@ -9,7 +9,8 @@ body {
   width: 100%;
 }
 
-html, body {
+html,
+body {
   height: 100%;
   margin: 0;
 }
@@ -73,7 +74,7 @@ html, body {
   border-radius: 14px;
   padding: 1rem;
   overflow-x: auto;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
   width: 100%;
   max-width: 900px;
   display: flex;
@@ -87,7 +88,8 @@ table {
   min-width: 600px;
 }
 
-th, td {
+th,
+td {
   padding: 0.75rem;
   text-align: center;
   border-bottom: 1px solid #374151;
@@ -164,7 +166,7 @@ th.sortable:hover {
   width: 90%;
   max-width: 480px;
   position: relative;
-  box-shadow: 0 12px 30px rgba(0,0,0,0.35);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
 }
 
 .close-button {
@@ -186,7 +188,7 @@ th.sortable:hover {
     display: flex;
     flex-direction: column;
     align-items: left;
-}
+  }
 
   .table-container {
     justify-content: center;
@@ -206,6 +208,7 @@ th.sortable:hover {
   .tabs {
     flex-direction: column;
     width: 100%;
+    align-items: center;
   }
 
   .tab-button {
@@ -222,18 +225,20 @@ th.sortable:hover {
     font-size: 0.85rem;
   }
 
-  th, td {
+  th,
+  td {
     padding: 0.5rem;
     font-size: 0.6rem;
   }
-.sessions-table th {
-  padding: 0.25rem; 
-  font-size: 0.6rem;
-}
 
-.sessions-table td {
-  padding: 0.25rem;
-}
+  .sessions-table th {
+    padding: 0.25rem;
+    font-size: 0.6rem;
+  }
+
+  .sessions-table td {
+    padding: 0.25rem;
+  }
 }
 
 .table-section {
@@ -253,3 +258,8 @@ th.sortable:hover {
   margin: 0.25rem 0;
 }
 
+.about-stripe {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}

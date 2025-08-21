@@ -3,6 +3,8 @@ import './App.css'
 import SubmissionTable from "./SubmissionTable";
 import LeaderboardModal from "./LeaderboardModal";
 import WaterLeaderBoardModal from "./WaterLeaderBoardModal";
+import Workout from "./Workout";
+import QuotesModal from "./QuotesModal";
 
 export default function Admin() {
     const [isAuthorized, setIsAuthorized] = useState(false);
@@ -44,6 +46,8 @@ export default function Admin() {
             <div style={{display: 'flex', justifyContent:'center'}}>
             <LeaderboardModal/>
             <WaterLeaderBoardModal/>
+            <Workout/>
+            <QuotesModal/>
             </div>
         </div>
     );

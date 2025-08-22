@@ -7,6 +7,7 @@
   line-height: 1.6;
   position: relative;
   padding: 0;
+  overflow: hidden;                                        
 }
 
 .quote blockquote {

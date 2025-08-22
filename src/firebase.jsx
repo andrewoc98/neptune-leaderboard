@@ -236,15 +236,20 @@ export async function addQuote(newQuote) {
 export async function getQuote() {
   try {
     const ref = doc(database, "quotes", "hHwBYh833CPbxMBvwdZt");
+    const snap = await getDoc(ref);
 
-    // Add the new quote to the 'quotes' array
-   const snap = await getDoc(ref)
-    return snap.data().quotes
+    if (!snap.exists()) {
+      console.warn("No such document!");
+      return [];
+    }
+
+    const quotes = snap.data().quotes || [];
+    // Only return quotes where approved === true
+    return quotes.filter(q => q.approved === true);
   } catch (error) {
-    console.error("Error adding quote: ", error);
+    console.error("Error fetching quotes: ", error);
+    return [];
   }
 }
-
-
 
 

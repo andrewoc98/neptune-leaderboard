@@ -7,7 +7,7 @@ const Quote = () => {
   const [index, setIndex] = useState(0);
   const [texts, setTexts] = useState([]);
   const [direction, setDirection] = useState(1);
-  const interval = 4500;
+  const interval = 3000;
 
   useEffect(() => {
     const fetchQuotes = async () => {

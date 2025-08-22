@@ -157,6 +157,27 @@ export default function ExerciseTable() {
                                 </div>
 
                                 <div className="modal-field">
+                                    <label className="modal-label">Type</label>
+                                    <select
+                                        className="modal-select"
+                                        value={selectedEntry.type}
+                                        onChange={(e) => handleModalChange("type", e.target.value)}
+                                    >
+                                        {[
+                                            "Erg",
+                                            "Water",
+                                            "Bike",
+                                            "Run",
+                                            "Other"
+                                        ].map((name) => (
+                                            <option key={name} value={name}>
+                                                {name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div className="modal-field">
                                     <label className="modal-label">Distance (m)</label>
                                     <input
                                         type="number"

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './modal.css';
-import {rowerSession} from "./firebase";
+import { rowerSession } from "./firebase";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { formatDate } from './Util';
@@ -11,30 +11,44 @@ export default function SessionModal({ isOpen, onClose, onSubmit }) {
         distance: '',
         weights: false,
         intense: false,
-        notes:'',
-        type:'Erg'
+        notes: '',
+        type: 'Erg',
+        date: verifydate(new Date().toLocaleDateString())
+
     });
 
-    const names = ["Alex Gillick","Andrew O'Connor","Ben Brennan","Devon Goldrick","Gavin O'Dwyer","John Giles","Luke Keating","Mark Connolly", "Matt Malone", "Odhran Hegarty","Ryan Farrell","Tommy Gillick"];
+    function verifydate(dateStr) {
+        if (!dateStr) return "";
+
+        const parts = dateStr.split("/");
+
+        if (parts.length !== 3) return dateStr; // not a valid format
+
+        let [day, month, year] = parts;
+
+        // padStart makes sure day/month are always 2 digits
+        day = day.padStart(2, "0");
+        month = month.padStart(2, "0");
+
+        return `${day}/${month}/${year}`;
+    }
+
+    const names = ["Alex Gillick", "Andrew O'Connor", "Ben Brennan", "Devon Goldrick", "Gavin O'Dwyer", "John Giles", "Luke Keating", "Mark Connolly", "Matt Malone", "Odhran Hegarty", "Ryan Farrell", "Tommy Gillick"];
     const [errors, setErrors] = useState({});
 
-    const distanceMultiplier = {
-        'Erg':1,
-        'Bike':0.5,
-        'Run':1,
-        'Water':1,
-        'Other':1
-    }
+    const workoutTypes = ['Erg', 'Water', 'Bike', 'Run', 'Other']
 
     const validate = () => {
         let newErrors = {};
-        if (!formData.name || formData === "" ) newErrors.name = 'Name is required';
+        if (!formData.name || formData === "") newErrors.name = 'Name is required';
         if (!formData.distance && !formData.weights) newErrors.distance = 'Distance is required';
-        if(formData.weights){
-            setFormData({...formData, distance:0, type:'Other'})
+        if (formData.weights) {
+            setFormData({ ...formData, distance: 0, type: 'Other' })
         }
-        setFormData({...formData, 
-            distance:Number(formData.distance*(distanceMultiplier[formData.type])).toFixed(0)})
+        setFormData({
+            ...formData,
+            distance: Number(formData.distance)
+        })
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -50,104 +64,104 @@ export default function SessionModal({ isOpen, onClose, onSubmit }) {
 
     return (
         <>
-        {isOpen && (
-        <div className="modal-overlay">
-            <div className="modal-content">
-                <h2 className="modal-title">New Session</h2>
+            {isOpen && (
+                <div className="modal-overlay">
+                    <div className="modal-content">
+                        <h2 className="modal-title">New Session</h2>
 
-                {/* Name Dropdown */}
-                <div className="modal-field">
-                    <label className="modal-label">Name</label>
-                    <select
-                        className="modal-select"
-                        value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    >
-                        <option value="">Select a name</option>
-                        {names.map((n) => (
-                            <option key={n} value={n}>{n}</option>
-                        ))}
-                    </select>
-                    {errors.name && <p className="modal-error">{errors.name}</p>}
-                </div>
+                        {/* Name Dropdown */}
+                        <div className="modal-field">
+                            <label className="modal-label">Name</label>
+                            <select
+                                className="modal-select"
+                                value={formData.name}
+                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                            >
+                                <option value="">Select a name</option>
+                                {names.map((n) => (
+                                    <option key={n} value={n}>{n}</option>
+                                ))}
+                            </select>
+                            {errors.name && <p className="modal-error">{errors.name}</p>}
+                        </div>
 
-                {/* Distance Input */}
-                {!formData.weights &&
-                <>
-                <div className="modal-field">
-                    <label className="modal-label">Distance (m)</label>
-                    <input
-                        type="number"
-                        className="modal-input"
-                        value={formData.distance}
-                        onChange={(e) => setFormData({ ...formData, distance: e.target.value })}
-                    />
-                    {errors.distance && <p className="modal-error">{errors.distance}</p>}
-                </div>
-                <div className="modal-field">
-                    <label className="modal-label">Type</label>
-                    <select
-                        className="modal-select"
-                        value={formData.type}
-                        onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                    >
+                        {/* Distance Input */}
+                        {!formData.weights &&
+                            <>
+                                <div className="modal-field">
+                                    <label className="modal-label">Distance (m)</label>
+                                    <input
+                                        type="number"
+                                        className="modal-input"
+                                        value={formData.distance}
+                                        onChange={(e) => setFormData({ ...formData, distance: e.target.value })}
+                                    />
+                                    {errors.distance && <p className="modal-error">{errors.distance}</p>}
+                                </div>
+                                <div className="modal-field">
+                                    <label className="modal-label">Type</label>
+                                    <select
+                                        className="modal-select"
+                                        value={formData.type}
+                                        onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                                    >
+                                        {workoutTypes.map(element => (
+                                            <option key={element} value={element}>
+                                                {element}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </>
+                        }
+                        {/* Checkboxes */}
+                        <div className="modal-field checkbox-field">
+                            <label className="checkbox-label">
+                                <input
+                                    type="checkbox"
+                                    checked={formData.weights}
+                                    onChange={(e) => setFormData({ ...formData, weights: e.target.checked })}
+                                />
+                                Weights session
+                            </label>
+                        </div>
 
-                        {Object.keys(distanceMultiplier).map((key) => (
-                            <option key={key} value={key}>
-                            {key}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-                </>
-}
-                {/* Checkboxes */}
-                <div className="modal-field checkbox-field">
-                <label className="checkbox-label">
-                    <input
-                    type="checkbox"
-                    checked={formData.weights}
-                    onChange={(e) => setFormData({ ...formData, weights: e.target.checked })}
-                    />
-                    Weights session
-                </label>
-                </div>
+                        <div className="modal-field checkbox-field">
+                            <label className="checkbox-label">
+                                <input
+                                    type="checkbox"
+                                    checked={formData.intense}
+                                    onChange={(e) => setFormData({ ...formData, intense: e.target.checked })}
+                                />
+                                Intense session
+                            </label>
+                        </div>
+                        <div className="modal-field">
+                            <input
+                                className='modal-input'
+                                type="date"
+                                placeholder="Date dd/mm/yyyy"
+                                onChange={(e) => {
+                                    setFormData({ ...formData, date: formatDate(e.target.value.replaceAll('-', '/')) })
+                                }
+                                }
 
-                <div className="modal-field checkbox-field">
-                <label className="checkbox-label">
-                    <input
-                    type="checkbox"
-                    checked={formData.intense}
-                    onChange={(e) => setFormData({ ...formData, intense: e.target.checked })}
-                    />
-                    Intense session
-                </label>
-                </div>
-                 <div className="modal-field">
-                <input
-                className='modal-input'
-                    type="date"
-                    placeholder="Date dd/mm/yyyy"
-                    onChange={(e) => {
-                        setFormData({...formData, date: formatDate(e.target.value.replaceAll('-','/'))})}
-                    }
-                
-                />
-                {errors.date && <p className="modal-error">{errors.date}</p>}
-                </div>
-                <div className="modal-field">
-                    <label className="modal-label">Notes</label>
-                    <textarea style={{width:'100%', height:'100px'}} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} ></textarea>
-                </div>
+                            />
+                            {errors.date && <p className="modal-error">{errors.date}</p>}
+                        </div>
+                        <div className="modal-field">
+                            <label className="modal-label">Notes</label>
+                            <textarea style={{ width: '100%', height: '100px' }} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} ></textarea>
+                        </div>
 
-                {/* Buttons */}
-                <div className="modal-footer">
-                    <button onClick={onClose} className="modal-button cancel">Cancel</button>
-                    <button onClick={handleSubmit} className="modal-button submit">Submit</button>
-                </div>
-            </div>
-        </div>)}
-        <ToastContainer position="top-right" autoClose={3000} />
+                        {/* Buttons */}
+                        <div className="modal-footer">
+                            <button onClick={onClose} className="modal-button cancel">Cancel</button>
+                            <button onClick={handleSubmit} className="modal-button submit">Submit</button>
+                        </div>
+                    </div>
+                </div>)}
+            <ToastContainer position="top-right" autoClose={3000} />
         </>
     );
 }

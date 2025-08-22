@@ -23,7 +23,6 @@ const Quote = () => {
       }
     };
     fetchQuotes();
-    console.log(texts)
   }, []);
 
   useEffect(() => {

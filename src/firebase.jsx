@@ -119,7 +119,6 @@ export async function getErgWorkouts() {
     const today = new Date();
     const { year: currentYear, week: currentWeek } = getISOWeek(today);
     const currentWeekStr = `${currentYear}-W${String(currentWeek).padStart(2, '0')}`
-    console.log(currentWeekStr)
 
     const nextWeekDate = new Date(today);
     nextWeekDate.setDate(today.getDate() + 7);
@@ -152,7 +151,6 @@ export async function getWaterWorkouts() {
     const today = new Date();
     const { year: currentYear, week: currentWeek } = getISOWeek(today);
     const currentWeekStr = `${currentYear}-W${String(currentWeek).padStart(2, '0')}`
-    console.log(currentWeekStr)
 
     const nextWeekDate = new Date(today);
     nextWeekDate.setDate(today.getDate() + 7);
@@ -173,7 +171,6 @@ export async function getWaterWorkouts() {
         results.nextWeek = 'TBD'
     }
 
-    console.log(results)
     return results
 
 }
@@ -242,11 +239,12 @@ export async function getQuote() {
 
     // Add the new quote to the 'quotes' array
    const snap = await getDoc(ref)
-   console.log(snap.data().quotes)
     return snap.data().quotes
   } catch (error) {
     console.error("Error adding quote: ", error);
   }
 }
+
+
 
 

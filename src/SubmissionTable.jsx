@@ -81,6 +81,7 @@ export default function ExerciseTable() {
                             <th>Distance(m)</th>
                             <th>Weights</th>
                             <th>Intense</th>
+                            <th>Type</th>
                             <th>Notes</th>
                             <th>Date</th>
                         </tr>
@@ -94,6 +95,7 @@ export default function ExerciseTable() {
                                         <td>{row.distance}</td>
                                         <td>{row.weights ? "✔" : "✖"}</td>
                                         <td>{row.intense ? "✔" : "✖"}</td>
+                                        <td>{row.type}</td>
                                         <td>{row.notes}</td>
                                         <td>{row.date}</td>
                                     </tr>

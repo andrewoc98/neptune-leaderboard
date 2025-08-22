@@ -8,7 +8,7 @@ import { ToastContainer, toast } from "react-toastify";
 export default function WaterLeaderBoardModal() {
     const [open, setOpen] = useState(false);
     const [rows, setRows] = useState([{ name: "", boatClass: "", time: "", distance: "" }]);
-    const [date, setDate] = useState("")
+    const [date, setDate] = useState()
     const [errors, setErrors] = useState([]);
 
     const handleRowChange = (index, field, value) => {

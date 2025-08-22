@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import './App.css';
 import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
-import {getWaterWorkouts, getErgWorkouts, loadLeaderboardHistory, rowerSession } from "./firebase";
+import { getWaterWorkouts, getErgWorkouts, loadLeaderboardHistory, rowerSession } from "./firebase";
 import { adjustedErgScore, goldMedalPercentage, getSessionStats, getDistanceForLastPeriod } from "./Util";
 import ThreeWaySwitch from "./ThreeWaySwitch";
 
@@ -53,7 +53,6 @@ export default function LeaderboardApp({ setOpenModal }) {
   }
 
   useEffect(() => {
-
     const fetchErgWorkouts = async () => {
       try {
         const workouts = await getErgWorkouts()
@@ -72,6 +71,23 @@ export default function LeaderboardApp({ setOpenModal }) {
       }
     }
 
+    const fetchLeaderBoard = async () => {
+      try {
+        const lb = await loadLeaderboardHistory();
+        setLeaderboardHistory(lb)
+      } catch (error) {
+        console.error("Error leaderboard:", error);
+      }
+    }
+    fetchLeaderBoard();
+    fetchErgWorkouts();
+    fetchWaterWorkouts();
+  }, [])
+
+  useEffect(() => {
+
+
+
     const fetchData = async () => {
       try {
         const stats = await getSessionStats(timeScale);
@@ -81,28 +97,16 @@ export default function LeaderboardApp({ setOpenModal }) {
       }
     };
 
-    const fetchLeaderBoard = async () => {
-      try {
-        const lb = await loadLeaderboardHistory();
-        setLeaderboardHistory(lb)
-      } catch (error) {
-        console.error("Error leaderboard:", error);
-      }
-    }
-
     const fetchChange = async () => {
       try {
         const change = await getDistanceForLastPeriod(timeScale)
         setChangePerRower(change);
-      }catch (error) {
+      } catch (error) {
         console.error("Error fetching change:", error);
       }
     }
 
     fetchData();
-    fetchLeaderBoard();
-    fetchErgWorkouts();
-    fetchWaterWorkouts();
     fetchChange();
   }, [timeScale]);
 

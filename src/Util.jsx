@@ -121,7 +121,7 @@ export async function getSessionStats(period) {
         if(entry.approved) {
             const entryDate = parseDate(entry.date);
             if (entryDate >= startDate && entryDate <= today) {
-                const {name, distance, intensity, weights} = entry;
+                const {name, distance, intense, weights} = entry;
         
                 if (!stats[name]) {
                 
@@ -138,7 +138,7 @@ export async function getSessionStats(period) {
                 stats[name].totalDistance += Number(distance);
                 stats[name].totalSessions += 1;
 
-                if (intensity) {
+                if (intense) {
                     stats[name].intensityCount += 1;
                 } else if (weights) {
                     stats[name].weightsCount += 1;
@@ -189,9 +189,11 @@ export async function getDistanceForLastPeriod(period) {
             if (!distanceMap[name]) {
                 distanceMap[name] = 0;
             }
-            distanceMap[name] += distance;
+            distanceMap[name] += Number(distance);
         }
     });
+
+
 
     return distanceMap;
 }

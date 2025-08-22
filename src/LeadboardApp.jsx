@@ -18,6 +18,7 @@ export default function LeaderboardApp({ setOpenModal }) {
   const [leaderboardHistory, setLeaderboardHistory] = useState([])
   const [flash, setFlash] = useState(false);
   const [hoverTimeout, setHoverTimeout] = useState(null);
+  const [changePerRower, setChangePerRower] = useState([])
   const [ergWorkouts, setErgWorkouts] = useState({
     currentWeek: 'TBD',
     nextWeek: 'TBD'
@@ -89,10 +90,20 @@ export default function LeaderboardApp({ setOpenModal }) {
       }
     }
 
+    const fetchChange = async () => {
+      try {
+        const change = await getDistanceForLastPeriod(timeScale)
+        setChangePerRower(change);
+      }catch (error) {
+        console.error("Error fetching change:", error);
+      }
+    }
+
     fetchData();
     fetchLeaderBoard();
     fetchErgWorkouts();
     fetchWaterWorkouts();
+    fetchChange();
   }, [timeScale]);
 
   const findLatestWithData = (history, type) => {
@@ -209,8 +220,6 @@ export default function LeaderboardApp({ setOpenModal }) {
     const diff = prevIndex - index;
     return diff === 0 ? "-" : diff > 0 ? `↑ ${diff}` : `↓ ${-diff}`;
   };
-
-  const changePerRower = getDistanceForLastPeriod(timeScale);
 
 
   return (
@@ -391,14 +400,14 @@ export default function LeaderboardApp({ setOpenModal }) {
                           {changePerRower[rower.name] != null && changePerRower[rower.name] !== 0 ? (
                             <>
                               {totalDistance - changePerRower[rower.name] !== 0
-                                ? (totalDistance - changePerRower[rower.name]).toLocaleString('en-US')
+                                ? (Math.abs(totalDistance - changePerRower[rower.name]).toLocaleString('en-US'))
                                 : ""}
                               {" "}
                               {totalDistance - changePerRower[rower.name] === 0
                                 ? "-"
                                 : totalDistance - changePerRower[rower.name] > 0
-                                  ? "▲"
-                                  : "▼"}
+                                  ? " ▲"
+                                  : " ▼"}
                             </>
                           ) : (
                             "-"

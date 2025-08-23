@@ -384,7 +384,7 @@ export default function LeaderboardApp({ setOpenModal }) {
                     <th>Weights %</th>
                     <th>Distance (m)</th>
                     <th className="end-tab">
-                      {timeScale === "total" ? "Rank" : "Change"}
+                      {timeScale === "total" ? "Level" : "Change"}
                     </th>
                   </tr>
                 </thead>

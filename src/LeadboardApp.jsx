@@ -19,6 +19,7 @@ export default function LeaderboardApp({ setOpenModal }) {
   const [flash, setFlash] = useState(false);
   const [hoverTimeout, setHoverTimeout] = useState(null);
   const [changePerRower, setChangePerRower] = useState([])
+  const [rankHistory, setRankHistory] = useState({ dates: [], rankMap: {} });
   const [ergWorkouts, setErgWorkouts] = useState({
     currentWeek: 'TBD',
     nextWeek: 'TBD'
@@ -51,6 +52,18 @@ export default function LeaderboardApp({ setOpenModal }) {
   const onSubmitSession = (entry) => {
     rowerSession(entry)
   }
+
+  useEffect(() => {
+    if (leaderboardHistory.length === 0) return;
+
+    const { dates, rankMap } = getRankingsOverTime(
+      leaderboardHistory,
+      activeTab === "erg" ? "ergData" : "waterData",
+      activeTab === "erg" ? ergSortKey : waterSortKey
+    );
+
+    setRankHistory({ dates, rankMap });
+  }, [leaderboardHistory, activeTab, ergSortKey, waterSortKey]);
 
   useEffect(() => {
     const fetchErgWorkouts = async () => {
@@ -144,39 +157,49 @@ export default function LeaderboardApp({ setOpenModal }) {
     return parseFloat(timeStr); // fallback if already number
   };
 
-  const getRankingsOverTime = (history, type, key) => {
-    const nameSet = new Set();
-    history.forEach(snapshot => {
-      if (snapshot[type]) {
-        snapshot[type].forEach(row => nameSet.add(row.name));
-      }
-    });
+const getRankingsOverTime = (history, type, key) => {
+  const nameSet = new Set();
+  history.forEach(snapshot => {
+    if (snapshot[type]) {
+      snapshot[type].forEach(row => nameSet.add(row.name));
+    }
+  });
 
-    const names = Array.from(nameSet);
-    const dates = history.map(h => h.date);
-    const rankMap = {};
+  const names = Array.from(nameSet);
+  const dates = history.map(h => h.date);
+  const rankMap = {};
 
-    names.forEach(name => {
-      rankMap[name] = history.map(snapshot => {
-        const rows = snapshot[type];
-        if (!rows) return null;
+  names.forEach(name => {
+    rankMap[name] = history.map(snapshot => {
+      const rows = snapshot[type];
+      if (!rows) return null;
 
-        const sorted = [...rows].sort((a, b) => {
-          const aVal = typeof a[key] === "string" ? parseTime(a[key]) : a[key];
-          const bVal = typeof b[key] === "string" ? parseTime(b[key]) : b[key];
+      const sorted = [...rows].sort((a, b) => {
+        const getValue = (row) => {
+          if (key === "adjustedSplit") {
+            return parseSplitTime(adjustedErgScore(row.split, row.weight));
+          } else if (key === "split") {
+            return parseSplitTime(row.split);
+          } else if (key === "time") {
+            return parseSplitTime(row.time);
+          } else if (key === "goldPercentage") {
+            return goldMedalPercentage(row.time, row.boatClass, row.distance);
+          }
+          return row[key] ?? 0;
+        };
 
-          // Ascending for time-based, descending otherwise
-          const sortAsc = ["split", "adjustedSplit", "time"].includes(key);
-          return sortAsc ? aVal - bVal : bVal - aVal;
-        });
-
-        const index = sorted.findIndex(r => r.name === name);
-        return index >= 0 ? index + 1 : null;
+        // Ascending for time-based splits
+        const sortAsc = ["split", "adjustedSplit", "time"].includes(key);
+        return sortAsc ? getValue(a) - getValue(b) : getValue(b) - getValue(a);
       });
-    });
 
-    return { dates, rankMap };
-  };
+      const index = sorted.findIndex(r => r.name === name);
+      return index >= 0 ? index + 1 : null;
+    });
+  });
+
+  return { dates, rankMap };
+};
 
   const parseSplitTime = (timeStr) => {
     if (!timeStr || typeof timeStr !== "string") return Infinity;
@@ -184,18 +207,18 @@ export default function LeaderboardApp({ setOpenModal }) {
     return parseInt(min, 10) * 60 + parseFloat(sec);
   };
 
-const sortedErg = [...(latestErg?.ergData || [])].sort((a, b) => {
-  const getValue = (rower, key) => {
-    if (key === "adjustedSplit") {
-      return parseSplitTime(adjustedErgScore(rower.split, rower.weight));
-    } else if (key === "split") {
-      return parseSplitTime(rower.split);
-    }
-    return Infinity; // fallback
-  };
+  const sortedErg = [...(latestErg?.ergData || [])].sort((a, b) => {
+    const getValue = (rower, key) => {
+      if (key === "adjustedSplit") {
+        return parseSplitTime(adjustedErgScore(rower.split, rower.weight));
+      } else if (key === "split") {
+        return parseSplitTime(rower.split);
+      }
+      return Infinity; // fallback
+    };
 
-  return getValue(a, ergSortKey) - getValue(b, ergSortKey);
-});
+    return getValue(a, ergSortKey) - getValue(b, ergSortKey);
+  });
 
 
   const handleErgSort = (key) => setErgSortKey(key);
@@ -207,26 +230,20 @@ const sortedErg = [...(latestErg?.ergData || [])].sort((a, b) => {
     return parseInt(minutes, 10) * 60 + seconds;
   };
 
-const sortedWater = [...(latestWater?.waterData || [])].sort((a, b) => {
-  if (waterSortKey === "goldPercentage") {
-    return goldMedalPercentage(b.time, b.boatClass, b.distance) -
-           goldMedalPercentage(a.time, a.boatClass, a.distance);
-  } else if (waterSortKey === "time") {
-    return parseTimeToSeconds(a.time) - parseTimeToSeconds(b.time);
-  }
-  return 0;
-});
+  const sortedWater = [...(latestWater?.waterData || [])].sort((a, b) => {
+    if (waterSortKey === "goldPercentage") {
+      return goldMedalPercentage(b.time, b.boatClass, b.distance) -
+        goldMedalPercentage(a.time, a.boatClass, a.distance);
+    } else if (waterSortKey === "time") {
+      return parseTimeToSeconds(a.time) - parseTimeToSeconds(b.time);
+    }
+    return 0;
+  });
 
 
   const handleSettingChange = (newSetting) => {
     setTimeScale(newSetting.toLowerCase());
   };
-
-  const { dates, rankMap } = getRankingsOverTime(
-    leaderboardHistory,
-    activeTab === 'erg' ? 'ergData' : 'waterData',
-    activeTab === 'erg' ? ergSortKey : waterSortKey
-  );
 
   const getDelta = (name, index, currentList, prevList, key, sortAsc = true) => {
     if (!prevList) return "-";
@@ -444,51 +461,51 @@ const sortedWater = [...(latestWater?.waterData || [])].sort((a, b) => {
         </div>
       )}
 
-  {/* Modal with Chart */}
-  {hoveredName && (
-    <div className="modal">
-      <div className="modal-content">
-        <span
-          className="close-button"
-          style={{ color: "white" }}
-          onClick={() => setHoveredName(null)}
-        >
-          &times;
-        </span>
-        <h2 style={{ marginBottom: "1rem" }}>{hoveredName}'s Progress</h2>
-        <Line
-          data={{
-            labels: dates,
-            spanGaps: true,
-            datasets: [
-              {
-                label: "Rank",
-                data: rankMap[hoveredName],
-                borderColor: "#3b82f6",
-                backgroundColor: "#60a5fa",
-              },
-            ],
-          }}
-          height={"300%"} // set fixed height
-          options={{
-            responsive: true,
-            maintainAspectRatio: true,
-            scales: {
-              y: {
-                min: 1,
-                max:
-                  activeTab === "erg"
-                    ? (latestErg?.ergData?.length || 5)
-                    : (latestWater?.waterData?.length || 5),
-                reverse: true,
-                ticks: { stepSize: 1, precision: 0 },
-              },
-            },
-          }}
-        />
-      </div>
-    </div>
-  )}
+      {/* Modal with Chart */}
+      {hoveredName && (
+        <div className="modal">
+          <div className="modal-content">
+            <span
+              className="close-button"
+              style={{ color: "white" }}
+              onClick={() => setHoveredName(null)}
+            >
+              &times;
+            </span>
+            <h2 style={{ marginBottom: "1rem" }}>{hoveredName}'s Progress</h2>
+            <Line
+              data={{
+                labels: rankHistory.dates,
+                datasets: [
+                  {
+                    label: "Rank",
+                    data: rankHistory.rankMap[hoveredName],
+                    borderColor: "#3b82f6",
+                    backgroundColor: "#60a5fa",
+                    spanGaps: true,   // 👈 connects missing entries
+                  },
+                ],
+              }}
+              height={"300%"} // set fixed height
+              options={{
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {
+                  y: {
+                    min: 1,
+                    max:
+                      activeTab === "erg"
+                        ? (latestErg?.ergData?.length || 5)
+                        : (latestWater?.waterData?.length || 5),
+                    reverse: true,
+                    ticks: { stepSize: 1, precision: 0 },
+                  },
+                },
+              }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

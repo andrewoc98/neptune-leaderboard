@@ -225,7 +225,7 @@ const sortedWater = [...(latestWater?.waterData || [])].sort((a, b) => {
   const { dates, rankMap } = getRankingsOverTime(
     leaderboardHistory,
     activeTab === 'erg' ? 'ergData' : 'waterData',
-    activeTab === 'erg' ? 'adjustedSplit' : 'goldPercentage'
+    activeTab === 'erg' ? ergSortKey : waterSortKey
   );
 
   const getDelta = (name, index, currentList, prevList, key, sortAsc = true) => {
@@ -444,48 +444,51 @@ const sortedWater = [...(latestWater?.waterData || [])].sort((a, b) => {
         </div>
       )}
 
-      {/* Modal with Chart */}
-      {hoveredName && (
-        <div
-          className="modal"
+  {/* Modal with Chart */}
+  {hoveredName && (
+    <div className="modal">
+      <div className="modal-content">
+        <span
+          className="close-button"
+          style={{ color: "white" }}
+          onClick={() => setHoveredName(null)}
         >
-
-          <div className="modal-content">
-            <span className="close-button" style={{ color: "white" }} onClick={() => setHoveredName(null)}>&times;</span>
-            <h2 style={{ marginBottom: "1rem" }}>{hoveredName}'s Progress</h2>
-            <Line
-              data={{
-                labels: dates,
-                datasets: [
-                  {
-                    label: "Rank",
-                    data: rankMap[hoveredName],
-                    borderColor: "#3b82f6",
-                    backgroundColor: "#60a5fa",
-                  },
-                ],
-              }}
-              height={"300%"} // set fixed height
-              options={{
-                responsive: true,
-                maintainAspectRatio: true,
-                scales: {
-                  y: {
-                    min: 1,
-                    max: Math.max(
-                      (latestErg?.ergData?.length || 0),
-                      (latestWater?.waterData?.length || 0),
-                      5
-                    ),
-                    reverse: true,
-                    ticks: { stepSize: 1, precision: 0 },
-                  },
-                },
-              }}
-            />
-          </div>
-        </div>
-      )}
+          &times;
+        </span>
+        <h2 style={{ marginBottom: "1rem" }}>{hoveredName}'s Progress</h2>
+        <Line
+          data={{
+            labels: dates,
+            spanGaps: true,
+            datasets: [
+              {
+                label: "Rank",
+                data: rankMap[hoveredName],
+                borderColor: "#3b82f6",
+                backgroundColor: "#60a5fa",
+              },
+            ],
+          }}
+          height={"300%"} // set fixed height
+          options={{
+            responsive: true,
+            maintainAspectRatio: true,
+            scales: {
+              y: {
+                min: 1,
+                max:
+                  activeTab === "erg"
+                    ? (latestErg?.ergData?.length || 5)
+                    : (latestWater?.waterData?.length || 5),
+                reverse: true,
+                ticks: { stepSize: 1, precision: 0 },
+              },
+            },
+          }}
+        />
+      </div>
+    </div>
+  )}
     </div>
   );
 }

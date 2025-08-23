@@ -4,6 +4,7 @@ html, body {
   padding: 0;
   font-family: 'Inter', 'Segoe UI', sans-serif;
   background: linear-gradient(#0f2027, #203a43, #2c5364);
+  min-height: 100vh;
   color: #f8f9fa;
   overflow-x: hidden;
   width: 100%;

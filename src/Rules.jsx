@@ -38,7 +38,7 @@ return (
             {/* Rules List */}
             <div className="modal-body">
                 <ul className="rules" style={{ listStyle: "disc", paddingLeft: "1.5rem" }}>
-                <h3>Erg Scores</h3>
+                <h3 style={{  color:'#4ade80'}}>Erg Scores</h3>
                 <li>Each week, members will complete one agreed-upon intense session together.</li>
                 <li>Weekly pieces will only be recorded if all sets are completed as per programmed. Any more or less will result in a DNF/DNS</li>
                 <li>Failure to complete the session, or making changes to it, will result in a DNF/DNS.</li>
@@ -47,19 +47,20 @@ return (
                 <li>Rank history for each participant can be viewed by clicking their name.</li>
                 <li>Weight is recorded at the start of the season and may be updated upon request.</li>
 
-                <h3>Water Scores</h3>
+                <h3 style={{  color:'#4ade80'}}>Water Scores</h3>
                 <li>When conditions allow, the group should complete agreed sessions together at Blessington.</li>
                 <li>Times must be recorded using a SpeedCoach or equivalent device.</li>
                 <li>Your score is the average time across the full session.</li>
                 <li>As with Erg Scores, failing to complete the full session results in a DNF/DNS.</li>
 
-                <h3>Sessions</h3>
+                <h3 style={{  color:'#4ade80'}}>Sessions</h3>
                 <li>This section serves as a diary of each individual’s training throughout the year.</li>
                 <li>Participants can submit scores via WhatsApp or directly through this site.</li>
                 <li>All sessions must be approved by an Admin before being officially recorded.</li>
                 <li>Bike meters are counted at 0.5x compared to other workout types.</li>
                 <li>Weight training sessions are recorded as 0 meters.</li>
                 <li>Sessions are tracked by total, monthly, and weekly metrics.</li>
+                <li>Each participant has an assigned level. You advance to the next level for every 600,000 meters recorded, with a total of 10 levels</li>
                 </ul>
             </div>
             {/* Footer */}

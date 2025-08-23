@@ -184,9 +184,19 @@ export default function LeaderboardApp({ setOpenModal }) {
     return parseInt(min, 10) * 60 + parseFloat(sec);
   };
 
-  const sortedErg = [...(latestErg?.ergData || [])].sort((a, b) => {
-    return parseSplitTime(a[ergSortKey]) - parseSplitTime(b[ergSortKey]);
-  });
+const sortedErg = [...(latestErg?.ergData || [])].sort((a, b) => {
+  const getValue = (rower, key) => {
+    if (key === "adjustedSplit") {
+      return parseSplitTime(adjustedErgScore(rower.split, rower.weight));
+    } else if (key === "split") {
+      return parseSplitTime(rower.split);
+    }
+    return Infinity; // fallback
+  };
+
+  return getValue(a, ergSortKey) - getValue(b, ergSortKey);
+});
+
 
   const handleErgSort = (key) => setErgSortKey(key);
   const handleWaterSort = (key) => setWaterSortKey(key);
@@ -197,14 +207,16 @@ export default function LeaderboardApp({ setOpenModal }) {
     return parseInt(minutes, 10) * 60 + seconds;
   };
 
-  const sortedWater = [...(latestWater?.waterData || [])].sort((a, b) => {
-    if (waterSortKey === "goldPercentage") {
-      return b.goldPercentage - a.goldPercentage;
-    } else if (waterSortKey === "time") {
-      return parseTimeToSeconds(a.time) - parseTimeToSeconds(b.time);
-    }
-    return 0;
-  });
+const sortedWater = [...(latestWater?.waterData || [])].sort((a, b) => {
+  if (waterSortKey === "goldPercentage") {
+    return goldMedalPercentage(b.time, b.boatClass, b.distance) -
+           goldMedalPercentage(a.time, a.boatClass, a.distance);
+  } else if (waterSortKey === "time") {
+    return parseTimeToSeconds(a.time) - parseTimeToSeconds(b.time);
+  }
+  return 0;
+});
+
 
   const handleSettingChange = (newSetting) => {
     setTimeScale(newSetting.toLowerCase());
@@ -336,7 +348,7 @@ export default function LeaderboardApp({ setOpenModal }) {
                       <td>{rower.name}</td>
                       <td>{rower.boatClass}</td>
                       <td>{rower.time}</td>
-                      <td>{goldMedalPercentage(rower.time, rower.boatClass, rower.distance)}</td>
+                      <td>{goldMedalPercentage(rower.time, rower.boatClass, rower.distance).toFixed(2)}%</td>
                       <td>{getDelta(
                         rower.name,
                         index,

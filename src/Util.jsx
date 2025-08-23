@@ -17,41 +17,25 @@ export function adjustedErgScore(split, weight) {
 }
 
 export function goldMedalPercentage(time, boatClass, distance) {
-    const [minutesStr, secTenthsStr] = time.split(':')
+  const [minutesStr, secTenthsStr] = time.split(':');
+  const minutes = parseInt(minutesStr, 10);
+  const seconds = parseFloat(secTenthsStr);
+  const totalSeconds = minutes * 60 + seconds;
 
-    const minutes = parseInt(minutesStr, 10);
-    const seconds = parseFloat(secTenthsStr);
-    const totalSeconds = minutes * 60 + seconds;
-    var gmpSpeed = 0
-    switch (boatClass.toLocaleLowerCase()) {
-        case "1x":
-            gmpSpeed = 5.119
-            return (((distance / totalSeconds) / gmpSpeed) * 100).toFixed(2) + "%"
-        case "2x":
-            gmpSpeed = 5.56
-            return (((distance / totalSeconds) / gmpSpeed) * 100).toFixed(2) + "%"
-        case "4x+":
-            gmpSpeed = 5.76
-            return (((distance / totalSeconds) / gmpSpeed) * 100).toFixed(2) + "%"
-        case "4x-":
-            gmpSpeed = 6.02
-            return (((distance / totalSeconds) / gmpSpeed) * 100).toFixed(2) + "%"
-        case "2-":
-            gmpSpeed = 5.43
-            return (((distance / totalSeconds) / gmpSpeed) * 100).toFixed(2) + "%"
-        case "4+":
-            gmpSpeed = 5.749
-            return (((distance / totalSeconds) / gmpSpeed) * 100).toFixed(2) + "%"
-        case "8+":
-            gmpSpeed = 6.276
-            return (((distance / totalSeconds) / gmpSpeed) * 100).toFixed(2) + "%"
-        case "4-":
-            gmpSpeed = 5.919
-            return (((distance / totalSeconds) / gmpSpeed) * 100).toFixed(2) + "%"
-        default:
-            return "PLEASE CHECK BOAT CLASS"
+  let gmpSpeed = 0;
+  switch (boatClass.toLowerCase()) {
+    case "1x": gmpSpeed = 5.119; break;
+    case "2x": gmpSpeed = 5.56; break;
+    case "4x+": gmpSpeed = 5.76; break;
+    case "4x-": gmpSpeed = 6.02; break;
+    case "2-": gmpSpeed = 5.43; break;
+    case "4+": gmpSpeed = 5.749; break;
+    case "8+": gmpSpeed = 6.276; break;
+    case "4-": gmpSpeed = 5.919; break;
+    default: return NaN; // instead of a string
+  }
 
-    }
+  return (distance / totalSeconds) / gmpSpeed * 100;
 }
 
 const distanceMultiplier = {

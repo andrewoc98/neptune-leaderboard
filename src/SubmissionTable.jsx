@@ -24,6 +24,10 @@ export default function ExerciseTable() {
 
     const handleApprove = async (entry) => {
         console.log(entry)
+        if(!entry.date || entry.date === '') {
+            entry.date = fromInputDate(`${new Date().getFullYear()}-${(new Date().getMonth()+1)}-${String(new Date().getDate()).padStart(2,0)}`)
+            console.log('Catch ran '+entry.date)
+        }
         const success = await approveSession(entry);
         if (success) {
             setData((prev) =>

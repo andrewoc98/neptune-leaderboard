@@ -106,7 +106,7 @@ export default function ExerciseTable() {
 
                 {/* Modal */}
                 {modalOpen && selectedEntry && (
-                    <div className="modal-overlay">
+                    <div className="modal-overlay" style={{height:'100%'}}>
                         <div className="modal-content">
                             {/* Close (X) button */}
                             <button
@@ -249,7 +249,6 @@ export default function ExerciseTable() {
                     </div>
                 )}
             </div>
-            <ToastContainer position="top-right" autoClose={3000} />
         </>
     );
 }

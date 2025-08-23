@@ -57,7 +57,9 @@ export default function SessionModal({ isOpen, onClose, onSubmit }) {
         if (!validate()) return;
         console.log(formData)
         rowerSession(formData)
-        toast.success("Your Session has been submitted for review");
+        toast.success("Your Session has been submitted for review", {
+            toastId: "session-submit"
+        });
         onClose();
     };
 
@@ -161,7 +163,6 @@ export default function SessionModal({ isOpen, onClose, onSubmit }) {
                         </div>
                     </div>
                 </div>)}
-            <ToastContainer position="top-right" autoClose={3000} />
         </>
     );
 }

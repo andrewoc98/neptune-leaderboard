@@ -1,7 +1,7 @@
 import { useState } from "react";
 import "./LeadboardModal.css"
 import { saveLeaderBoardtoDB } from "./firebase";
-import {BicepsFlexed} from 'lucide-react'
+import { BicepsFlexed } from 'lucide-react'
 import { ToastContainer, toast } from "react-toastify";
 import { formatDate } from "./Util";
 
@@ -57,7 +57,7 @@ export default function LeaderboardModal() {
 
     return (
         <>
-            <button className="btn" onClick={() => setOpen(true)}><BicepsFlexed/></button>
+            <button className="btn" onClick={() => setOpen(true)}><BicepsFlexed /></button>
             {open && (
                 <div className="modal-overlay">
                     <div className="modal">
@@ -131,7 +131,6 @@ export default function LeaderboardModal() {
                     </div>
                 </div>
             )}
-            <ToastContainer position="top-right" autoClose={3000} />
         </>
     );
 }

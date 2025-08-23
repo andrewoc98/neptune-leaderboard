@@ -90,7 +90,6 @@ export default function QuoteModal() {
                     </div>
                 )}
             </div>
-            <ToastContainer position="top-right" autoClose={3000} />
         </>
     );
 }

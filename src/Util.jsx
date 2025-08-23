@@ -1,5 +1,7 @@
 import { collection, getDocs } from "firebase/firestore";
 import { database } from "./firebase";
+import { TbFishBone, TbFish } from 'react-icons/tb';
+import { GiPorcupinefish, GiSharkJaws, GiDolphin, GiSpermWhale, GiAnglerFish, GiTropicalFish, GiSnakeTongue, GiSadCrab, GiTadpole } from 'react-icons/gi';
 
 export function adjustedErgScore(split, weight) {
 
@@ -58,6 +60,40 @@ const distanceMultiplier = {
     'Run': 1,
     'Water': 1,
     'Other': 1
+}
+
+const rankThreshold = {
+    0: <TbFishBone size={20} />,
+    600_000: <GiTadpole size={20}/>,
+    1_200_000: <TbFish size={20} />,
+    1_800_000: <GiTropicalFish size={20} />,
+    2_400_000: <GiSadCrab size={20} />,
+    3_000_000: <GiPorcupinefish size={20} />,
+    3_600_000: <GiAnglerFish size={20} />,
+    4_200_000: <GiDolphin size={20} />,
+    4_800_000: <GiSpermWhale size={22} />,
+    5_400_000: <GiSharkJaws size={20} />,
+    6_000_000: <GiSnakeTongue size={20} />
+}
+
+export function getRankIcon(value) {
+    // Get sorted numeric keys
+    const thresholds = Object.keys(rankThreshold)
+        .map(Number)
+        .sort((a, b) => a - b);
+
+    // Loop and find the highest threshold that is less than or equal to value
+    let result = null;
+    for (let threshold of thresholds) {
+        if (value >= threshold) {
+            result = rankThreshold[threshold];
+        } else {
+            break;
+        }
+    }
+
+    // Return the matched icon, or null if value is below all thresholds
+    return result;
 }
 
 function parseDate(dateStr) {
@@ -130,7 +166,7 @@ export async function getSessionStats(period) {
             const entryDate = parseDate(entry.date);
             if (entryDate >= startDate && entryDate <= today) {
                 const { name, distance, intense, weights, type } = entry;
-    
+
                 if (!stats[name]) {
 
                     stats[name] = {
@@ -143,7 +179,7 @@ export async function getSessionStats(period) {
                     };
                 }
 
-                stats[name].totalDistance = stats[name].totalDistance+(Number(distance)*distanceMultiplier[type]);
+                stats[name].totalDistance = stats[name].totalDistance + (Number(distance) * distanceMultiplier[type]);
                 stats[name].totalSessions += 1;
 
                 if (intense) {

@@ -3,7 +3,7 @@ import './App.css';
 import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
 import { getWaterWorkouts, getErgWorkouts, loadLeaderboardHistory, rowerSession } from "./firebase";
-import { adjustedErgScore, goldMedalPercentage, getSessionStats, getDistanceForLastPeriod } from "./Util";
+import { adjustedErgScore, goldMedalPercentage, getSessionStats, getDistanceForLastPeriod, getRankIcon } from "./Util";
 import ThreeWaySwitch from "./ThreeWaySwitch";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
@@ -383,7 +383,9 @@ export default function LeaderboardApp({ setOpenModal }) {
                     <th>Intensity %</th>
                     <th>Weights %</th>
                     <th>Distance (m)</th>
-                    <th className="end-tab">Change</th>
+                    <th className="end-tab">
+                      {timeScale === "total" ? "Rank" : "Change"}
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -401,7 +403,9 @@ export default function LeaderboardApp({ setOpenModal }) {
                         <td>{weightsPercent}</td>
                         <td>{totalDistance.toLocaleString('en-US')}</td>
                         <td>
-                          {changePerRower[rower.name] != null && changePerRower[rower.name] !== 0 ? (
+                          {timeScale === 'total' ? (
+                            getRankIcon(totalDistance)
+                          ) : changePerRower[rower.name] != null && changePerRower[rower.name] !== 0 ? (
                             <>
                               {totalDistance - changePerRower[rower.name] !== 0
                                 ? (Math.abs(totalDistance - changePerRower[rower.name]).toLocaleString('en-US'))

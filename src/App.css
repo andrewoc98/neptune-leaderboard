@@ -1,6 +1,7 @@
 /* Global Styles */
 html {
-  min-height: 100%; /* ensures it grows with content */
+  min-height: 100%;
+  /* ensures it grows with content */
 }
 
 body {
@@ -8,10 +9,12 @@ body {
   padding: 0;
   font-family: 'Inter', 'Segoe UI', sans-serif;
   background: linear-gradient(#0f2027, #203a43, #2c5364);
-  background-attachment: fixed; /* ensures gradient sticks */
+  background-attachment: fixed;
+  /* ensures gradient sticks */
   color: #f8f9fa;
   overflow-x: hidden;
-  min-height: 100%; /* stretch with content */
+  min-height: 100%;
+  /* stretch with content */
 }
 
 
@@ -273,6 +276,14 @@ th.sortable:hover {
 }
 
 .gold-fill {
-  filter: drop-shadow(0 0 0.5px rgba(0,0,0,0.6))
-          drop-shadow(0 0 4px rgba(255,215,0,0.35));
+  filter: drop-shadow(0 0 0.5px rgba(0, 0, 0, 0.6)) drop-shadow(0 0 4px rgba(255, 215, 0, 0.35));
+}
+
+.unapprove-button {
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+  cursor: pointer;
 }

@@ -40,6 +40,10 @@ export default function ExerciseTable() {
     };
 
     const handleReject = async (entry) => {
+        const confirmed = window.confirm("Are you sure you want to unapprove this session?");
+        if(!confirmed){
+            return
+        }
         const success = await rejectSession(entry);
         if (success) {
             setData((prev) => prev.filter((item) => item.id !== entry.id));

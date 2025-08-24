@@ -5,6 +5,7 @@ import LeaderboardModal from "./LeaderboardModal";
 import WaterLeaderBoardModal from "./WaterLeaderBoardModal";
 import Workout from "./Workout";
 import QuotesModal from "./QuotesModal";
+import AdminSessionTable from "./AdminSessionTable";
 
 export default function Admin() {
     const [isAuthorized, setIsAuthorized] = useState(false);
@@ -23,8 +24,8 @@ export default function Admin() {
 
     if (!isAuthorized) {
         return (
-            <div style={{ padding: "2rem", allignItems:'centre'}}>
-                <h1 style={{color:'white'}}>Admin Login</h1>
+            <div style={{ padding: "2rem", allignItems: 'centre' }}>
+                <h1 style={{ color: 'white' }}>Admin Login</h1>
                 <form onSubmit={handleSubmit}>
                     <input
                         className='modal-input'
@@ -32,23 +33,34 @@ export default function Admin() {
                         value={passwordInput}
                         onChange={(e) => setPasswordInput(e.target.value)}
                         placeholder="Enter password"
-                        style={{ padding: "0.5rem", marginRight: "0.5rem", width:'20%' }}
+                        style={{ padding: "0.5rem", marginRight: "0.5rem", width: '20%' }}
                     />
                     <button type="submit">Enter</button>
                 </form>
             </div>
         );
     }
+  return (
+    <div style={{ padding: "2rem", color: 'white', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2rem' }}>
+      
+      {/* Submission Table */}
+      <div style={{ width: '100%', maxWidth: '1200px' }}>
+        <SubmissionTable />
+      </div>
 
-    return (
-        <div style={{ padding: "2rem", color:'white' }}>
-            <SubmissionTable/>
-            <div style={{display: 'flex', justifyContent:'center'}}>
-            <LeaderboardModal/>
-            <WaterLeaderBoardModal/>
-            <Workout/>
-            <QuotesModal/>
-            </div>
-        </div>
-    );
+      {/* Action Buttons */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '1rem' }}>
+        <LeaderboardModal />
+        <WaterLeaderBoardModal />
+        <Workout />
+        <QuotesModal />
+      </div>
+
+      {/* Admin Session Table */}
+      <div style={{ width: '100%', maxWidth: '1200px' }}>
+        <AdminSessionTable />
+      </div>
+
+    </div>
+  );
 }

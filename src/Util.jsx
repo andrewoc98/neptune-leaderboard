@@ -49,17 +49,26 @@ const distanceMultiplier = {
 
 const rankThreshold = {
   0: <TbFishBone size={20} />,
-  600_000: <GiTadpole size={20} />,
-  1_200_000: <TbFish size={20} />,
-  1_800_000: <GiTropicalFish size={20} />,
-  2_400_000: <GiSadCrab size={20} />,
-  3_000_000: <GiPorcupinefish size={20} />,
-  3_600_000: <GiAnglerFish size={20} />,
-  4_200_000: <GiDolphin size={20} />,
-  4_800_000: <GiSpermWhale size={22} />,
-  5_400_000: <GiSharkJaws size={20} />,
-  6_000_000: <GiSnakeTongue size={20} />,
-  6_600_000: <GiSnakeTongue size={20} className="gold-fill" />
+  350000: <GiTadpole size={20} />,
+  700000: <TbFish size={20} />,
+  1050000: <GiTropicalFish size={20} />,
+  1400000: <GiSadCrab size={20} />,
+  1750000: <GiPorcupinefish size={20} />,
+  2100000: <GiAnglerFish size={20} />,
+  2450000: <GiDolphin size={20} />,
+  2800000: <GiSpermWhale size={22} />,
+  3150000: <GiSharkJaws size={20} />,
+  3500000: <GiSnakeTongue size={20} />,
+  3850000: <GiTadpole size={20} className="gold-fill" />,
+  4200000: <TbFish size={20} className="gold-fill" />,
+  4550000: <GiTropicalFish size={20} className="gold-fill" />,
+  4900000: <GiSadCrab size={20} className="gold-fill" />,
+  5250000: <GiPorcupinefish size={20} className="gold-fill" />,
+  5600000: <GiAnglerFish size={20} className="gold-fill" />,
+  5950000: <GiDolphin size={20} className="gold-fill" />,
+  6300000: <GiSpermWhale size={22} className="gold-fill" />,
+  6650000: <GiSharkJaws size={20} className="gold-fill" />,
+  7000000: <GiSnakeTongue size={20} className="gold-fill" />
 };
 
 export function getRankIcon(value) {
@@ -280,6 +289,22 @@ export function getISOWeek(date) {
     const yearStart = new Date(Date.UTC(tempDate.getUTCFullYear(), 0, 1));
     const weekNo = Math.ceil((((tempDate - yearStart) / 86400000) + 1) / 7);
     return { year: tempDate.getUTCFullYear(), week: weekNo };
+}
+
+
+export function sortByDate(data) {
+    return data.sort((a, b) => {
+        if (!a.date) return 1; // push items without a date to the end
+        if (!b.date) return -1;
+
+        const [dayA, monthA, yearA] = a.date.split('/').map(Number);
+        const [dayB, monthB, yearB] = b.date.split('/').map(Number);
+
+        // Descending: compare year, month, day in reverse
+        if (yearA !== yearB) return yearB - yearA;
+        if (monthA !== monthB) return monthB - monthA;
+        return dayB - dayA;
+    });
 }
 
 

@@ -59,7 +59,7 @@ return (
                 <li>Bike meters are counted at 0.5x compared to other workout types.</li>
                 <li>Weight training sessions are recorded as 0 meters.</li>
                 <li>Sessions are tracked by total, monthly, and weekly metrics.</li>
-                <li>Each participant has an assigned level. You advance to the next level for every 600,000 meters recorded, with a total of 10 levels</li>
+                <li>Each participant has an assigned level. You advance to the next level for every 350,000 meters recorded.</li>
                 </ul>
             </div>
             {/* Footer */}

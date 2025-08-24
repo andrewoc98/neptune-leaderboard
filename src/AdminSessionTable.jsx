@@ -55,7 +55,7 @@ return (
               <th>Name</th>
               <th>Date</th>
               <th>Distance</th>
-              <th>Actions</th>
+              <th>Unapprove</th>
             </tr>
           </thead>
           <tbody>

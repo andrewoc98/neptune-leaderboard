@@ -5,6 +5,7 @@ import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement
 import { getWaterWorkouts, getErgWorkouts, loadLeaderboardHistory, rowerSession } from "./firebase";
 import { adjustedErgScore, goldMedalPercentage, getSessionStats, getDistanceForLastPeriod, getRankIcon } from "./Util";
 import ThreeWaySwitch from "./ThreeWaySwitch";
+import {points} from "./Points"
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
@@ -472,7 +473,9 @@ const getRankingsOverTime = (history, type, key) => {
             >
               &times;
             </span>
-            <h2 style={{ marginBottom: "1rem" }}>{hoveredName}'s Progress</h2>
+            <h2 style={{ marginBottom: "1rem" }}>{hoveredName}'s Profile</h2>
+            <p><b>Sculling Points: </b> {points[hoveredName].scull}</p>
+            <p><b>Sweep Points: </b> {points[hoveredName].sweep}</p>
             <Line
               data={{
                 labels: rankHistory.dates,
@@ -493,10 +496,6 @@ const getRankingsOverTime = (history, type, key) => {
                 scales: {
                   y: {
                     min: 1,
-                    max:
-                      activeTab === "erg"
-                        ? (latestErg?.ergData?.length || 5)
-                        : (latestWater?.waterData?.length || 5),
                     reverse: true,
                     ticks: { stepSize: 1, precision: 0 },
                   },

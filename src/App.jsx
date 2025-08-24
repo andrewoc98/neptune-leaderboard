@@ -3,6 +3,7 @@ import Admin from "./Admin";
 import User from "./User";
 import { useState } from "react";
 import { ToastContainer } from 'react-toastify';
+import { Prestige } from './Prestige';
 
 function App() {
   const [admin, setAdmin] = useState(false);
@@ -28,6 +29,7 @@ function App() {
         autoClose={1500}
         limit={1}
       />
+      <Prestige />
     </div>
   );
 }

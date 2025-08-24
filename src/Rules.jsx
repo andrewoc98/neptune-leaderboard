@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { X, FileText } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 import "./modal.css"
 
 export default function Rules() {

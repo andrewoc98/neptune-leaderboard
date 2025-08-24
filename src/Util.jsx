@@ -2,6 +2,7 @@ import { collection, getDocs } from "firebase/firestore";
 import { database } from "./firebase";
 import { TbFishBone, TbFish } from 'react-icons/tb';
 import { GiPorcupinefish, GiSharkJaws, GiDolphin, GiSpermWhale, GiAnglerFish, GiTropicalFish, GiSnakeTongue, GiSadCrab, GiTadpole } from 'react-icons/gi';
+import './App.css';
 
 export function adjustedErgScore(split, weight) {
 
@@ -17,25 +18,25 @@ export function adjustedErgScore(split, weight) {
 }
 
 export function goldMedalPercentage(time, boatClass, distance) {
-  const [minutesStr, secTenthsStr] = time.split(':');
-  const minutes = parseInt(minutesStr, 10);
-  const seconds = parseFloat(secTenthsStr);
-  const totalSeconds = minutes * 60 + seconds;
+    const [minutesStr, secTenthsStr] = time.split(':');
+    const minutes = parseInt(minutesStr, 10);
+    const seconds = parseFloat(secTenthsStr);
+    const totalSeconds = minutes * 60 + seconds;
 
-  let gmpSpeed = 0;
-  switch (boatClass.toLowerCase()) {
-    case "1x": gmpSpeed = 5.119; break;
-    case "2x": gmpSpeed = 5.56; break;
-    case "4x+": gmpSpeed = 5.76; break;
-    case "4x-": gmpSpeed = 6.02; break;
-    case "2-": gmpSpeed = 5.43; break;
-    case "4+": gmpSpeed = 5.749; break;
-    case "8+": gmpSpeed = 6.276; break;
-    case "4-": gmpSpeed = 5.919; break;
-    default: return NaN; // instead of a string
-  }
+    let gmpSpeed = 0;
+    switch (boatClass.toLowerCase()) {
+        case "1x": gmpSpeed = 5.119; break;
+        case "2x": gmpSpeed = 5.56; break;
+        case "4x+": gmpSpeed = 5.76; break;
+        case "4x-": gmpSpeed = 6.02; break;
+        case "2-": gmpSpeed = 5.43; break;
+        case "4+": gmpSpeed = 5.749; break;
+        case "8+": gmpSpeed = 6.276; break;
+        case "4-": gmpSpeed = 5.919; break;
+        default: return NaN; // instead of a string
+    }
 
-  return (distance / totalSeconds) / gmpSpeed * 100;
+    return (distance / totalSeconds) / gmpSpeed * 100;
 }
 
 const distanceMultiplier = {
@@ -47,18 +48,19 @@ const distanceMultiplier = {
 }
 
 const rankThreshold = {
-    0: <TbFishBone size={20} />,
-    600_000: <GiTadpole size={20}/>,
-    1_200_000: <TbFish size={20} />,
-    1_800_000: <GiTropicalFish size={20} />,
-    2_400_000: <GiSadCrab size={20} />,
-    3_000_000: <GiPorcupinefish size={20} />,
-    3_600_000: <GiAnglerFish size={20} />,
-    4_200_000: <GiDolphin size={20} />,
-    4_800_000: <GiSpermWhale size={22} />,
-    5_400_000: <GiSharkJaws size={20} />,
-    6_000_000: <GiSnakeTongue size={20} />
-}
+  0: <TbFishBone size={20} />,
+  600_000: <GiTadpole size={20} />,
+  1_200_000: <TbFish size={20} />,
+  1_800_000: <GiTropicalFish size={20} />,
+  2_400_000: <GiSadCrab size={20} />,
+  3_000_000: <GiPorcupinefish size={20} />,
+  3_600_000: <GiAnglerFish size={20} />,
+  4_200_000: <GiDolphin size={20} />,
+  4_800_000: <GiSpermWhale size={22} />,
+  5_400_000: <GiSharkJaws size={20} />,
+  6_000_000: <GiSnakeTongue size={20} />,
+  6_600_000: <GiSnakeTongue size={20} className="gold-fill" />
+};
 
 export function getRankIcon(value) {
     // Get sorted numeric keys

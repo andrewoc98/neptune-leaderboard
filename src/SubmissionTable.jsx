@@ -96,7 +96,7 @@ export default function ExerciseTable() {
                                 !row.approved && (
                                     <tr key={row.id} onClick={() => openModal(row)}>
                                         <td>{row.name}</td>
-                                        <td>{row.distance}</td>
+                                        <td>{Number(row.distance).toLocaleString('en-US')}</td>
                                         <td>{row.weights ? "✔" : "✖"}</td>
                                         <td>{row.intense ? "✔" : "✖"}</td>
                                         <td>{row.type}</td>

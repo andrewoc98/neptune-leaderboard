@@ -265,3 +265,14 @@ th.sortable:hover {
   align-items: center;
   margin-bottom: 1rem;
 }
+
+/* styles.css */
+/* Give the icon a metallic fill + a subtle glow */
+.gold-fill path {
+  fill: url(#goldGradientAnimated);
+}
+
+.gold-fill {
+  filter: drop-shadow(0 0 0.5px rgba(0,0,0,0.6))
+          drop-shadow(0 0 4px rgba(255,215,0,0.35));
+}

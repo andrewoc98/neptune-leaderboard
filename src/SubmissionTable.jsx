@@ -192,6 +192,16 @@ export default function ExerciseTable() {
                                         }
                                     />
                                 </div>
+                                <div className="modal-field">
+                                    <label className="modal-label">Split</label>
+                                    <input
+                                        type="text"
+                                        className="modal-input"
+                                        value={selectedEntry['split']}
+                                        placeholder="Split mm:ss (Optional)"
+                                        onChange={(e) => handleModalChange("split", e.target.value)}
+                                    />
+                                </div>
                                 <div className="modal-field checkbox-field">
                                     <label className="checkbox-label">
                                         <input

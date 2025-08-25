@@ -13,7 +13,8 @@ export default function SessionModal({ isOpen, onClose, onSubmit }) {
         intense: false,
         notes: '',
         type: 'Erg',
-        date: verifydate(new Date().toLocaleDateString())
+        date: verifydate(new Date().toLocaleDateString()),
+        split: ''
 
     });
 
@@ -99,6 +100,16 @@ export default function SessionModal({ isOpen, onClose, onSubmit }) {
                                         onChange={(e) => setFormData({ ...formData, distance: e.target.value })}
                                     />
                                     {errors.distance && <p className="modal-error">{errors.distance}</p>}
+                                </div>
+                                <div className="modal-field">
+                                    <label className="modal-label">Split</label>
+                                    <input
+                                        type="text"
+                                        className="modal-input"
+                                        value={formData.split}
+                                        placeholder="Split mm:ss (Optional)"
+                                        onChange={(e) => setFormData({ ...formData, split: e.target.value })}
+                                    />
                                 </div>
                                 <div className="modal-field">
                                     <label className="modal-label">Type</label>

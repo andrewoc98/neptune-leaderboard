@@ -48,8 +48,9 @@ return (
           </p>
         </div>
 
-        <table>
-          <thead>
+        <table style={{}}>
+          <thead
+          style={{padding:"0"}}>
             <tr>
               <th>Notes</th>
               <th>Name</th>

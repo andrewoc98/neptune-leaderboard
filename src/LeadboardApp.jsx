@@ -544,7 +544,7 @@ const getRankingsOverTime = (history, type, key) => {
                     data: rankHistory.rankMap[hoveredName],
                     borderColor: "#3b82f6",
                     backgroundColor: "#60a5fa",
-                    spanGaps: true,   // 👈 connects missing entries
+                    spanGaps: true,
                   },
                 ],
               }}
@@ -553,11 +553,18 @@ const getRankingsOverTime = (history, type, key) => {
                 responsive: true,
                 maintainAspectRatio: true,
                 scales: {
+
                   y: {
                     min: 1,
                     reverse: true,
-                    ticks: { stepSize: 1, precision: 0 },
+                    ticks: { stepSize: 1, precision: 0 ,color:"white" },
+                    grace: "20%",
                   },
+                    x:{
+                      ticks:{
+                          color:"white"
+                      }
+                    }
                 },
               }}
             />

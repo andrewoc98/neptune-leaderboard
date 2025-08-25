@@ -45,7 +45,7 @@ export default function Admin() {
     <div style={{ padding: "2rem", color: 'white', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2rem' }}>
       
       {/* Submission Table */}
-      <div style={{ width: '100%', maxWidth: '1200px' }}>
+      <div style={{ width: '80%', maxWidth: '1200px', }}>
         <SubmissionTable />
       </div>
 
@@ -59,7 +59,7 @@ export default function Admin() {
       </div>
 
       {/* Admin Session Table */}
-      <div style={{ width: '100%', maxWidth: '1200px' }}>
+      <div style={{ width: '90%', maxWidth: '1200px' }}>
         <AdminSessionTable />
       </div>
 

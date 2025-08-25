@@ -3,13 +3,21 @@ import './App.css';
 import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
 import { getWaterWorkouts, getErgWorkouts, loadLeaderboardHistory, rowerSession } from "./firebase";
-import { adjustedErgScore, goldMedalPercentage, getSessionStats, getDistanceForLastPeriod, getRankIcon } from "./Util";
+import {
+    adjustedErgScore, goldMedalPercentage, getSessionStats, getDistanceForLastPeriod, getRankIcon,
+    selectIndividuals
+} from "./Util";
 import ThreeWaySwitch from "./ThreeWaySwitch";
 import {points} from "./Points"
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 export default function LeaderboardApp({ setOpenModal }) {
+  const [boatSelection, setBoatSelection] = useState({
+      level:null,
+      boat:null
+  })
+  const [selectedNames, setSelectedNames] = useState([])
   const [activeTab, setActiveTab] = useState("erg");
   const [hoveredName, setHoveredName] = useState(null);
   const [ergSortKey, setErgSortKey] = useState("adjustedSplit");
@@ -34,11 +42,6 @@ export default function LeaderboardApp({ setOpenModal }) {
     setHoveredName(name);
   };
 
-  const handleMouseLeave = () => {
-    setHoverTimeout(setTimeout(() => setHoveredName(null), 1000));
-  };
-
-
   const handleClick = () => {
     setFlash(true);
     handleOpen();
@@ -53,6 +56,37 @@ export default function LeaderboardApp({ setOpenModal }) {
   const onSubmitSession = (entry) => {
     rowerSession(entry)
   }
+
+    const handleLevelChange = (e) => {
+        const level = e.target.value;
+        setBoatSelection((prev) => ({
+            ...prev,
+            level,
+            // set numeric value based on selection
+            numericValue: level === "Inter" ? 700 : 250
+        }));
+    };
+
+    const handleBoatChange = (e) => {
+        const boat = e.target.value;
+        setBoatSelection((prev) => ({
+            ...prev,
+            boat
+        }));
+    };
+
+
+    useEffect(() =>{
+        const type = boatSelection.boat?.includes("x") ? "scull" : "sweep";
+        const numIndividuals = (() => {
+            const firstChar = boatSelection.boat?.[0]; // get first char safely
+            const num = Number(firstChar);             // try to cast to number
+            return isNaN(num) ? 0 : num;               // if NaN, return 0
+        })();
+        const names = selectIndividuals(findLatestWithData(leaderboardHistory, "waterData") ,points ,numIndividuals, Number(boatSelection.level), type)
+      setSelectedNames(names)
+
+  },[boatSelection])
 
   useEffect(() => {
     if (leaderboardHistory.length === 0) return;
@@ -99,8 +133,6 @@ export default function LeaderboardApp({ setOpenModal }) {
   }, [])
 
   useEffect(() => {
-
-
 
     const fetchData = async () => {
       try {
@@ -332,6 +364,26 @@ const getRankingsOverTime = (history, type, key) => {
       {activeTab === "water" && latestWater && (
         <div className="table-container" style={{ width: "90%" }}>{/*TODO align to the left on mobile*/}
           <div className="table-section">
+              <div className='table-description'>
+                  <p style={{color:'white', marginBottom:'1 rem'}}>Select a Boat class and a level to preform seat selection</p>
+                  {/* Level Dropdown */}
+                  <select className= "modal-select" value={boatSelection.level || ""} onChange={handleLevelChange}>
+                      <option value="" disabled>Select Level</option>
+                      <option value="700">Inter</option>
+                      <option value="250">Club</option>
+                  </select>
+
+                  {/* Boat Dropdown */}
+                  <select className= "modal-select" value={boatSelection.boat || ""} onChange={handleBoatChange}>
+                      <option value="" disabled>Select Boat</option>
+                      <option value="1x">1x</option>
+                      <option value="2x">2x</option>
+                      <option value="2">2</option>
+                      <option value="4x">4x</option>
+                      <option value="4">4</option>
+                      <option value="8">8</option>
+                  </select>
+              </div>
             <div className="table-description">
               <p style={{ textAlign: "center", marginBottom: "0.5rem", color: "white" }}>
                 <b>This Week Session:</b> {waterWorkouts.currentWeek}
@@ -358,29 +410,36 @@ const getRankingsOverTime = (history, type, key) => {
                     <th>Change</th>
                   </tr>
                 </thead>
-                <tbody>
+                  <tbody>
                   {sortedWater.map((rower, index) => (
-                    <tr key={rower.name}
-                      onClick={() => handleMouseEnter(rower.name)}>
-                      <td>{index + 1}</td>
-                      <td>{rower.name}</td>
-                      <td>{rower.boatClass}</td>
-                      <td>{rower.time}</td>
-                      <td>{goldMedalPercentage(rower.time, rower.boatClass, rower.distance).toFixed(2)}%</td>
-                      <td>{getDelta(
-                        rower.name,
-                        index,
-                        sortedWater,
-                        prevWater?.waterData?.map(row => ({
-                          ...row,
-                          time: parseTimeToSeconds(row.time)
-                        })),
-                        waterSortKey,
-                        waterSortKey !== "goldPercentage"
-                      )}</td>
-                    </tr>
+                      <tr
+                          key={rower.name}
+                          onClick={() => handleMouseEnter(rower.name)}
+                          className={selectedNames.includes(rower.name) ? "gold-row" : ""}
+                      >
+                          <td>{index + 1}</td>
+                          <td>{rower.name}</td>
+                          <td>{rower.boatClass}</td>
+                          <td>{rower.time}</td>
+                          <td>
+                              {goldMedalPercentage(rower.time, rower.boatClass, rower.distance).toFixed(2)}%
+                          </td>
+                          <td>
+                              {getDelta(
+                                  rower.name,
+                                  index,
+                                  sortedWater,
+                                  prevWater?.waterData?.map(row => ({
+                                      ...row,
+                                      time: parseTimeToSeconds(row.time)
+                                  })),
+                                  waterSortKey,
+                                  waterSortKey !== "goldPercentage"
+                              )}
+                          </td>
+                      </tr>
                   ))}
-                </tbody>
+                  </tbody>
               </table>
 
             </table>

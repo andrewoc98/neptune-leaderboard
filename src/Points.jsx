@@ -27,7 +27,7 @@ export const points = {
         "scull": 300,
         "sweep": 300
     },
-    "Mark Connoly": {
+    "Mark Connolly": {
         "scull": 0,
         "sweep": 360
     },

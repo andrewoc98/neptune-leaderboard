@@ -324,6 +324,60 @@ export function sortByDate(data) {
     });
 }
 
+export function selectIndividuals(data, users, numIndividuals, maxAveragePoints, type) {
+    try {
+        const waterData = data.waterData || [];
+        if (numIndividuals <= 0 || waterData.length === 0) return [];
+
+        // Merge goldMedalPercentage with selected points type
+        const merged = waterData.map(d => {
+            const userPoints = users[d.name]?.[type];
+            const gold = Number(goldMedalPercentage(d.time, d.boatClass, d.distance));
+            if (userPoints === undefined || isNaN(gold)) return null;
+            return {
+                name: d.name,
+                goldMedalPercentage: gold,
+                points: userPoints
+            };
+        }).filter(Boolean);
+
+        // Check if there are enough entries to select
+        if (merged.length < numIndividuals) return [];
+        let bestGroup = [];
+        let bestGoldAvg = -1;
+        function combine(arr, k, start = 0, path = []) {
+            if (path.length === k) {
+                const avgPoints = path.reduce((sum, ind) => sum + ind.points, 0) / k;
+                if (avgPoints <= maxAveragePoints) {
+                    const avgGold = path.reduce((sum, ind) => sum + ind.goldMedalPercentage, 0) / k;
+                    if (avgGold > bestGoldAvg) {
+                        bestGoldAvg = avgGold;
+                        bestGroup = [...path];
+                    }
+                }
+                return;
+            }
+
+            for (let i = start; i < arr.length; i++) {
+                path.push(arr[i]);
+                combine(arr, k, i + 1, path);
+                path.pop();
+            }
+        }
+
+        combine(merged, numIndividuals);
+        const names = bestGroup.map(ind => ind.name);
+        console.log(names)
+        return names
+    } catch (e) {
+        console.error("selectIndividuals error:", e);
+        return [];
+    }
+}
+
+
+
+
 
 
 

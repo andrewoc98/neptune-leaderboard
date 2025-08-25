@@ -287,3 +287,68 @@ th.sortable:hover {
   border-radius: 4px;
   cursor: pointer;
 }
+
+.modal-select{
+    padding: 0.5rem 0.75rem;
+    border-radius: 10px;
+    border: 1px solid #374151;
+    background: #111827;
+    color: #f8f9fa;
+    font-size: 1rem;
+    outline: none;
+    transition: border 0.2s ease, box-shadow 0.2s ease;
+}
+
+@keyframes goldShimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+.gold-row {
+    background: linear-gradient(
+            90deg,
+            #8f6b29 0%,
+            #fde08d 20%,
+            #b0822b 50%,
+            #fde08d 80%,
+            #8f6b29 100%
+    );
+    background-size: 200% auto;
+    animation: goldShimmer 15s linear infinite;
+
+    /* readability */
+    color: #000;
+    font-weight: bold;
+}
+
+
+tr:hover {
+    background-color: rgba(255, 255, 255, 0.1); /* adjust to your theme */
+}
+
+/* Gold shimmer rows override hover so gradient persists */
+.gold-row,
+.gold-row:hover {
+    background: linear-gradient(
+            90deg,
+            #8f6b29 0%,
+            #fde08d 20%,
+            #b0822b 50%,
+            #fde08d 80%,
+            #8f6b29 100%
+    );
+    background-size: 200% auto;
+    animation: goldShimmer 15s linear infinite;
+    color: #000;
+    font-weight: bold;
+}
+
+/* Optional: a hover enhancement without killing the shimmer */
+.gold-row:hover {
+    filter: brightness(1.1);
+    cursor: pointer;
+}

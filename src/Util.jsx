@@ -38,8 +38,9 @@ export function goldMedalPercentage(time, boatClass, distance) {
 
     return (distance / totalSeconds) / gmpSpeed * 100;
 }
-
-const distanceMultiplier = await getMultipliers()
+export const getDistanceMultiplier = async () => {
+    return await getMultipliers();
+};
 
 const rankThreshold = {
   0: <TbFishBone size={20} />,
@@ -136,6 +137,7 @@ export function formatDate(date) {
 
 
 export async function getSessionStats(period) {
+    const distanceMultiplier = await getDistanceMultiplier()
     const today = new Date();
     let startDate;
 

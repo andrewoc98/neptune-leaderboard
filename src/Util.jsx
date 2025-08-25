@@ -327,24 +327,54 @@ export function selectIndividuals(data, users, numIndividuals, maxAveragePoints,
 
         // Merge goldMedalPercentage with selected points type
         const merged = waterData.map(d => {
-            const userPoints = users[d.name]?.[type];
-            const gold = Number(goldMedalPercentage(d.time, d.boatClass, d.distance));
-            if (userPoints === undefined || isNaN(gold)) return null;
-            return {
-                name: d.name,
-                goldMedalPercentage: gold,
-                points: userPoints
-            };
+            const user = users[d.name];
+            if (!user) return null;
+
+            if (type === "scull") {
+                if (user.scull === undefined) return null;
+                return {
+                    name: d.name,
+                    goldMedalPercentage: Number(goldMedalPercentage(d.time, d.boatClass, d.distance)),
+                    points: user.scull
+                };
+            } else if (type === "sweep") {
+                if (!user.sweep || user.sweep.points === undefined) return null;
+                return {
+                    name: d.name,
+                    goldMedalPercentage: Number(goldMedalPercentage(d.time, d.boatClass, d.distance)),
+                    points: user.sweep.points,
+                    side: user.sweep.side // Bow, Stroke, or Both
+                };
+            }
+
+            return null;
         }).filter(Boolean);
 
-        // Check if there are enough entries to select
         if (merged.length < numIndividuals) return [];
+
         let bestGroup = [];
         let bestGoldAvg = -1;
+
+        function isValidSweepGroup(group) {
+            let bow = 0, stroke = 0, both = 0;
+            for (const person of group) {
+                if (person.side === "Bow") bow++;
+                else if (person.side === "Stroke") stroke++;
+                else if (person.side === "Both") both++;
+            }
+
+            // After assigning "Both" optimally, bow == stroke must hold
+            const diff = Math.abs(bow - stroke);
+            return both >= diff && (bow + stroke + both) % 2 === 0;
+        }
+
         function combine(arr, k, start = 0, path = []) {
             if (path.length === k) {
                 const avgPoints = path.reduce((sum, ind) => sum + ind.points, 0) / k;
                 if (avgPoints <= maxAveragePoints) {
+                    if (type === "sweep" && !isValidSweepGroup(path)) {
+                        return; // skip invalid sweep groups
+                    }
                     const avgGold = path.reduce((sum, ind) => sum + ind.goldMedalPercentage, 0) / k;
                     if (avgGold > bestGoldAvg) {
                         bestGoldAvg = avgGold;
@@ -362,14 +392,14 @@ export function selectIndividuals(data, users, numIndividuals, maxAveragePoints,
         }
 
         combine(merged, numIndividuals);
-        const names = bestGroup.map(ind => ind.name);
-        console.log(names)
-        return names
+
+        return bestGroup.map(ind => ind.name);
     } catch (e) {
         console.error("selectIndividuals error:", e);
         return [];
     }
 }
+
 
 
 

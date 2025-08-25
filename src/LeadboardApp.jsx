@@ -534,7 +534,8 @@ const getRankingsOverTime = (history, type, key) => {
             </span>
             <h2 style={{ marginBottom: "1rem" }}>{hoveredName}'s Profile</h2>
             <p><b>Sculling Points: </b> {points[hoveredName].scull}</p>
-            <p><b>Sweep Points: </b> {points[hoveredName].sweep}</p>
+            <p><b>Sweep Points: </b> {points[hoveredName].sweep.points}</p>
+              <p><b>Sweep Side: </b> {points[hoveredName].sweep.side}</p>
             <Line
               data={{
                 labels: rankHistory.dates,

@@ -1,4 +1,4 @@
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, query, where, onSnapshot } from "firebase/firestore";
 import { database } from "./firebase";
 import { TbFishBone, TbFish } from 'react-icons/tb';
 import { GiPorcupinefish, GiSharkJaws, GiDolphin, GiSpermWhale, GiAnglerFish, GiTropicalFish, GiSnakeTongue, GiSadCrab, GiTadpole } from 'react-icons/gi';
@@ -244,6 +244,23 @@ export async function getUnApprovedSessions() {
 
     return allSessions.filter(item => item.approved === false);
 
+}
+
+export function listenToUnApprovedSessions(callback) {
+    const q = query(
+        collection(database, "sessionHistory"), 
+    );
+
+    // Real-time listener
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+        const sessions = snapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+        }));
+        callback(sessions);
+    });
+
+    return unsubscribe; // so you can clean up in useEffect
 }
 
 export function getPreviousSunday(dateStr) {

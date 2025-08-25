@@ -54,6 +54,7 @@ return (
               <th>Notes</th>
               <th>Name</th>
               <th>Date</th>
+              <th>Type</th>
               <th>Distance</th>
               <th>Unapprove</th>
             </tr>
@@ -73,6 +74,7 @@ return (
                   <td>{session.notes || "N/A"}</td>
                   <td>{session.name || "N/A"}</td>
                   <td>{session.date || "N/A"}</td>
+                  <td>{session.type || "N/A"}</td>
                   <td>{session.distance || "N/A"}</td>
                   <td>
                     <button

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "./SubmissionTable.css";
 import "./LeadboardModal.css"; // import modal styles
-import { formatDate, getUnApprovedSessions } from "./Util";
+import { formatDate, listenToUnApprovedSessions } from "./Util";
 import { approveSession, rejectSession } from "./firebase";
 import { ToastContainer, toast } from "react-toastify";
 
@@ -11,15 +11,11 @@ export default function ExerciseTable() {
     const [selectedEntry, setSelectedEntry] = useState(null);
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const stats = await getUnApprovedSessions();
-                setData(stats);
-            } catch (error) {
-                console.error("Error fetching session stats:", error);
-            }
-        };
-        fetchData();
+        const unsubscribe = listenToUnApprovedSessions((sessions) => {
+            setData(sessions);
+        });
+
+        return () => unsubscribe(); // clean up listener on unmount
     }, []);
 
     const handleApprove = async (entry) => {

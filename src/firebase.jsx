@@ -259,13 +259,25 @@ function getMultipliersDocRef() {
 // 🔹 Fetch multipliers
 export async function getMultipliers() {
     const snapshot = await getDoc(getMultipliersDocRef());
-    console.log(snapshot.data() )
     return snapshot.exists() ? snapshot.data() : {};
 }
 
 // 🔹 Update multipliers
 export async function updateMultipliers(newData) {
     await setDoc(getMultipliersDocRef(), newData, { merge: true });
+}
+
+function getUsersDocRef(){
+    return doc(database, "users","profiles")
+}
+
+export async function getUsers(){
+    const snapshot = await getDoc(getUsersDocRef())
+    return snapshot.exists() ? snapshot.data() : {}
+}
+
+export async function  updateUsers(){
+    await setDoc(getUsersDocRef(), newData, {merge: true})
 }
 
 

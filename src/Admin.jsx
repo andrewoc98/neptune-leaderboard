@@ -7,6 +7,7 @@ import Workout from "./Workout";
 import QuotesModal from "./QuotesModal";
 import AdminSessionTable from "./AdminSessionTable";
 import MultiplierModal from "./MultiplerModal";
+import UserEditModal from "./UserEditModal";
 
 export default function Admin() {
     const [isAuthorized, setIsAuthorized] = useState(false);
@@ -56,6 +57,7 @@ export default function Admin() {
         <Workout />
         <QuotesModal />
         <MultiplierModal/>
+        <UserEditModal/>
       </div>
 
       {/* Admin Session Table */}

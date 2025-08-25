@@ -321,6 +321,7 @@ export function sortByDate(data) {
 }
 
 export function selectIndividuals(data, users, numIndividuals, maxAveragePoints, type) {
+    console.log(users)
     try {
         const waterData = data.waterData || [];
         if (numIndividuals <= 0 || waterData.length === 0) return [];
@@ -392,7 +393,6 @@ export function selectIndividuals(data, users, numIndividuals, maxAveragePoints,
         }
 
         combine(merged, numIndividuals);
-
         return bestGroup.map(ind => ind.name);
     } catch (e) {
         console.error("selectIndividuals error:", e);

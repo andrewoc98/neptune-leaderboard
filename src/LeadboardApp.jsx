@@ -2,14 +2,12 @@ import React, { useEffect, useState } from "react";
 import './App.css';
 import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
-import { getWaterWorkouts, getErgWorkouts, loadLeaderboardHistory, rowerSession } from "./firebase";
+import {getWaterWorkouts, getErgWorkouts, loadLeaderboardHistory, rowerSession, getUsers} from "./firebase";
 import {
     adjustedErgScore, goldMedalPercentage, getSessionStats, getDistanceForLastPeriod, getRankIcon,
     selectIndividuals
 } from "./Util";
 import ThreeWaySwitch from "./ThreeWaySwitch";
-import {points} from "./Points"
-
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 export default function LeaderboardApp({ setOpenModal }) {
@@ -18,6 +16,7 @@ export default function LeaderboardApp({ setOpenModal }) {
       boat:null
   })
   const [selectedNames, setSelectedNames] = useState([])
+    const [points, setPoints] = useState({})
   const [activeTab, setActiveTab] = useState("erg");
   const [hoveredName, setHoveredName] = useState(null);
   const [ergSortKey, setErgSortKey] = useState("adjustedSplit");
@@ -85,7 +84,6 @@ export default function LeaderboardApp({ setOpenModal }) {
         })();
         const names = selectIndividuals(findLatestWithData(leaderboardHistory, "waterData") ,points ,numIndividuals, Number(boatSelection.level), type)
       setSelectedNames(names)
-
   },[boatSelection])
 
   useEffect(() => {
@@ -101,6 +99,14 @@ export default function LeaderboardApp({ setOpenModal }) {
   }, [leaderboardHistory, activeTab, ergSortKey, waterSortKey]);
 
   useEffect(() => {
+      const fetchUsers = async () => {
+          try{
+              const users = await getUsers()
+              setPoints(users)
+          } catch (e){
+              console.log("Error fetching users: ", e)
+          }
+      }
     const fetchErgWorkouts = async () => {
       try {
         const workouts = await getErgWorkouts()
@@ -130,6 +136,7 @@ export default function LeaderboardApp({ setOpenModal }) {
     fetchLeaderBoard();
     fetchErgWorkouts();
     fetchWaterWorkouts();
+    fetchUsers()
   }, [])
 
   useEffect(() => {

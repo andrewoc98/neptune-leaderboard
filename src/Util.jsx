@@ -1,5 +1,5 @@
 import { collection, getDocs, query, where, onSnapshot } from "firebase/firestore";
-import { database } from "./firebase";
+import {database, getMultipliers} from "./firebase";
 import { TbFishBone, TbFish } from 'react-icons/tb';
 import { GiPorcupinefish, GiSharkJaws, GiDolphin, GiSpermWhale, GiAnglerFish, GiTropicalFish, GiSnakeTongue, GiSadCrab, GiTadpole } from 'react-icons/gi';
 import './App.css';
@@ -39,13 +39,7 @@ export function goldMedalPercentage(time, boatClass, distance) {
     return (distance / totalSeconds) / gmpSpeed * 100;
 }
 
-const distanceMultiplier = {
-    'Erg': 1,
-    'Bike': 0.5,
-    'Run': 1,
-    'Water': 1,
-    'Other': 1
-}
+const distanceMultiplier = await getMultipliers()
 
 const rankThreshold = {
   0: <TbFishBone size={20} />,

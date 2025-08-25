@@ -252,4 +252,20 @@ export async function getQuote() {
   }
 }
 
+function getMultipliersDocRef() {
+    return doc(database, "mulipliers", "types");
+}
+
+// 🔹 Fetch multipliers
+export async function getMultipliers() {
+    const snapshot = await getDoc(getMultipliersDocRef());
+    console.log(snapshot.data() )
+    return snapshot.exists() ? snapshot.data() : {};
+}
+
+// 🔹 Update multipliers
+export async function updateMultipliers(newData) {
+    await setDoc(getMultipliersDocRef(), newData, { merge: true });
+}
+
 

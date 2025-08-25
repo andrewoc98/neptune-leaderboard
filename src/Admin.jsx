@@ -6,6 +6,7 @@ import WaterLeaderBoardModal from "./WaterLeaderBoardModal";
 import Workout from "./Workout";
 import QuotesModal from "./QuotesModal";
 import AdminSessionTable from "./AdminSessionTable";
+import MultiplierModal from "./MultiplerModal";
 
 export default function Admin() {
     const [isAuthorized, setIsAuthorized] = useState(false);
@@ -54,6 +55,7 @@ export default function Admin() {
         <WaterLeaderBoardModal />
         <Workout />
         <QuotesModal />
+        <MultiplierModal/>
       </div>
 
       {/* Admin Session Table */}

@@ -378,7 +378,7 @@ const getRankingsOverTime = (history, type, key) => {
                   { !gmp && (
                   <p style={{color:'white', marginBottom:'1 rem'}}>Select a Boat class and a level to preform seat selection</p>
                   )}
-                  {gmp && (
+                  {(gmp>0) && (
                       <p style={{color:'white'}}>Gold medal percentage scaled to champs   {boatSelection.level === "700"
                           ? (gmp* 1.07).toFixed(2)
                           : boatSelection.level === "250"
@@ -386,7 +386,6 @@ const getRankingsOverTime = (history, type, key) => {
                               : gmp
                       }%</p>
                   )
-
                   }
                   <select className= "modal-select" value={boatSelection.level || ""} onChange={handleLevelChange}>
                       <option value="" disabled>Select Level</option>

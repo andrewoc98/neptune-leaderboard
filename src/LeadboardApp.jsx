@@ -296,7 +296,7 @@ const getRankingsOverTime = (history, type, key) => {
 
 
   return (
-    <div className="container">{/*TODO align to the left on mobile*/}
+    <div className="container">
       <h1 className="title">Neptune Boat Club Leaderboard</h1>
 
       {/* Tabs */}
@@ -308,7 +308,7 @@ const getRankingsOverTime = (history, type, key) => {
 
       {/* Erg Table */}
       {activeTab === "erg" && latestErg && (
-        <div className="table-container" style={{ width: "90%" }}>{/*TODO align to the left on mobile*/}
+        <div className="table-container" style={{ width: "90%" }}>
           <div className="table-section">
             <div className="table-description">
               <p style={{ textAlign: "center", marginBottom: "0.5rem", color: "white" }}>
@@ -385,10 +385,10 @@ const getRankingsOverTime = (history, type, key) => {
                       <option value="" disabled>Select Boat</option>
                       <option value="1x">1x</option>
                       <option value="2x">2x</option>
-                      <option value="2">2</option>
+                      <option value="2">2-</option>
                       <option value="4x">4x</option>
-                      <option value="4">4</option>
-                      <option value="8">8</option>
+                      <option value="4">4-</option>
+                      <option value="8">8+</option>
                   </select>
               </div>
             <div className="table-description">

@@ -17,6 +17,7 @@ export default function LeaderboardApp({ setOpenModal }) {
   })
   const [selectedNames, setSelectedNames] = useState([])
     const [points, setPoints] = useState({})
+    const [gmp, setGmp] = useState(0)
   const [activeTab, setActiveTab] = useState("erg");
   const [hoveredName, setHoveredName] = useState(null);
   const [ergSortKey, setErgSortKey] = useState("adjustedSplit");
@@ -82,8 +83,10 @@ export default function LeaderboardApp({ setOpenModal }) {
             const num = Number(firstChar);             // try to cast to number
             return isNaN(num) ? 0 : num;               // if NaN, return 0
         })();
-        const names = selectIndividuals(findLatestWithData(leaderboardHistory, "waterData") ,points ,numIndividuals, Number(boatSelection.level), type)
-      setSelectedNames(names)
+        const result = selectIndividuals(findLatestWithData(leaderboardHistory, "waterData") ,points ,numIndividuals, Number(boatSelection.level), type)
+      console.log(result)
+        setSelectedNames(result[1])
+        setGmp(result[0])
   },[boatSelection])
 
   useEffect(() => {
@@ -372,8 +375,19 @@ const getRankingsOverTime = (history, type, key) => {
         <div className="table-container" style={{ width: "90%" }}>{/*TODO align to the left on mobile*/}
           <div className="table-section">
               <div className='table-description'>
+                  { !gmp && (
                   <p style={{color:'white', marginBottom:'1 rem'}}>Select a Boat class and a level to preform seat selection</p>
-                  {/* Level Dropdown */}
+                  )}
+                  {gmp && (
+                      <p style={{color:'white'}}>Gold medal percentage scaled to champs   {boatSelection.level === "700"
+                          ? (gmp* 1.07).toFixed(2)
+                          : boatSelection.level === "250"
+                              ? (gmp * 1.11).toFixed(2)
+                              : gmp
+                      }%</p>
+                  )
+
+                  }
                   <select className= "modal-select" value={boatSelection.level || ""} onChange={handleLevelChange}>
                       <option value="" disabled>Select Level</option>
                       <option value="700">Inter</option>

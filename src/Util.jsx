@@ -321,10 +321,12 @@ export function sortByDate(data) {
 }
 
 export function selectIndividuals(data, users, numIndividuals, maxAveragePoints, type) {
-    console.log(users)
+    if(!maxAveragePoints){
+        return [0,[]]
+    }
     try {
         const waterData = data.waterData || [];
-        if (numIndividuals <= 0 || waterData.length === 0) return [];
+        if (numIndividuals <= 0 || waterData.length === 0) return [0,[]];
 
         // Merge goldMedalPercentage with selected points type
         const merged = waterData.map(d => {
@@ -393,10 +395,10 @@ export function selectIndividuals(data, users, numIndividuals, maxAveragePoints,
         }
 
         combine(merged, numIndividuals);
-        return bestGroup.map(ind => ind.name);
+        return [bestGoldAvg ,bestGroup.map(ind => ind.name)]
     } catch (e) {
         console.error("selectIndividuals error:", e);
-        return [];
+        return [0,[]];
     }
 }
 

@@ -276,7 +276,7 @@ export async function getUsers(){
     return snapshot.exists() ? snapshot.data() : {}
 }
 
-export async function  updateUsers(){
+export async function  updateUsers(newData){
     await setDoc(getUsersDocRef(), newData, {merge: true})
 }
 

@@ -41,7 +41,7 @@ export default function UserEditModal() {
     };
 
     const handleSubmit = async () => {
-        const newData = {
+        const updatedData = {
             ...users,
             [selectedUser]: {
                 scull: Number(formData.scull),
@@ -52,15 +52,16 @@ export default function UserEditModal() {
             },
         };
 
-        setUsers(newData);
+
+        setUsers(updatedData);
         try {
-            await updateUsers(newData);
+            await updateUsers(updatedData); // pass the updatedData instead of undefined
             closeModal();
+            setSelectedUser('')
         } catch (err) {
             console.error("Update failed", err);
         }
     };
-
     return (
         <div>
             <button onClick={() => setIsOpen(true)} className="btn" >

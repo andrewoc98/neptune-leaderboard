@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 
 function ThreeWaySwitch({ onChange }) {
-    const [selected, setSelected] = useState('Total');
-    const options = ['Total', 'Month', 'Week'];
+    const [selected, setSelected] = useState('Season');
+    const options = ['Season', 'Month', 'Week'];
 
     const handleSelect = (option) => {
         setSelected(option);

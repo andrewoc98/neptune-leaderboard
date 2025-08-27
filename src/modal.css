@@ -1,36 +1,36 @@
 /* Modal Overlay */
 .modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.85);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 100;
-  backdrop-filter: blur(4px);
-    max-height: 90vh;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.85);
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;   /* align to top instead of center */
+    z-index: 100;
+    backdrop-filter: blur(4px);
+    overflow-y: auto;          /* allow scrolling when modal is taller than viewport */
+    padding: 2rem 1rem;        /* creates breathing room at top & bottom */
 }
 
 /* Modal Content */
 .modal-content {
-  background: #1e293b;
-  border-radius: 16px;
-  padding: 2rem 1.5rem;
-  width: 90%;
-  max-width: 500px;
-  box-shadow: 0 12px 24px rgba(0,0,0,0.6);
-  color: #f8f9fa;
-  animation: fadeIn 0.25s ease;
-    max-height: 80vh; /* prevent it from overflowing screen */
+    background: #1e293b;
+    border-radius: 16px;
+    padding: 2rem 1.5rem;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 12px 24px rgba(0,0,0,0.6);
+    color: #f8f9fa;
+    animation: fadeIn 0.25s ease;
+    max-height: calc(100vh - 4rem); /* safe space for mobile bottom UI */
     display: flex;
     flex-direction: column;
 }
 
 /* Title */
 .modal-title {
-  font-size: 1.75rem;
+  font-size: 1.5rem;
   font-weight: 700;
-  margin-bottom: 1.5rem;
   text-align: center;
   color: #4ade80;
 }
@@ -95,9 +95,7 @@
 /* Modal Footer */
 .modal-footer {
   display: flex;
-  justify-content: flex-end;
   gap: 0.75rem;
-  margin-top: 1.5rem;
 }
 
 .modal-button {

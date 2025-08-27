@@ -18,11 +18,11 @@ export default function LeaderboardApp({ setOpenModal }) {
   const [selectedNames, setSelectedNames] = useState([])
     const [points, setPoints] = useState({})
     const [gmp, setGmp] = useState(0)
-  const [activeTab, setActiveTab] = useState("erg");
+  const [activeTab, setActiveTab] = useState("sessions");
   const [hoveredName, setHoveredName] = useState(null);
   const [ergSortKey, setErgSortKey] = useState("adjustedSplit");
   const [waterSortKey, setWaterSortKey] = useState("goldPercentage");
-  const [timeScale, setTimeScale] = useState("total");
+  const [timeScale, setTimeScale] = useState("season");
   const [data, setData] = useState([])
   const [leaderboardHistory, setLeaderboardHistory] = useState([])
   const [flash, setFlash] = useState(false);
@@ -305,9 +305,9 @@ const getRankingsOverTime = (history, type, key) => {
 
       {/* Tabs */}
       <div className="tabs">
+        <button className={`tab-button ${activeTab === "sessions" ? "active" : ""}`} onClick={() => setActiveTab("sessions")}>Sessions</button>
         <button className={`tab-button ${activeTab === "erg" ? "active" : ""}`} onClick={() => setActiveTab("erg")}>Erg Scores</button>
         <button className={`tab-button ${activeTab === "water" ? "active" : ""}`} onClick={() => setActiveTab("water")}>On the Water</button>
-        <button className={`tab-button ${activeTab === "sessions" ? "active" : ""}`} onClick={() => setActiveTab("sessions")}>Sessions</button>
       </div>
 
       {/* Erg Table */}
@@ -513,7 +513,7 @@ const getRankingsOverTime = (history, type, key) => {
                         <td>{weightsPercent}</td>
                         <td>{totalDistance.toLocaleString('en-US')}</td>
                         <td>
-                          {timeScale === 'total' ? (
+                          {timeScale === 'season' ? (
                             getRankIcon(totalDistance)
                           ) : changePerRower[rower.name] != null && changePerRower[rower.name] !== 0 ? (
                             <>

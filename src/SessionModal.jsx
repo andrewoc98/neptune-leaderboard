@@ -71,7 +71,7 @@ export default function SessionModal({ isOpen, onClose, onSubmit }) {
                 <div className="modal-overlay">
                     <div className="modal-content">
                         <h2 className="modal-title">New Session</h2>
-
+                        <div className="modal-body">
                         {/* Name Dropdown */}
                         <div className="modal-field">
                             <label className="modal-label">Name</label>
@@ -172,6 +172,7 @@ export default function SessionModal({ isOpen, onClose, onSubmit }) {
                             <button onClick={onClose} className="modal-button cancel">Cancel</button>
                             <button onClick={handleSubmit} className="modal-button submit">Submit</button>
                         </div>
+                    </div>
                     </div>
                 </div>)}
         </>

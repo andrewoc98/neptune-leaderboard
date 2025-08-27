@@ -45,10 +45,7 @@ export default function Admin() {
   return (
     <div style={{ padding: "2rem", color: 'white', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2rem' }}>
       
-      {/* Submission Table */}
-      <div style={{ width: '80%', maxWidth: '1200px', }}>
-        <SubmissionTable />
-      </div>
+
 
       {/* Action Buttons */}
       <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '1rem' }}>
@@ -59,7 +56,10 @@ export default function Admin() {
         <MultiplierModal/>
         <UserEditModal/>
       </div>
-
+        {/* Submission Table */}
+        <div style={{ width: '80%', maxWidth: '1200px', }}>
+            <SubmissionTable />
+        </div>
       {/* Admin Session Table */}
       <div style={{ width: '90%', maxWidth: '1200px' }}>
         <AdminSessionTable />

@@ -110,6 +110,7 @@ export default function LeaderboardApp({ setOpenModal }) {
               console.log("Error fetching users: ", e)
           }
       }
+      //TODO: MAKE into one call
     const fetchErgWorkouts = async () => {
       try {
         const workouts = await getErgWorkouts()
@@ -143,7 +144,7 @@ export default function LeaderboardApp({ setOpenModal }) {
   }, [])
 
   useEffect(() => {
-
+// TODO:Change to have on initial call with a listener
     const fetchData = async () => {
       try {
         const stats = await getSessionStats(timeScale);
@@ -556,6 +557,7 @@ const getRankingsOverTime = (history, type, key) => {
             <p><b>Sculling Points: </b> {points[hoveredName].scull}</p>
             <p><b>Sweep Points: </b> {points[hoveredName].sweep.points}</p>
               <p><b>Sweep Side: </b> {points[hoveredName].sweep.side}</p>
+              <p><b>Available for Champs: </b> {points[hoveredName].champs.toString()}</p>
             <Line
               data={{
                 labels: rankHistory.dates,

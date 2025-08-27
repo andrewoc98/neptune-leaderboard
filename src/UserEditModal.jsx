@@ -9,7 +9,7 @@ export default function UserEditModal() {
     const [isOpen, setIsOpen] = useState(false);
     const [users, setUsers] = useState({});
     const [selectedUser, setSelectedUser] = useState("");
-    const [formData, setFormData] = useState({ scull: "", sweepSide: "", sweepPoints: "" });
+    const [formData, setFormData] = useState({ scull: "", sweepSide: "", sweepPoints: "", champs:true});
     const [isAdding, setIsAdding] = useState(false);
     const [newUserName, setNewUserName] = useState("");
 
@@ -32,13 +32,14 @@ export default function UserEditModal() {
             scull: user.scull,
             sweepSide: user.sweep.side,
             sweepPoints: user.sweep.points,
+            champs:user.champs
         });
     };
 
     const openAddUser = () => {
         setIsAdding(true);
         setSelectedUser("");
-        setFormData({ scull: 0, sweepSide: "Bow", sweepPoints: 0 });
+        setFormData({ scull: 0, sweepSide: "Bow", sweepPoints: 0, champs: true });
         setNewUserName("");
     };
 
@@ -50,6 +51,7 @@ export default function UserEditModal() {
     };
 
     const handleChange = (e) => {
+
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
@@ -65,6 +67,7 @@ export default function UserEditModal() {
                         side: formData.sweepSide,
                         points: Number(formData.sweepPoints),
                     },
+                    champs: true
                 },
             };
         } else if (selectedUser) {
@@ -76,6 +79,7 @@ export default function UserEditModal() {
                         side: formData.sweepSide,
                         points: Number(formData.sweepPoints),
                     },
+                    champs: formData.champs
                 },
             };
         } else {
@@ -191,6 +195,17 @@ export default function UserEditModal() {
                                             onChange={handleChange}
                                             className="modal-input"
                                         />
+                                    </div>
+
+                                    <div className="modal-field checkbox-field">
+                                        <label className="checkbox-label">
+                                            <input
+                                                type="checkbox"
+                                                checked={formData.champs}
+                                                onChange={handleChange}
+                                            />
+                                            Available for Champs
+                                        </label>
                                     </div>
                                 </div>
 

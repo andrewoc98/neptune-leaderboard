@@ -332,7 +332,7 @@ export function selectIndividuals(data, users, numIndividuals, maxAveragePoints,
         const merged = waterData.map(d => {
             const user = users[d.name];
             if (!user) return null;
-
+            if(user.champs){
             if (type === "scull") {
                 if (user.scull === undefined) return null;
                 return {
@@ -348,7 +348,7 @@ export function selectIndividuals(data, users, numIndividuals, maxAveragePoints,
                     points: user.sweep.points,
                     side: user.sweep.side // Bow, Stroke, or Both
                 };
-            }
+            }}
 
             return null;
         }).filter(Boolean);

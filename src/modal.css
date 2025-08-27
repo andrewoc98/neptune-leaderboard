@@ -8,6 +8,7 @@
   align-items: center;
   z-index: 100;
   backdrop-filter: blur(4px);
+    max-height: 90vh;
 }
 
 /* Modal Content */
@@ -20,7 +21,7 @@
   box-shadow: 0 12px 24px rgba(0,0,0,0.6);
   color: #f8f9fa;
   animation: fadeIn 0.25s ease;
-    max-height: 90vh; /* prevent it from overflowing screen */
+    max-height: 80vh; /* prevent it from overflowing screen */
     display: flex;
     flex-direction: column;
 }

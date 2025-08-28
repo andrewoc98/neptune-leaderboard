@@ -66,24 +66,8 @@ export const rowerSession = async (entry) => {
     }
 };
 
-export const loadLeaderboardHistory = async () => {
-    const result = [];
-    const snapshot = await getDocs(collection(database, "leaderboardHistory"));
-
-    snapshot.forEach(doc => {
-        result.push({
-            id: doc.id,
-            ...doc.data()
-        });
-
-    });
-
-    return result[0].entries
-
-}
-
 export async function saveLeaderBoardtoDB(newEntry) {
-    const ref = doc(database, "leaderboardHistory", '7ybV6j8crv0G67snO4Io');
+    const ref = doc(database, "page-data", 'leaderboards');
     const snap = await getDoc(ref);
     console.log(newEntry)
     if (!snap.exists()) throw new Error("Document not found");
@@ -109,88 +93,59 @@ export async function saveLeaderBoardtoDB(newEntry) {
     await updateDoc(ref, { entries });
 }
 
-
-export async function getErgWorkouts() {
-    const ref = doc(database, "workouts", 'lIjuoJIC0awyIGLqQtYx');
-    const snap = await getDoc(ref);
-
-    if (!snap.exists()) throw new Error("Document not found");
-
+export function getWorkouts(workout) {
     const today = new Date();
-    const { year: currentYear, week: currentWeek } = getISOWeek(today);
-    const currentWeekStr = `${currentYear}-W${String(currentWeek).padStart(2, '0')}`
 
-    const nextWeekDate = new Date(today);
-    nextWeekDate.setDate(today.getDate() + 7);
-    const { year: nextYear, week: nextWeek } = getISOWeek(nextWeekDate);
-    const nextWeekStr = `${nextYear}-W${String(nextWeek).padStart(2, '0')}`
-    let results = {}
-    snap.data().workouts.forEach((entry) => {
-        if (entry.date === currentWeekStr) {
-            results.currentWeek = entry.text
-        } else if (entry.date === nextWeekStr) {
-            results.nextWeek = entry.text
-        }
-    })
-    if (!results.currentWeek) {
-        results.currentWeek = 'TBD'
-    }
-    if (!results.nextWeek) {
-        results.nextWeek = 'TBD'
-    }
-    return results
-
-}
-
-export async function getWaterWorkouts() {
-    const ref = doc(database, "workouts", 'R1e1kBGvqEGyKRVYtbrn');
-    const snap = await getDoc(ref);
-
-    if (!snap.exists()) throw new Error("Document not found");
-
-    const today = new Date();
-    const { year: currentYear, week: currentWeek } = getISOWeek(today);
-    const currentWeekStr = `${currentYear}-W${String(currentWeek).padStart(2, '0')}`
-
-    const nextWeekDate = new Date(today);
-    nextWeekDate.setDate(today.getDate() + 7);
-    const { year: nextYear, week: nextWeek } = getISOWeek(nextWeekDate);
-    const nextWeekStr = `${nextYear}-W${String(nextWeek).padStart(2, '0')}`
-    let results = {}
-    snap.data().workouts.forEach((entry) => {
-        if (entry.date === currentWeekStr) {
-            results.currentWeek = entry.text
-        } else if (entry.date === nextWeekStr) {
-            results.nextWeek = entry.text
-        }
-    })
-    if (!results.currentWeek) {
-        results.currentWeek = 'TBD'
-    }
-    if (!results.nextWeek) {
-        results.nextWeek = 'TBD'
+    // helper to get ISO week string
+    function getISOWeekString(date) {
+        const tmp = new Date(date.getTime());
+        // Thursday in current week decides the year
+        tmp.setDate(tmp.getDate() + 4 - (tmp.getDay() || 7));
+        const yearStart = new Date(tmp.getFullYear(), 0, 1);
+        const week = Math.ceil((((tmp - yearStart) / 86400000) + 1) / 7);
+        return `${tmp.getFullYear()}-W${String(week).padStart(2, "0")}`;
     }
 
-    return results
+    const currentWeekStr = getISOWeekString(today);
+    const nextWeekStr = getISOWeekString(new Date(today.setDate(today.getDate() + 7)));
 
+    // helper for both erg & water
+    function extractWorkouts(entries) {
+        let res = {};
+        entries.forEach((entry) => {
+            if (entry.week === currentWeekStr) {
+                res.currentWeek = entry.workout;
+            } else if (entry.week === nextWeekStr) {
+                res.nextWeek = entry.workout;
+            }
+        });
+        if (!res.currentWeek) res.currentWeek = "TBD";
+        if (!res.nextWeek) res.nextWeek = "TBD";
+        return res;
+    }
+    const output = {
+        water: extractWorkouts(workout.water),
+        erg: extractWorkouts(workout.erg),
+    }
+    console.log(output)
+    return output;
 }
 
 export async function updateOrAppendWorkout(newEntry) {
     let refId = ''
-    let workout = {}
+
     if (newEntry.type === 'Erg') {
-        refId = 'lIjuoJIC0awyIGLqQtYx'
+        refId = 'erg'
     } else if (newEntry.type === 'Water') {
-        refId = 'R1e1kBGvqEGyKRVYtbrn'
+        refId = 'water'
     } else {
         console.error("Error in submitting workout");
         return
     }
-    const ref = doc(database, "workouts", refId);
+    const ref = doc(database, "page-data", 'workouts');
 
     try {
         const snapshot = await getDoc(ref);
-        console.log(snapshot)
         if (!snapshot.exists()) {
             // If document doesn't exist, create it with initial array
             await updateDoc(ref, { entries: [newEntry] });
@@ -198,7 +153,7 @@ export async function updateOrAppendWorkout(newEntry) {
         }
 
         const data = snapshot.data();
-        const entries = data.entries || [];
+        const entries = data[refId] || [];
 
         // Check if an entry with the same date exists
         const index = entries.findIndex(entry => entry.date === newEntry.date);
@@ -206,10 +161,10 @@ export async function updateOrAppendWorkout(newEntry) {
         if (index !== -1) {
             // Update the existing entry
             entries[index] = newEntry;
-            await updateDoc(ref, { entries });
+            await updateDoc(ref, {[refId]:{ entries }});
         } else {
             // Append the new entry
-            await updateDoc(ref, { workouts: arrayUnion(newEntry) });
+            await updateDoc(ref, { [refId]: arrayUnion(newEntry) });
         }
 
         console.log("Workout updated successfully!");
@@ -220,7 +175,7 @@ export async function updateOrAppendWorkout(newEntry) {
 
 export async function addQuote(newQuote) {
   try {
-    const ref = doc(database, "quotes", "hHwBYh833CPbxMBvwdZt");
+    const ref = doc(database, "page-data", "quotes");
 
     // Add the new quote to the 'quotes' array
     await updateDoc(ref, {
@@ -233,24 +188,6 @@ export async function addQuote(newQuote) {
   }
 }
 
-export async function getQuote() {
-  try {
-    const ref = doc(database, "quotes", "hHwBYh833CPbxMBvwdZt");
-    const snap = await getDoc(ref);
-
-    if (!snap.exists()) {
-      console.warn("No such document!");
-      return [];
-    }
-
-    const quotes = snap.data().quotes || [];
-    // Only return quotes where approved === true
-    return quotes.filter(q => q.approved === true);
-  } catch (error) {
-    console.error("Error fetching quotes: ", error);
-    return [];
-  }
-}
 
 function getMultipliersDocRef() {
     return doc(database, "mulipliers", "types");
@@ -268,7 +205,7 @@ export async function updateMultipliers(newData) {
 }
 
 function getUsersDocRef(){
-    return doc(database, "users","profiles")
+    return doc(database, "page-data","users")
 }
 
 export async function getUsers(){
@@ -279,5 +216,26 @@ export async function getUsers(){
 export async function  updateUsers(newData){
     await setDoc(getUsersDocRef(), newData, {merge: true})
 }
+
+
+
+/**
+ * Loads all documents from a given Firestore collection
+ * @param {string} collectionName - The name of the collection to fetch
+ * @returns {Promise<Array<Object>>} - Array of document data with IDs included
+ */
+export async function loadAllDocuments() {
+    const colRef = collection(database, "page-data");
+    const snapshot = await getDocs(colRef);
+
+    const docs = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+    }));
+    console.log(docs)
+    return docs;
+}
+
+
 
 

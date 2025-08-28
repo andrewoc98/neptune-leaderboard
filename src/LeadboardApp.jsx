@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import './App.css';
 import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
-import {getWaterWorkouts, getErgWorkouts, loadLeaderboardHistory, rowerSession, getUsers} from "./firebase";
+import {rowerSession, getWorkouts} from "./firebase";
 import {
     adjustedErgScore, goldMedalPercentage, getSessionStats, getDistanceForLastPeriod, getRankIcon,
     selectIndividuals
@@ -10,13 +10,12 @@ import {
 import ThreeWaySwitch from "./ThreeWaySwitch";
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
-export default function LeaderboardApp({ setOpenModal }) {
+export default function LeaderboardApp({workouts, users, leaderboard, setOpenModal }) {
   const [boatSelection, setBoatSelection] = useState({
       level:null,
       boat:null
   })
   const [selectedNames, setSelectedNames] = useState([])
-    const [points, setPoints] = useState({})
     const [gmp, setGmp] = useState(0)
   const [activeTab, setActiveTab] = useState("sessions");
   const [hoveredName, setHoveredName] = useState(null);
@@ -24,21 +23,21 @@ export default function LeaderboardApp({ setOpenModal }) {
   const [waterSortKey, setWaterSortKey] = useState("goldPercentage");
   const [timeScale, setTimeScale] = useState("season");
   const [data, setData] = useState([])
-  const [leaderboardHistory, setLeaderboardHistory] = useState([])
+
   const [flash, setFlash] = useState(false);
-  const [hoverTimeout, setHoverTimeout] = useState(null);
   const [changePerRower, setChangePerRower] = useState([])
   const [rankHistory, setRankHistory] = useState({ dates: [], rankMap: {} });
-  const [ergWorkouts, setErgWorkouts] = useState({
+
+  const [pieces, setPieces] = useState({erg:{
     currentWeek: 'TBD',
     nextWeek: 'TBD'
-  })
-  const [waterWorkouts, setWaterWorkouts] = useState({
-    currentWeek: 'TBD',
-    nextWeek: 'TBD'
+  },
+    water:{
+        currentWeek: 'TBD',
+            nextWeek: 'TBD'
+    }
   })
   const handleMouseEnter = (name) => {
-    if (hoverTimeout) clearTimeout(hoverTimeout);
     setHoveredName(name);
   };
 
@@ -83,65 +82,35 @@ export default function LeaderboardApp({ setOpenModal }) {
             const num = Number(firstChar);             // try to cast to number
             return isNaN(num) ? 0 : num;               // if NaN, return 0
         })();
-        const result = selectIndividuals(findLatestWithData(leaderboardHistory, "waterData") ,points ,numIndividuals, Number(boatSelection.level), type)
+        const result = selectIndividuals(findLatestWithData(leaderboard, "waterData") ,users,numIndividuals, Number(boatSelection.level), type)
       console.log(result)
         setSelectedNames(result[1])
         setGmp(result[0])
   },[boatSelection])
 
   useEffect(() => {
-    if (leaderboardHistory.length === 0) return;
-
+    if (leaderboard.length === 0) return;
     const { dates, rankMap } = getRankingsOverTime(
-      leaderboardHistory,
+      leaderboard,
       activeTab === "erg" ? "ergData" : "waterData",
       activeTab === "erg" ? ergSortKey : waterSortKey
     );
 
     setRankHistory({ dates, rankMap });
-  }, [leaderboardHistory, activeTab, ergSortKey, waterSortKey]);
+  }, [leaderboard, activeTab, ergSortKey, waterSortKey]);
 
   useEffect(() => {
-      const fetchUsers = async () => {
-          try{
-              const users = await getUsers()
-              setPoints(users)
-          } catch (e){
-              console.log("Error fetching users: ", e)
-          }
-      }
       //TODO: MAKE into one call
-    const fetchErgWorkouts = async () => {
-      try {
-        const workouts = await getErgWorkouts()
-        setErgWorkouts(workouts)
-      } catch (error) {
-        console.error("Error fetching workouts stats:", error);
-      }
+    const fetchWorkouts = async () => {
+        try {
+            const w = getWorkouts(workouts)
+            setPieces(w)
+        } catch (error) {
+            console.error("Error fetching workouts stats:", error);
+        }
     }
-
-    const fetchWaterWorkouts = async () => {
-      try {
-        const workouts = await getWaterWorkouts()
-        setWaterWorkouts(workouts)
-      } catch (error) {
-        console.error("Error fetching workouts stats:", error);
-      }
-    }
-
-    const fetchLeaderBoard = async () => {
-      try {
-        const lb = await loadLeaderboardHistory();
-        setLeaderboardHistory(lb)
-      } catch (error) {
-        console.error("Error leaderboard:", error);
-      }
-    }
-    fetchLeaderBoard();
-    fetchErgWorkouts();
-    fetchWaterWorkouts();
-    fetchUsers()
-  }, [])
+    fetchWorkouts();
+  }, [workouts])
 
   useEffect(() => {
 // TODO:Change to have on initial call with a listener
@@ -187,10 +156,10 @@ export default function LeaderboardApp({ setOpenModal }) {
     return null;
   };
 
-  const latestErg = findLatestWithData(leaderboardHistory, "ergData");
-  const latestWater = findLatestWithData(leaderboardHistory, "waterData");
-  const prevErg = latestErg ? findPrevWithData(leaderboardHistory, "ergData", latestErg) : null;
-  const prevWater = latestWater ? findPrevWithData(leaderboardHistory, "waterData", latestWater) : null;
+  const latestErg = findLatestWithData(leaderboard, "ergData");
+  const latestWater = findLatestWithData(leaderboard, "waterData");
+  const prevErg = latestErg ? findPrevWithData(leaderboard, "ergData", latestErg) : null;
+  const prevWater = latestWater ? findPrevWithData(leaderboard, "waterData", latestWater) : null;
 
   const parseTime = (timeStr) => {
     const parts = timeStr.split(":");
@@ -203,6 +172,7 @@ export default function LeaderboardApp({ setOpenModal }) {
 
 const getRankingsOverTime = (history, type, key) => {
   const nameSet = new Set();
+  console.log(history)
   history.forEach(snapshot => {
     if (snapshot[type]) {
       snapshot[type].forEach(row => nameSet.add(row.name));
@@ -316,10 +286,10 @@ const getRankingsOverTime = (history, type, key) => {
           <div className="table-section">
             <div className="table-description">
               <p style={{ textAlign: "center", marginBottom: "0.5rem", color: "white" }}>
-                <b>This Week Session:</b> {ergWorkouts.currentWeek}
+                <b>This Week Session:</b> {pieces.erg.currentWeek}
               </p>
               <p style={{ textAlign: "center", marginBottom: "1rem", color: "white" }}>
-                <b>Next Week Session:</b> {ergWorkouts.nextWeek}
+                <b>Next Week Session:</b> {pieces.erg.nextWeek}
               </p>
             </div>
             <table>
@@ -407,10 +377,10 @@ const getRankingsOverTime = (history, type, key) => {
               </div>
             <div className="table-description">
               <p style={{ textAlign: "center", marginBottom: "0.5rem", color: "white" }}>
-                <b>This Week Session:</b> {waterWorkouts.currentWeek}
+                <b>This Week Session:</b> {pieces.water.currentWeek}
               </p>
               <p style={{ textAlign: "center", marginBottom: "1rem", color: "white" }}>
-                <b>Next Week Session:</b> {waterWorkouts.nextWeek}
+                <b>Next Week Session:</b> {pieces.water.nextWeek}
               </p>
             </div>
             <table>
@@ -554,10 +524,10 @@ const getRankingsOverTime = (history, type, key) => {
               &times;
             </span>
             <h2 style={{ marginBottom: "1rem" }}>{hoveredName}'s Profile</h2>
-            <p><b>Sculling Points: </b> {points[hoveredName].scull}</p>
-            <p><b>Sweep Points: </b> {points[hoveredName].sweep.points}</p>
-              <p><b>Sweep Side: </b> {points[hoveredName].sweep.side}</p>
-              <p><b>Available for Champs: </b> {points[hoveredName].champs.toString()}</p>
+            <p><b>Sculling Points: </b> {users[hoveredName].scull}</p>
+            <p><b>Sweep Points: </b> {users[hoveredName].sweep.points}</p>
+              <p><b>Sweep Side: </b> {users[hoveredName].sweep.side}</p>
+              <p><b>Available for Champs: </b> {users[hoveredName].champs ? "Yes" : "No"}</p>
             <Line
               data={{
                 labels: rankHistory.dates,

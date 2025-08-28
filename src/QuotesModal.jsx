@@ -7,7 +7,7 @@ import { Quote } from "lucide-react";
 export default function QuotesModal() {
     const [isOpen, setIsOpen] = useState(false);
     const [quotes, setQuotes] = useState([]);
-    const ref = doc(database, "quotes", "hHwBYh833CPbxMBvwdZt");
+    const ref = doc(database, "page-data", "quotes");
 
     // Fetch quotes with approved: false when modal opens
     useEffect(() => {

@@ -201,8 +201,11 @@ export default function UserEditModal() {
                                         <label className="checkbox-label">
                                             <input
                                                 type="checkbox"
+                                                name="champs"
                                                 checked={formData.champs}
-                                                onChange={handleChange}
+                                                onChange={(e) =>
+                                                    setFormData((prev) => ({ ...prev, champs: e.target.checked }))
+                                                }
                                             />
                                             Available for Champs
                                         </label>

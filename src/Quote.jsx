@@ -1,38 +1,20 @@
 import "./quote.css"
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { getQuote } from "./firebase";
 
-const Quote = () => {
+export default function Quote ({quotes}) {
   const [index, setIndex] = useState(0);
-  const [texts, setTexts] = useState([]);
   const [direction, setDirection] = useState(1);
   const interval = 3000;
 
   useEffect(() => {
-    const fetchQuotes = async () => {
-      try {
-        const fetched = await getQuote();
-        if (Array.isArray(fetched)) {
-          setTexts(fetched);
-        } else if (fetched) {
-          setTexts([fetched]);
-        }
-      } catch (err) {
-        console.error("Error fetching quotes:", err);
-      }
-    };
-    fetchQuotes();
-  }, []);
-
-  useEffect(() => {
-    if (texts.length === 0) return;
+    if (!quotes || quotes.length === 0) return;
     const timer = setInterval(() => {
       setDirection(1);
-      setIndex((prev) => (prev + 1) % texts.length);
+      setIndex((prev) => (prev + 1) % quotes.length);
     }, interval);
     return () => clearInterval(timer);
-  }, [texts, interval]);
+  }, [quotes, interval]);
 
   const variants = {
     enter: (direction) => ({
@@ -55,7 +37,7 @@ const Quote = () => {
   return (
     <figure className="quote">
       <AnimatePresence custom={direction}>
-        {texts.length > 0 && (
+        {quotes && quotes.length > 0 && (
           <motion.blockquote
             key={index}
             custom={direction}
@@ -65,9 +47,9 @@ const Quote = () => {
             exit="exit"
             transition={{ duration: 0.5 }}
           >
-            {texts[index]?.quote}
-            {texts[index]?.author && (
-              <figcaption>— {texts[index].author}</figcaption>
+            {quotes[index]?.quote}
+            {quotes[index]?.author && (
+              <figcaption>— {quotes[index].author}</figcaption>
             )}
           </motion.blockquote>
         )}
@@ -75,5 +57,3 @@ const Quote = () => {
     </figure>
   );
 }
-
-export default Quote;

@@ -190,7 +190,7 @@ export async function addQuote(newQuote) {
 
 
 function getMultipliersDocRef() {
-    return doc(database, "mulipliers", "types");
+    return doc(database, "page-data", "multipliers");
 }
 
 // 🔹 Fetch multipliers

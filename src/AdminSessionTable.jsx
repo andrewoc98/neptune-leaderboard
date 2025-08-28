@@ -52,7 +52,6 @@ return (
           <thead
           style={{padding:"0"}}>
             <tr>
-              <th>Notes</th>
               <th>Name</th>
               <th>Date</th>
               <th>Type</th>
@@ -72,7 +71,6 @@ return (
                     backgroundColor: isToday ? "rgba(255, 255, 255, 0.1)" : "transparent"
                   }}
                 >
-                  <td>{session.notes || "N/A"}</td>
                   <td>{session.name || "N/A"}</td>
                   <td>{session.date || "N/A"}</td>
                   <td>{session.type || "N/A"}</td>

@@ -112,6 +112,7 @@ export function getWorkouts(workout) {
     // helper for both erg & water
     function extractWorkouts(entries) {
         let res = {};
+        if(entries){
         entries.forEach((entry) => {
             if (entry.week === currentWeekStr) {
                 res.currentWeek = entry.workout;
@@ -119,16 +120,16 @@ export function getWorkouts(workout) {
                 res.nextWeek = entry.workout;
             }
         });
+        }
         if (!res.currentWeek) res.currentWeek = "TBD";
         if (!res.nextWeek) res.nextWeek = "TBD";
         return res;
     }
-    const output = {
+    return {
         water: extractWorkouts(workout.water),
         erg: extractWorkouts(workout.erg),
     }
-    console.log(output)
-    return output;
+
 }
 
 export async function updateOrAppendWorkout(newEntry) {
@@ -228,12 +229,10 @@ export async function loadAllDocuments() {
     const colRef = collection(database, "page-data");
     const snapshot = await getDocs(colRef);
 
-    const docs = snapshot.docs.map(doc => ({
+   return snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
     }));
-    console.log(docs)
-    return docs;
 }
 
 

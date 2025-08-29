@@ -115,7 +115,7 @@ function getWeekStart(date) {
     return start;
 }
 
-async function getAllSessionHistory() {
+export async function getAllSessionHistory() {
     const result = [];
     const snapshot = await getDocs(collection(database, "sessionHistory"));
 
@@ -136,11 +136,9 @@ export function formatDate(date) {
 }
 
 
-export async function getSessionStats(period) {
-    const distanceMultiplier = await getDistanceMultiplier()
+export function getSessionStats(period, distanceMultiplier, allSessions) {
     const today = new Date();
     let startDate;
-
     if (period === "month") {
         startDate = getMonthStart(today);
     } else if (period === "week") {
@@ -150,7 +148,7 @@ export async function getSessionStats(period) {
     }
 
     const stats = {};
-    const allSessions = await getAllSessionHistory();
+
 
     allSessions.forEach(entry => {
         if (entry.approved) {
@@ -188,7 +186,7 @@ export async function getSessionStats(period) {
     return output
 }
 
-export async function getDistanceForLastPeriod(period) {
+export function getDistanceForLastPeriod(period, allSessions) {
     const today = new Date();
 
     const getLastMonthStart = (date) => new Date(date.getFullYear(), date.getMonth() - 1, 1);
@@ -216,7 +214,6 @@ export async function getDistanceForLastPeriod(period) {
     }
 
     const distanceMap = {};
-    const allSessions = await getAllSessionHistory();
 
     allSessions.forEach(entry => {
         const entryDate = parseDate(entry.date);
@@ -321,7 +318,7 @@ export function sortByDate(data) {
 }
 
 export function selectIndividuals(data, users, numIndividuals, maxAveragePoints, type) {
-    if(!maxAveragePoints){
+    if(!maxAveragePoints || !data){
         return [0,[]]
     }
     try {

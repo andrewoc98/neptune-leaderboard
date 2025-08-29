@@ -6,6 +6,7 @@ import LeaderboardApp from "./LeadboardApp";
 import Rules from "./Rules";
 import QuoteModal from "./QuoteModal";
 import {loadAllDocuments} from "./firebase";
+import {getAllSessionHistory} from "./Util"
 
 export default function User() {
 
@@ -14,17 +15,21 @@ export default function User() {
   const [quotes, setQuotes] = useState([])
   const [users, setUsers] = useState({})
   const [workouts, setWorkouts] = useState([])
+  const [multipliers, setMultipliers] = useState({})
+  const [sessions, setSessions] = useState([])
 
     useEffect(() => {
         const fetchLazyData = async () => {
             try {
                 const lazyData = await loadAllDocuments();
+                const allSessions = await getAllSessionHistory();
                 setLeaderboard(lazyData[0].entries)
+                setMultipliers(lazyData[1])
                 setQuotes(lazyData[2].quotes)
                 setUsers(lazyData[3])
                 setWorkouts({erg:lazyData[4].erg, water:lazyData[4].water})
-                console.log(lazyData)
-                console.log(workouts)
+                setSessions(allSessions)
+
             } catch (e) {
                 console.log("Failed to load page documents", e)
             }
@@ -45,7 +50,7 @@ export default function User() {
 
   return (
     <>
-      <LeaderboardApp workouts = {workouts} users={users} leaderboard ={leaderboard} setOpenModal={setOpenModal} />
+      <LeaderboardApp sessions={sessions} multipliers={multipliers} workouts = {workouts} users={users} leaderboard ={leaderboard} setOpenModal={setOpenModal} />
       <Quote quotes={quotes}/>
       <div className="about-stripe">
         <Rules />

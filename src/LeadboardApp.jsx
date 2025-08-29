@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import './App.css';
 import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
-import {rowerSession, getWorkouts} from "./firebase";
+import {getWorkouts} from "./firebase";
 import {
     adjustedErgScore, goldMedalPercentage, getSessionStats, getDistanceForLastPeriod, getRankIcon,
     selectIndividuals
@@ -10,7 +10,7 @@ import {
 import ThreeWaySwitch from "./ThreeWaySwitch";
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
-export default function LeaderboardApp({workouts, users, leaderboard, setOpenModal }) {
+export default function LeaderboardApp({sessions, multipliers, workouts, users, leaderboard, setOpenModal }) {
   const [boatSelection, setBoatSelection] = useState({
       level:null,
       boat:null
@@ -44,16 +44,11 @@ export default function LeaderboardApp({workouts, users, leaderboard, setOpenMod
   const handleClick = () => {
     setFlash(true);
     handleOpen();
-    onSubmitSession?.();
     setTimeout(() => setFlash(false), 300); // Remove flash after transition
   };
 
   const handleOpen = () => {
     setOpenModal(true)
-  }
-
-  const onSubmitSession = (entry) => {
-    rowerSession(entry)
   }
 
     const handleLevelChange = (e) => {
@@ -83,7 +78,6 @@ export default function LeaderboardApp({workouts, users, leaderboard, setOpenMod
             return isNaN(num) ? 0 : num;               // if NaN, return 0
         })();
         const result = selectIndividuals(findLatestWithData(leaderboard, "waterData") ,users,numIndividuals, Number(boatSelection.level), type)
-      console.log(result)
         setSelectedNames(result[1])
         setGmp(result[0])
   },[boatSelection])
@@ -100,8 +94,7 @@ export default function LeaderboardApp({workouts, users, leaderboard, setOpenMod
   }, [leaderboard, activeTab, ergSortKey, waterSortKey]);
 
   useEffect(() => {
-      //TODO: MAKE into one call
-    const fetchWorkouts = async () => {
+    const fetchWorkouts = () => {
         try {
             const w = getWorkouts(workouts)
             setPieces(w)
@@ -113,10 +106,9 @@ export default function LeaderboardApp({workouts, users, leaderboard, setOpenMod
   }, [workouts])
 
   useEffect(() => {
-// TODO:Change to have on initial call with a listener
     const fetchData = async () => {
       try {
-        const stats = await getSessionStats(timeScale);
+        const stats = getSessionStats(timeScale, multipliers, sessions);
         setData(stats);
       } catch (error) {
         console.error("Error fetching session stats:", error);
@@ -125,7 +117,7 @@ export default function LeaderboardApp({workouts, users, leaderboard, setOpenMod
 
     const fetchChange = async () => {
       try {
-        const change = await getDistanceForLastPeriod(timeScale)
+        const change = getDistanceForLastPeriod(timeScale, sessions)
         setChangePerRower(change);
       } catch (error) {
         console.error("Error fetching change:", error);
@@ -134,7 +126,7 @@ export default function LeaderboardApp({workouts, users, leaderboard, setOpenMod
 
     fetchData();
     fetchChange();
-  }, [timeScale]);
+  }, [timeScale, multipliers, sessions]);
 
   const findLatestWithData = (history, type) => {
     for (let i = history.length - 1; i >= 0; i--) {
@@ -281,7 +273,7 @@ const getRankingsOverTime = (history, type, key) => {
       </div>
 
       {/* Erg Table */}
-      {activeTab === "erg" && latestErg && (
+      {activeTab === "erg" && (
         <div className="table-container" style={{ width: "90%" }}>
           <div className="table-section">
             <div className="table-description">
@@ -293,7 +285,6 @@ const getRankingsOverTime = (history, type, key) => {
               </p>
             </div>
             <table>
-              <table>
                 <thead>
                   <tr>
                     <th>Rank</th>
@@ -335,14 +326,12 @@ const getRankingsOverTime = (history, type, key) => {
                   ))}
                 </tbody>
               </table>
-
-            </table>
           </div>
         </div>
       )}
 
       {/* Water Table */}
-      {activeTab === "water" && latestWater && (
+      {activeTab === "water" && (
         <div className="table-container" style={{ width: "90%" }}>{/*TODO align to the left on mobile*/}
           <div className="table-section">
               <div className='table-description'>
@@ -384,7 +373,6 @@ const getRankingsOverTime = (history, type, key) => {
               </p>
             </div>
             <table>
-              <table>
                 <thead>
                   <tr>
                     <th>Rank</th>
@@ -432,8 +420,6 @@ const getRankingsOverTime = (history, type, key) => {
                   ))}
                   </tbody>
               </table>
-
-            </table>
           </div>
         </div>
       )}
@@ -454,7 +440,6 @@ const getRankingsOverTime = (history, type, key) => {
               </div>
             </div>
             <table>
-              <table>
                 <thead>
                   <tr>
                     <th>Rank</th>
@@ -505,8 +490,6 @@ const getRankingsOverTime = (history, type, key) => {
                     );
                   })}
                 </tbody>
-              </table>
-
             </table>
           </div>
         </div>

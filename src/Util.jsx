@@ -225,9 +225,6 @@ export function getDistanceForLastPeriod(period, allSessions) {
             distanceMap[name] += Number(distance);
         }
     });
-
-
-
     return distanceMap;
 }
 

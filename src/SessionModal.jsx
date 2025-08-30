@@ -61,6 +61,17 @@ export default function SessionModal({ isOpen, onClose, onSubmit }) {
         toast.success("Your Session has been submitted for review", {
             toastId: "session-submit"
         });
+        setFormData({
+            name: '',
+                distance: '',
+            weights: false,
+            intense: false,
+            notes: '',
+            type: 'Erg',
+            date: verifydate(new Date().toLocaleDateString()),
+            split: ''
+
+        })
         onClose();
     };
 

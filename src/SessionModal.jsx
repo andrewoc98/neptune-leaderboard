@@ -144,7 +144,7 @@ export default function SessionModal({ isOpen, onClose, onSubmit }) {
                                 <input
                                     type="checkbox"
                                     checked={formData.weights}
-                                    onChange={(e) => setFormData({ ...formData, weights: e.target.checked })}
+                                    onChange={(e) => setFormData({ ...formData, type:"Other", weights: e.target.checked })}
                                 />
                                 Weights session
                             </label>

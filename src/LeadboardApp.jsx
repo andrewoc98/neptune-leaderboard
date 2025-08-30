@@ -449,7 +449,7 @@ const getRankingsOverTime = (history, type, key) => {
                     <th>Weights %</th>
                     <th>Distance (m)</th>
                     <th className="end-tab">
-                      {timeScale === "total" ? "Level" : "Change"}
+                      {timeScale === "season" ? "Level" : "Change"}
                     </th>
                   </tr>
                 </thead>

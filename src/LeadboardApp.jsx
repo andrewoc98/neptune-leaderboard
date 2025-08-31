@@ -27,6 +27,7 @@ export default function LeaderboardApp({sessions, multipliers, workouts, users, 
   const [flash, setFlash] = useState(false);
   const [changePerRower, setChangePerRower] = useState([])
   const [rankHistory, setRankHistory] = useState({ dates: [], rankMap: {} });
+    const [compareNames, setCompareNames] = useState([]);
 
   const [pieces, setPieces] = useState({erg:{
     currentWeek: 'TBD',
@@ -260,8 +261,41 @@ const getRankingsOverTime = (history, type, key) => {
     return diff === 0 ? "-" : diff > 0 ? `↑ ${diff}` : `↓ ${-diff}`;
   };
 
+    const getDistanceHistory = (name) => {
+        const history = {};
 
-  return (
+        sessions.forEach(s => {
+            if (!s.name || !s.date || s.distance == null) return;
+            if (s.name === name) {
+                const [day, month, year] = s.date.split("/").map(Number);
+                const d = new Date(year, month - 1, day);
+                const dayKey = d.toISOString().split("T")[0];
+
+                const distanceNum = Number(s.distance); // convert to number
+                if (!isNaN(distanceNum)) {
+                    history[dayKey] = (history[dayKey] || 0) + distanceNum;
+                }
+            }
+        });
+
+        // sort the dates
+        const dates = Object.keys(history).sort((a, b) => new Date(a) - new Date(b));
+        const rawDistances = dates.map(d => history[d]);
+
+        // compute cumulative distances
+        const cumulativeDistances = rawDistances.reduce((acc, cur, i) => {
+            acc.push(cur + (i > 0 ? acc[i - 1] : 0));
+            return acc;
+        }, []);
+
+        return { dates, distances: cumulativeDistances };
+    };
+
+
+
+
+
+    return (
     <div className="container">
       <h1 className="title">Neptune Boat Club Leaderboard</h1>
 
@@ -460,7 +494,10 @@ const getRankingsOverTime = (history, type, key) => {
                     const intensityPercent = totalSessions > 0 ? ((intensityCount / totalSessions) * 100).toFixed(1) + "%" : "-";
                     const weightsPercent = totalSessions > 0 ? ((weightsCount / totalSessions) * 100).toFixed(1) + "%" : "-";
                     return (
-                      <tr key={rower.name}>
+                        <tr
+                            key={rower.name}
+                            onClick={() => setHoveredName(rower.name)} // open modal
+                        >
                         <td>{index + 1}</td>
                         <td>{rower.name}</td>
                         <td>{steadyPercent}</td>
@@ -496,57 +533,145 @@ const getRankingsOverTime = (history, type, key) => {
       )}
 
       {/* Modal with Chart */}
-      {hoveredName && (
-        <div className="modal">
-          <div className="modal-content">
-            <span
-              className="close-button"
-              style={{ color: "white" }}
-              onClick={() => setHoveredName(null)}
-            >
-              &times;
-            </span>
-            <h2 style={{ marginBottom: "1rem" }}>{hoveredName}'s Profile</h2>
-            <p><b>Sculling Points: </b> {users[hoveredName].scull}</p>
-            <p><b>Sweep Points: </b> {users[hoveredName].sweep.points}</p>
-              <p><b>Sweep Side: </b> {users[hoveredName].sweep.side}</p>
-              <p><b>Available for Champs: </b> {users[hoveredName].champs ? "Yes" : "No"}</p>
-            <Line
-              data={{
-                labels: rankHistory.dates,
-                datasets: [
-                  {
-                    label: "Rank",
-                    data: rankHistory.rankMap[hoveredName],
-                    borderColor: "#3b82f6",
-                    backgroundColor: "#60a5fa",
-                    spanGaps: true,
-                  },
-                ],
-              }}
-              height={"300%"} // set fixed height
-              options={{
-                responsive: true,
-                maintainAspectRatio: true,
-                scales: {
+        {/* Modal with Chart */}
+        {hoveredName && (
+            <div className="modal">
+                <div className="modal-content">
+      <span
+          className="close-button"
+          style={{ color: "white" }}
+          onClick={() => {
+              setHoveredName(null);
+              setCompareNames([]); // reset comparisons when closing
+          }}
+      >
+        &times;
+      </span>
+                    <h2 style={{ marginBottom: "1rem" }}>{hoveredName}'s Profile</h2>
 
-                  y: {
-                    min: 1,
-                    reverse: true,
-                    ticks: { stepSize: 1, precision: 0 ,color:"white" },
-                    grace: "20%",
-                  },
-                    x:{
-                      ticks:{
-                          color:"white"
-                      }
-                    }
-                },
-              }}
-            />
-          </div>
-        </div>
-      )}
+                    {/* Athlete info */}
+                    <p><b>Sculling Points: </b> {users[hoveredName].scull}</p>
+                    <p><b>Sweep Points: </b> {users[hoveredName].sweep.points}</p>
+                    <p><b>Sweep Side: </b> {users[hoveredName].sweep.side}</p>
+                    <p><b>Available for Champs: </b> {users[hoveredName].champs ? "Yes" : "No"}</p>
+                    <div style={{ marginBottom: "1rem" }}>
+                        <label style={{ color: "white" }}>Compare with: </label>
+                        <select
+                            className="modal-select"
+                            onChange={(e) => {
+                                const name = e.target.value;
+                                if (name && !compareNames.includes(name)) {
+                                    setCompareNames([...compareNames, name]);
+                                }
+                                e.target.value = ""; // reset select
+                            }}
+                        >
+                            <option value="">Select rower</option>
+                            {data
+                                .map(r => r.name)
+                                .filter(n => n !== hoveredName && !compareNames.includes(n))
+                                .map(n => (
+                                    <option key={n} value={n}>{n}</option>
+                                ))}
+                        </select>
+
+                        {/* Selected names displayed as chips */}
+                        <div className="selected-names">
+                            {compareNames.map(n => (
+                                <div key={n} className="chip">
+                                    {n}
+                                    <button
+                                        className="remove-chip"
+                                        onClick={() => setCompareNames(compareNames.filter(c => c !== n))}
+                                    >
+                                        &times;
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Chart */}
+                    {activeTab === "sessions" ? (
+                        (() => {
+                            const baseHistory = getDistanceHistory(hoveredName);
+                            const compareHistories = compareNames.map(name => ({
+                                name,
+                                ...getDistanceHistory(name)
+                            }));
+
+                            const allDates = [...new Set([
+                                ...baseHistory.dates,
+                                ...compareHistories.flatMap(h => h.dates),
+                            ])].sort();
+
+                            const datasets = [
+                                {
+                                    label: hoveredName,
+                                    data: allDates.map(d => baseHistory.distances[baseHistory.dates.indexOf(d)] ?? null),
+                                    borderColor: "#3b82f6",
+                                    backgroundColor: "#60a5fa",
+                                    spanGaps: true,
+                                },
+                                ...compareHistories.map((h, idx) => ({
+                                    label: h.name,
+                                    data: allDates.map(d => h.distances[h.dates.indexOf(d)] ?? null),
+                                    borderColor: `hsl(${(idx * 60) % 360}, 70%, 50%)`,
+                                    spanGaps: true,
+                                }))
+                            ];
+
+                            return (
+                                <Line
+                                    data={{ labels: allDates, datasets }}
+                                    height={300}
+                                    options={{
+                                        responsive: true,
+                                        maintainAspectRatio: true,
+                                        scales: {
+                                            y: {
+                                                ticks: { color: "white" },
+                                                title: { display: true, text: "Distance (m)", color: "white" },
+                                            },
+                                            x: { ticks: { color: "white" } },
+                                        },
+                                    }}
+                                />
+                            );
+                        })()
+                    ) : (
+                        <Line
+                            data={{
+                                labels: rankHistory.dates,
+                                datasets: [
+                                    {
+                                        label: "Rank",
+                                        data: rankHistory.rankMap[hoveredName],
+                                        borderColor: "#3b82f6",
+                                        backgroundColor: "#60a5fa",
+                                        spanGaps: true,
+                                    },
+                                ],
+                            }}
+                            height={"300%"}
+                            options={{
+                                responsive: true,
+                                maintainAspectRatio: true,
+                                scales: {
+                                    y: {
+                                        min: 1,
+                                        reverse: true,
+                                        ticks: { stepSize: 1, precision: 0 ,color:"white" },
+                                        grace: "20%",
+                                    },
+                                    x: { ticks: { color:"white" } }
+                                },
+                            }}
+                        />
+                    )}
+                </div>
+            </div>
+        )}
     </div>
   );
 }

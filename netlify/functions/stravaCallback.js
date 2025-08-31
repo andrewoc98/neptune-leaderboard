@@ -1,22 +1,26 @@
-// netlify/functions/stravaCallback.js
-const axios = require('axios');
+import axios from "axios";
 
-exports.handler = async (event, context) => {
+export async function handler(event, context) {
     const code = event.queryStringParameters.code;
 
-    // Exchange code for access token
-    const response = await axios.post('https://www.strava.com/oauth/token', {
-        client_id: process.env.STRAVA_CLIENT_ID,
-        client_secret: process.env.STRAVA_CLIENT_SECRET,
-        code,
-        grant_type: 'authorization_code'
-    });
+    try {
+        const response = await axios.post("https://www.strava.com/oauth/token", {
+            client_id: process.env.STRAVA_CLIENT_ID,
+            client_secret: process.env.STRAVA_CLIENT_SECRET,
+            code: code,
+            grant_type: "authorization_code"
+        });
 
-    // You can redirect back to your frontend after storing the token
-    return {
-        statusCode: 302,
-        headers: {
-            Location: `/success?athlete=${response.data.athlete.id}`
-        },
-    };
-};
+        return {
+            statusCode: 200,
+            body: JSON.stringify(response.data)
+        };
+    } catch (err) {
+        console.error(err.response.data); // log Strava's error message
+        return {
+            statusCode: err.response?.status || 500,
+            body: JSON.stringify(err.response?.data || { error: err.message })
+        };
+    }
+}
+

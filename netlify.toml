@@ -9,3 +9,8 @@ NODE_VERSION = "18"  # ensures compatibility with Vite/Rollup native modules
 [dev]
 command = "npm run dev"
 port = 5173
+
+[[redirects]]
+from = "/strava/callback"
+to = "/.netlify/functions/stravaCallback"
+status = 200

@@ -3,9 +3,13 @@ import { collection, onSnapshot, updateDoc, doc, query, where } from "firebase/f
 import { database } from "./firebase"; // import from your firebase.js
 import "./App.css"
 import { sortByDate } from "./Util";
+import FilterModal from "./FilterModal";
 
 function AdminSessionTable() {
     const [data, setData] = useState([]);
+
+    const [filters, setFilters] = useState({ name: "", sortBy: "", order: "asc" });
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     const handleUnapprove = async (id) => {
 
@@ -38,10 +42,35 @@ function AdminSessionTable() {
     const today = new Date();
     const todayString = `${String(today.getDate()).padStart(2, "0")}/${String(today.getMonth() + 1).padStart(2, "0")}/${today.getFullYear()}`;
 
+    const filteredData = data
+        .filter((session) => (filters.name ? session.name === filters.name : true))
+        .sort((a, b) => {
+            let result = 0;
+            if (filters.sortBy === "distance") {
+                result = (a.distance || 0) - (b.distance || 0);
+            } else if (filters.sortBy === "date") {
+                result = new Date(a.date) - new Date(b.date);
+            }
+            return filters.order === "desc" ? -result : result;
+        });
+
 return (
     <div className="table-container" style={{ width: "90%" }}>
       <div className="table-section">
-        {/* Optional description */}
+        <FilterModal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            filters={filters}
+            onSubmit={(newFilters) => setFilters(newFilters)}
+            onReset={() => setFilters({ name: "", sortBy: "" })}/>
+
+          <button
+              className="btn"
+              style={{ margin: "0.5rem", padding: "0.3rem 0.6rem" }}
+              onClick={() => setIsModalOpen(true)}
+          >
+              Filters
+          </button>
         <div className="table-description">
           <p style={{ textAlign: "center", marginBottom: "0.5rem", color: "white" }}>
             <b>Approved Sessions:</b> {data.length}
@@ -60,32 +89,29 @@ return (
             </tr>
           </thead>
           <tbody>
-            {data.map((session) => {
-              const isToday = session.date === todayString; // check if date is today
+          {filteredData.map((session) => {
+              const isToday = session.date === todayString;
               return (
-                <tr
-                  key={session.id}
-                  className="hover-row"
-                  style={{
-                    cursor: "pointer",
-                    backgroundColor: isToday ? "rgba(255, 255, 255, 0.1)" : "transparent"
-                  }}
-                >
-                  <td>{session.name || "N/A"}</td>
-                  <td>{session.date || "N/A"}</td>
-                  <td>{session.type || "N/A"}</td>
-                  <td>{session.distance || "N/A"}</td>
-                  <td>
-                    <button
-                      className="unapprove-button"
-                      onClick={() => handleUnapprove(session.id)}
-                    >
-                      X
-                    </button>
-                  </td>
-                </tr>
+                  <tr
+                      key={session.id}
+                      className="hover-row"
+                      style={{
+                          cursor: "pointer",
+                          backgroundColor: isToday ? "rgba(255, 255, 255, 0.1)" : "transparent",
+                      }}
+                  >
+                      <td>{session.name || "N/A"}</td>
+                      <td>{session.date || "N/A"}</td>
+                      <td>{session.type || "N/A"}</td>
+                      <td>{session.distance || "N/A"}</td>
+                      <td>
+                          <button className="unapprove-button" onClick={() => handleUnapprove(session.id)}>
+                              X
+                          </button>
+                      </td>
+                  </tr>
               );
-            })}
+          })}
           </tbody>
         </table>
       </div>

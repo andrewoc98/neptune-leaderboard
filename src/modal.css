@@ -207,3 +207,39 @@ input {
   gap: 0.5rem;
   justify-content: flex-end;
 }
+
+.selected-names {
+    margin-top: 0.75rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+/* Each selected crew member */
+.chip {
+    background: #0f172a;            /* match your dark modal */
+    color: #4ade80;                 /* neon green text to match title/accents */
+    padding: 0.35rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    border: 1px solid #4ade80;      /* neon green border */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+}
+
+/* Remove (×) button */
+.remove-chip {
+    background: none;
+    border: none;
+    margin-left: 0.4rem;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    color: #9ca3af;                 /* muted gray */
+    transition: color 0.2s ease;
+}
+
+.remove-chip:hover {
+    color: #f87171;                 /* red on hover */
+}

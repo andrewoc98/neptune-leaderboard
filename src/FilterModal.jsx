@@ -3,6 +3,8 @@ import React, { useState, useEffect } from "react";
 function FilterModal({ isOpen, onClose, filters, onSubmit, onReset }) {
     const [localFilters, setLocalFilters] = useState(filters);
 
+    const workoutTypes = ['Erg', 'Water', 'Bike', 'Run', 'Other']
+
     useEffect(() => {
         if (isOpen) setLocalFilters(filters);
     }, [isOpen, filters]);
@@ -47,6 +49,23 @@ function FilterModal({ isOpen, onClose, filters, onSubmit, onReset }) {
                         </select>
                     </div>
 
+                    {/* --- Workout Type Dropdown --- */}
+                    <div className="modal-field">
+                        <label className="modal-label">Workout Type</label>
+                        <select
+                            className="modal-select"
+                            value={localFilters.type}
+                            onChange={(e) => setLocalFilters({ ...localFilters, type: e.target.value })}
+                        >
+                            <option value="">All</option>
+                            {workoutTypes.map((type) => (
+                                <option key={type} value={type}>
+                                    {type}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
                     {/* --- Sort By --- */}
                     <div className="modal-field">
                         <label className="modal-label">Sort By</label>
@@ -72,6 +91,42 @@ function FilterModal({ isOpen, onClose, filters, onSubmit, onReset }) {
                             <option value="asc">Ascending</option>
                             <option value="desc">Descending</option>
                         </select>
+                    </div>
+
+                    {/* --- Intense Checkbox --- */}
+                    <div className="modal-field">
+                        <label className="checkbox-label">
+                            <input
+                                type="checkbox"
+                                className="modal-checkbox"
+                                checked={localFilters.intense === true}
+                                onChange={(e) =>
+                                    setLocalFilters({
+                                        ...localFilters,
+                                        intense: e.target.checked ? true : "",
+                                    })
+                                }
+                            />
+                            Intense only
+                        </label>
+                    </div>
+
+                    {/* --- Weights Checkbox --- */}
+                    <div className="modal-field">
+                        <label className="checkbox-label">
+                            <input
+                                type="checkbox"
+                                className="modal-checkbox"
+                                checked={localFilters.weights === true}
+                                onChange={(e) =>
+                                    setLocalFilters({
+                                        ...localFilters,
+                                        weights: e.target.checked ? true : "",
+                                    })
+                                }
+                            />
+                            Weights only
+                        </label>
                     </div>
                 </div>
 

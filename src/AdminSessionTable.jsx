@@ -4,11 +4,19 @@ import { database } from "./firebase"; // import from your firebase.js
 import "./App.css"
 import { sortByDate } from "./Util";
 import FilterModal from "./FilterModal";
+import {ListFilter} from "lucide-react";
 
 function AdminSessionTable() {
     const [data, setData] = useState([]);
 
-    const [filters, setFilters] = useState({ name: "", sortBy: "", order: "asc" });
+    const [filters, setFilters] = useState({
+        name: "",
+        type: "",
+        sortBy: "",
+        order: "asc",
+        intense: "",
+        weights: ""
+    });
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const handleUnapprove = async (id) => {
@@ -44,6 +52,9 @@ function AdminSessionTable() {
 
     const filteredData = data
         .filter((session) => (filters.name ? session.name === filters.name : true))
+        .filter((session) => (filters.type ? session.type === filters.type : true))
+        .filter((session) => (filters.intense === true ? session.intense === true : true))
+        .filter((session) => (filters.weights === true ? session.weights === true : true))
         .sort((a, b) => {
             let result = 0;
             if (filters.sortBy === "distance") {
@@ -56,24 +67,31 @@ function AdminSessionTable() {
 
 return (
     <div className="table-container" style={{ width: "90%" }}>
-      <div className="table-section">
+      <div className="table-section" style={{ position: "relative", marginBottom: "0.5rem", color: "white" }}>
         <FilterModal
             isOpen={isModalOpen}
             onClose={() => setIsModalOpen(false)}
             filters={filters}
             onSubmit={(newFilters) => setFilters(newFilters)}
-            onReset={() => setFilters({ name: "", sortBy: "" })}/>
+            onReset={() => setFilters({
+                name: "",
+                type: "",
+                sortBy: "",
+                order: "asc",
+                intense: "",
+                weights: ""
+            })}/>
 
           <button
               className="btn"
-              style={{ margin: "0.5rem", padding: "0.3rem 0.6rem" }}
+              style={{alignItems:"left", margin: "0.5rem", padding: "0.3rem 0.6rem" }}
               onClick={() => setIsModalOpen(true)}
           >
-              Filters
+              <ListFilter />
           </button>
         <div className="table-description">
           <p style={{ textAlign: "center", marginBottom: "0.5rem", color: "white" }}>
-            <b>Approved Sessions:</b> {data.length}
+            <b>Approved Sessions:</b> {filteredData.length}
           </p>
         </div>
 

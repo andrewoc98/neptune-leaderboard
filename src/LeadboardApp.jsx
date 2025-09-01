@@ -272,8 +272,10 @@ const getRankingsOverTime = (history, type, key) => {
                 const dayKey = d.toISOString().split("T")[0];
 
                 const distanceNum = Number(s.distance); // convert to number
+                const multiplier = multipliers[s.type] || 1; // default to 1 if type not found
+
                 if (!isNaN(distanceNum)) {
-                    history[dayKey] = (history[dayKey] || 0) + distanceNum;
+                    history[dayKey] = (history[dayKey] || 0) + distanceNum * multiplier;
                 }
             }
         });
@@ -290,10 +292,6 @@ const getRankingsOverTime = (history, type, key) => {
 
         return { dates, distances: cumulativeDistances };
     };
-
-
-
-
 
     return (
     <div className="container">

@@ -27,9 +27,10 @@ export default function User() {
                 setLeaderboard(lazyData[0].entries)
                 setMultipliers(lazyData[1])
                 setQuotes(lazyData[2].quotes)
-                setUsers(lazyData[3])
+                setUsers(lazyData[4])
                 setWorkouts({erg:lazyData[4].erg, water:lazyData[4].water})
                 setSessions(allSessions)
+
 
             } catch (e) {
                 console.log("Failed to load page documents", e)

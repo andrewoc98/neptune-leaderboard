@@ -280,71 +280,81 @@ export async function fetchAllAthleteActivities() {
         // 1. Get last epoch
         const epochRef = doc(database, "page-data", "strava");
         const epochSnap = await getDoc(epochRef);
-        const lastEpoch = epochSnap.exists() && epochSnap.data().epoch ? epochSnap.data().epoch : 0;
+
+        // 30 days ago in seconds
+        const thirtyDaysAgo = Math.floor(Date.now() / 1000 - 30 * 24 * 60 * 60);
+
+        const lastEpoch =
+            epochSnap.exists() && epochSnap.data().epoch
+                ? epochSnap.data().epoch
+                : thirtyDaysAgo;
+
         const nowEpoch = Math.floor(Date.now() / 1000);
-        console.log(lastEpoch)
-        console.log(nowEpoch)
+
         // 2. Load all athletes
         const athletesRef = collection(database, "strava");
         const athletesSnapshot = await getDocs(athletesRef);
         const allActivities = [];
 
         for (const athleteDoc of athletesSnapshot.docs) {
-            const athleteData = athleteDoc.data();
-            let { access_token, refresh_token, expires_at, athlete } = athleteData;
+            try {
+                const athleteData = athleteDoc.data();
+                let { access_token, refresh_token, expires_at, athlete } = athleteData;
 
-            // 3. Refresh token if expired
-            if (Date.now() / 1000 > expires_at) {
-                const refreshRes = await axios.post("https://www.strava.com/oauth/token", {
-                    client_id: process.env.STRAVA_CLIENT_ID,
-                    client_secret: process.env.STRAVA_CLIENT_SECRET,
-                    grant_type: "refresh_token",
-                    refresh_token,
-                });
+                // 3. Refresh token if expired
+                if (Date.now() / 1000 > expires_at) {
+                    const refreshRes = await axios.post("https://www.strava.com/oauth/token", {
+                        client_id: process.env.STRAVA_CLIENT_ID,
+                        client_secret: process.env.STRAVA_CLIENT_SECRET,
+                        grant_type: "refresh_token",
+                        refresh_token,
+                    });
 
-                access_token = refreshRes.data.access_token;
-                refresh_token = refreshRes.data.refresh_token;
-                expires_at = refreshRes.data.expires_at;
+                    access_token = refreshRes.data.access_token;
+                    refresh_token = refreshRes.data.refresh_token;
+                    expires_at = refreshRes.data.expires_at;
 
-                const athleteRef = doc(database, "strava", athleteDoc.id);
-                await updateDoc(athleteRef, {
-                    access_token,
-                    refresh_token,
-                    expires_at,
-                    updated_at: new Date(), // v9 SDK — no admin.firestore.FieldValue
-                });
-            }
+                    const athleteRef = doc(database, "strava", athleteDoc.id);
+                    await updateDoc(athleteRef, {
+                        access_token,
+                        refresh_token,
+                        expires_at,
+                        updated_at: new Date(),
+                    });
+                }
 
-            // 4. Fetch activities in pages
-            let page = 1;
-            while (true) {
-                const res = await axios.get("https://www.strava.com/api/v3/athlete/activities", {
-                    headers: { Authorization: `Bearer ${access_token}` },
-                    params: { after: lastEpoch, before: nowEpoch, per_page: 200, page },
-                });
+                // 4. Fetch activities in pages
+                let page = 1;
+                while (true) {
+                    const res = await axios.get("https://www.strava.com/api/v3/athlete/activities", {
+                        headers: { Authorization: `Bearer ${access_token}` },
+                        params: { after: lastEpoch, before: nowEpoch, per_page: 200, page },
+                    });
 
-                if (!res.data || res.data.length === 0) break;
+                    if (!res.data || res.data.length === 0) break;
 
-                // Add athlete info to each activity
-                const activitiesWithAthlete = res.data.map(act => ({
-                    ...act,
-                    athlete: {
-                        id: athlete.id,
-                        firstname: athlete.firstname,
-                        lastname: athlete.lastname,
-                        profile: athlete.profile,
-                    },
-                }));
+                    const activitiesWithAthlete = res.data.map(act => ({
+                        ...act,
+                        athlete: {
+                            id: athlete.id,
+                            firstname: athlete.firstname,
+                            lastname: athlete.lastname,
+                            profile: athlete.profile,
+                        },
+                    }));
 
-                allActivities.push(...activitiesWithAthlete);
-                page++;
+                    allActivities.push(...activitiesWithAthlete);
+                    page++;
+                }
+            } catch (athleteErr) {
+                console.warn(`Skipping athlete ${athleteDoc.id}:`, athleteErr.response?.data || athleteErr.message);
+                continue;
             }
         }
 
         // 5. Update global epoch
         await setDoc(epochRef, { epoch: nowEpoch }, { merge: true });
 
-        console.log(allActivities);
         return allActivities;
     } catch (err) {
         console.error("Error fetching all athletes' activities:", err.response?.data || err.message);

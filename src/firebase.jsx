@@ -5,6 +5,7 @@ import { doc, setDoc, deleteDoc } from "firebase/firestore";
 import { getDoc, updateDoc } from "firebase/firestore";
 import { v4 as uuidv4 } from 'uuid';
 import { getPreviousSunday, getISOWeek } from "./Util";
+import axios from "axios";
 
 
 // Your web app's Firebase configuration
@@ -262,6 +263,91 @@ export async function saveStravaUser(data) {
     } catch (err) {
         console.error("❌ Error saving Strava user:", err);
         return false;
+    }
+
+}
+
+/**
+ * Fetches Strava activities since the last epoch in Firestore and updates epoch
+ * @param {string} athleteId - Strava athlete ID
+ */
+/**
+ * Fetch all Strava activities for all athletes since the last stored epoch
+ * @returns {Array} Array of activity objects with athlete info
+ */
+export async function fetchAllAthleteActivities() {
+    try {
+        // 1. Get last epoch
+        const epochRef = doc(database, "page-data", "strava");
+        const epochSnap = await getDoc(epochRef);
+        const lastEpoch = epochSnap.exists() && epochSnap.data().epoch ? epochSnap.data().epoch : 0;
+        const nowEpoch = Math.floor(Date.now() / 1000);
+
+        // 2. Load all athletes
+        const athletesRef = collection(database, "strava");
+        const athletesSnapshot = await getDocs(athletesRef);
+        const allActivities = [];
+
+        for (const athleteDoc of athletesSnapshot.docs) {
+            const athleteData = athleteDoc.data();
+            let { access_token, refresh_token, expires_at, athlete } = athleteData;
+
+            // 3. Refresh token if expired
+            if (Date.now() / 1000 > expires_at) {
+                const refreshRes = await axios.post("https://www.strava.com/oauth/token", {
+                    client_id: process.env.STRAVA_CLIENT_ID,
+                    client_secret: process.env.STRAVA_CLIENT_SECRET,
+                    grant_type: "refresh_token",
+                    refresh_token,
+                });
+
+                access_token = refreshRes.data.access_token;
+                refresh_token = refreshRes.data.refresh_token;
+                expires_at = refreshRes.data.expires_at;
+
+                const athleteRef = doc(database, "strava", athleteDoc.id);
+                await updateDoc(athleteRef, {
+                    access_token,
+                    refresh_token,
+                    expires_at,
+                    updated_at: new Date(), // v9 SDK — no admin.firestore.FieldValue
+                });
+            }
+
+            // 4. Fetch activities in pages
+            let page = 1;
+            while (true) {
+                const res = await axios.get("https://www.strava.com/api/v3/athlete/activities", {
+                    headers: { Authorization: `Bearer ${access_token}` },
+                    params: { after: lastEpoch, before: nowEpoch, per_page: 200, page },
+                });
+
+                if (!res.data || res.data.length === 0) break;
+
+                // Add athlete info to each activity
+                const activitiesWithAthlete = res.data.map(act => ({
+                    ...act,
+                    athlete: {
+                        id: athlete.id,
+                        firstname: athlete.firstname,
+                        lastname: athlete.lastname,
+                        profile: athlete.profile,
+                    },
+                }));
+
+                allActivities.push(...activitiesWithAthlete);
+                page++;
+            }
+        }
+
+        // 5. Update global epoch
+        await setDoc(epochRef, { epoch: nowEpoch }, { merge: true });
+
+        console.log(allActivities);
+        return allActivities;
+    } catch (err) {
+        console.error("Error fetching all athletes' activities:", err.response?.data || err.message);
+        throw err;
     }
 }
 

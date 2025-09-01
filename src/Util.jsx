@@ -396,6 +396,115 @@ export function selectIndividuals(data, users, numIndividuals, maxAveragePoints,
     }
 }
 
+/**
+ * Converts Strava activities to your custom format
+ * @param {Array} activities - Array of Strava activity objects
+ * @returns {Array} Formatted activities
+ */
+export function formatStravaActivities(activities) {
+    return activities.map((act) => {
+        // Format date as DD/MM/YYYY
+        const dateObj = new Date(act.start_date);
+        const formattedDate = `${String(dateObj.getDate()).padStart(2, "0")}/${String(
+            dateObj.getMonth() + 1
+        ).padStart(2, "0")}/${dateObj.getFullYear()}`;
+
+        // Determine activity type mapping (example)
+        let type = mapSportType(act.type,hasGps(act))
+        let notes
+
+        return {
+            approved: false,
+            date: formattedDate,
+            distance: Math.round(act.distance).toString(),
+            id: uuidv4(),
+            intense: false,
+            name: `${act.athlete.firstname} ${act.athlete.lastname}`,
+            notes: getNotes(act),
+            split: mpsToSplit(act["average_speed"]),
+            type: type,
+            weights: false,
+        };
+    });
+}
+
+function mapSportType(sportType, hasGps) {
+    switch (sportType) {
+        // Foot sports
+        case "Run":
+        case "TrailRun":
+        case "Walk":
+        case "Hike":
+        case "VirtualRun":
+            return "Run";
+
+        // Cycle sports
+        case "Ride":
+        case "MountainBikeRide":
+        case "GravelRide":
+        case "EBikeRide":
+        case "EMountainBikeRide":
+        case "Velomobile":
+        case "VirtualRide":
+            return "Bike";
+
+        // Rowing (special case with GPS flag)
+        case "Rowing":
+            return hasGps ? "Water" : "Erg";
+
+        // Everything else
+        default:
+            return "Other";
+    }
+}
+
+function hasGps(activity) {
+    // check lat/lng or polyline
+    return (
+        activity.start_latlng &&
+        activity.start_latlng.length === 2 &&
+        activity.map &&
+        activity.map.summary_polyline
+    );
+}
+
+/**
+ * Convert speed (m/s) to rowing split (mm:ss.s per 500m)
+ * @param {number} speedMps - speed in meters per second
+ * @returns {string} split formatted as "mm:ss.s /500m"
+ */
+function mpsToSplit(speedMps) {
+    if (!speedMps || speedMps <= 0) return "—"; // invalid speed
+
+    // Time (seconds) to cover 500m
+    const secondsPer500m = 500 / speedMps;
+
+    // Minutes and seconds
+    const minutes = Math.floor(secondsPer500m / 60);
+    const seconds = secondsPer500m % 60;
+
+    // Format: mm:ss.s
+    return `${minutes}:${seconds.toFixed(1).padStart(4, "0")} /500m`;
+}
+
+function getNotes(act) {
+    let parts = [];
+
+    if (act.name) {
+        parts.push(act.name);
+    }
+
+    if (act.average_heartrate !== undefined && act.average_heartrate !== null) {
+        parts.push(`Average HR: ${act.average_heartrate}`);
+    }
+
+    if (act.max_heartrate !== undefined && act.max_heartrate !== null) {
+        parts.push(`Peak HR: ${act.max_heartrate}`);
+    }
+
+    return parts.join("\n");
+}
+
 
 
 

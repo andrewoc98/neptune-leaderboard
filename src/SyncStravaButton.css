@@ -1,0 +1,71 @@
+/* Button Base */
+.sync-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: background 0.3s ease, transform 0.15s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    margin-left: 0.5rem;
+    margin-top: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 0.9rem;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+    color: #f8f9fa;
+    background-color: #22c55e; /* green */
+}
+
+/* Hover effect */
+.sync-button:hover {
+    background-color: #4ade80; /* brighter green */
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+}
+
+/* Disabled state */
+.sync-button.loading,
+.sync-button:disabled {
+    background-color: #22c55e;
+    cursor: not-allowed;
+    opacity: 0.7;
+    transform: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+/* Error flash */
+.sync-button.error {
+    background-color: #ef4444 !important; /* red */
+    animation: flashRed 0.6s;
+}
+
+@keyframes flashRed {
+    0% { background-color: #ef4444; }
+    50% { background-color: #3db669; }
+    100% { background-color: #ef4444; }
+}
+
+/* Spinner */
+.spinner {
+    width: 20px;
+    height: 20px;
+    animation: spin 1s linear infinite;
+}
+
+.spinner-circle {
+    opacity: 0.25;
+    stroke: currentColor;
+}
+
+.spinner-path {
+    opacity: 0.75;
+    fill: currentColor;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

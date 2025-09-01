@@ -8,6 +8,7 @@ import QuotesModal from "./QuotesModal";
 import AdminSessionTable from "./AdminSessionTable";
 import MultiplierModal from "./MultiplerModal";
 import UserEditModal from "./UserEditModal";
+import SyncStravaButton from "./SyncStravaButton";
 
 export default function Admin() {
     const [isAuthorized, setIsAuthorized] = useState(false);
@@ -55,6 +56,7 @@ export default function Admin() {
         <QuotesModal />
         <MultiplierModal/>
         <UserEditModal/>
+          <SyncStravaButton/>
       </div>
         {/* Submission Table */}
         <div style={{ width: '80%', maxWidth: '1200px', }}>

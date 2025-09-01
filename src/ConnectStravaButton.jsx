@@ -1,48 +1,32 @@
-import axios from "axios";
-import * as admin from "firebase-admin";
+// src/components/ConnectStravaButton.jsx
+import React from "react";
+import StravaIcon from "./StravaIcon";
 
-if (!admin.apps.length) {
-    admin.initializeApp({
-        credential: admin.credential.cert({
-            projectId: process.env.FIREBASE_PROJECT_ID,
-            clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-            privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n"),
-        }),
-    });
-}
+const ConnectStravaButton = () => {
+    const CLIENT_ID = "174999"; // replace with your actual client ID
+    const REDIRECT_URI = "https://neptuneleaderboard.netlify.app/strava/callback";
+    const SCOPE = "activity:read_all";
 
-const db = admin.firestore();
+    const handleConnect = () => {
+        const stravaAuthUrl = `https://www.strava.com/oauth/authorize?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${encodeURIComponent(
+            REDIRECT_URI
+        )}&approval_prompt=auto&scope=${SCOPE}`;
 
-export async function handler(event, context) {
-    const code = event.queryStringParameters.code;
+        // Redirect the user to Strava's authorization page
+        window.location.href = stravaAuthUrl;
+    };
 
-    try {
-        // 1. Exchange code for tokens
-        const response = await axios.post("https://www.strava.com/oauth/token", {
-            client_id: process.env.STRAVA_CLIENT_ID,
-            client_secret: process.env.STRAVA_CLIENT_SECRET,
-            code,
-            grant_type: "authorization_code"
-        });
+    return (
+        <button
+            onClick={handleConnect}
+            style={{
+                backgroundColor: "transparent",
+                padding:0
+            }}
+        >
+            <StravaIcon/>
+        </button>
+    );
+};
 
-        const data = response.data;
-
-        // 2. Save to Firestore
-        await db.collection("strava").doc(data.athlete.id.toString()).set(data);
-
-        // 3. Redirect back to homepage
-        return {
-            statusCode: 302,
-            headers: {
-                Location: "/"  // 👈 change this to "/dashboard" if you want
-            },
-        };
-
-    } catch (err) {
-        console.error("Strava auth error:", err.response?.data || err.message);
-        return {
-            statusCode: 500,
-            body: JSON.stringify({ error: err.message }),
-        };
-    }
-}
+export default ConnectStravaButton;

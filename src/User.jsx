@@ -7,6 +7,7 @@ import Rules from "./Rules";
 import QuoteModal from "./QuoteModal";
 import {loadAllDocuments} from "./firebase";
 import {getAllSessionHistory} from "./Util"
+import ConnectStravaButton from "./ConnectStravaButton";
 
 export default function User() {
 
@@ -54,7 +55,9 @@ export default function User() {
       <Quote quotes={quotes}/>
       <div className="about-stripe">
         <Rules />
+          <ConnectStravaButton/>
         <QuoteModal/>
+
       </div>
       <SessionModal isOpen={openModal} onClose={onClose} onSubmit={onSubmit} setOpen />
     </>);

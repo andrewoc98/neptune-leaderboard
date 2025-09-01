@@ -42,7 +42,10 @@ export default function QuoteModal() {
             <div>
                 {/* Text Icon Trigger */}
                 <button onClick={() => setOpen(true)}>
-                    <Quote />
+                    <Quote style={{
+                        width:25,   // adjust size
+                        height:25
+                    }}/>
                 </button>
 
                 {/* Modal */}

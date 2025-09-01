@@ -9,7 +9,10 @@ return (
     <div>
       {/* Text Icon Trigger */}
       <button onClick={() => setOpen(true)}>
-        <FileText className="w-6 h-6 text-gray-700" />
+        <FileText className="w-6 h-6 text-gray-700" style={{
+            width:25,   // adjust size
+            height:25
+        }}/>
       </button>
 
       {/* Modal */}

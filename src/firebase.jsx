@@ -235,6 +235,37 @@ export async function loadAllDocuments() {
     }));
 }
 
+/**
+ * Saves Strava athlete + token info into Firestore
+ * @param {Object} data - Strava auth response (from /oauth/token)
+ */
+export async function saveStravaUser(data) {
+    try {
+        const { access_token, refresh_token, expires_at, athlete } = data;
+
+        const userDoc = {
+            athlete_id: athlete.id,
+            firstname: athlete.firstname,
+            lastname: athlete.lastname,
+            profile: athlete.profile,
+            access_token,
+            refresh_token,
+            expires_at,
+            updated_at: new Date().toISOString(),
+        };
+
+        const entryRef = doc(database, "strava", String(athlete.id));
+        await setDoc(entryRef, userDoc, { merge: true });
+
+        console.log(`✅ Saved/updated Strava user ${athlete.id}`);
+        return true;
+    } catch (err) {
+        console.error("❌ Error saving Strava user:", err);
+        return false;
+    }
+}
+
+
 
 
 

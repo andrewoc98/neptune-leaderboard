@@ -14,3 +14,7 @@ port = 5173
 from = "/strava/callback"
 to = "/.netlify/functions/stravaCallback"
 status = 200
+
+[functions]
+node_bundler = "esbuild"
+external_node_modules = ["axios"]

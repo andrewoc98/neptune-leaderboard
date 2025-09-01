@@ -282,7 +282,8 @@ export async function fetchAllAthleteActivities() {
         const epochSnap = await getDoc(epochRef);
         const lastEpoch = epochSnap.exists() && epochSnap.data().epoch ? epochSnap.data().epoch : 0;
         const nowEpoch = Math.floor(Date.now() / 1000);
-
+        console.log(lastEpoch)
+        console.log(nowEpoch)
         // 2. Load all athletes
         const athletesRef = collection(database, "strava");
         const athletesSnapshot = await getDocs(athletesRef);

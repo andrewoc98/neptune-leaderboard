@@ -1,11 +1,13 @@
+import stravaLogo from "./brand-strava-svgrepo-com.svg";
+
 export function StravaIcon() {
     return (
-            <img
-                src="./brand-strava-svgrepo-com.svg"
-                alt="Strava Logo"
-                width={40}   // adjust size
-                height={40}  // adjust size
-            />
+        <img
+            src={stravaLogo}
+            alt="Strava Logo"
+            width={40}
+            height={40}
+        />
     );
 }
 

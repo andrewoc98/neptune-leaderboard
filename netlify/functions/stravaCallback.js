@@ -1,18 +1,25 @@
 import axios from "axios";
 
-export async function handler() {
+export async function handler(event, context) {
+    const code = event.queryStringParameters.code;
+
     try {
-        const axios = require("axios");
+        const response = await axios.post("https://www.strava.com/oauth/token", {
+            client_id: process.env.STRAVA_CLIENT_ID,
+            client_secret: process.env.STRAVA_CLIENT_SECRET,
+            code: code,
+            grant_type: "authorization_code"
+        });
+
         return {
             statusCode: 200,
-            body: "Axios loaded fine!"
+            body: JSON.stringify(response.data)
         };
     } catch (err) {
+        console.error(err.response.data); // log Strava's error message
         return {
-            statusCode: 500,
-            body: `Axios error: ${err.message}`
+            statusCode: err.response?.status || 500,
+            body: JSON.stringify(err.response?.data || { error: err.message })
         };
     }
 }
-
-

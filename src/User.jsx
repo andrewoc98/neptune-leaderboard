@@ -56,7 +56,6 @@ export default function User() {
       <Quote quotes={quotes}/>
       <div className="about-stripe">
         <Rules />
-          <ConnectStravaButton/>
         <QuoteModal/>
 
       </div>

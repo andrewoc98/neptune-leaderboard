@@ -56,7 +56,6 @@ export default function Admin() {
         <QuotesModal />
         <MultiplierModal/>
         <UserEditModal/>
-          <SyncStravaButton/>
       </div>
         {/* Submission Table */}
         <div style={{ width: '80%', maxWidth: '1200px', }}>

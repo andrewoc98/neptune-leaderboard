@@ -38,6 +38,12 @@ export default function LeaderboardApp({sessions, multipliers, workouts, users, 
             nextWeek: 'TBD'
     }
   })
+
+    const graphText = {
+      "season":"Distance done over the season",
+        "month": "Distance done over the current rolling month",
+        "week": "Distance done over the past 7 days"
+    }
   const handleMouseEnter = (name) => {
     setHoveredName(name);
   };
@@ -261,18 +267,33 @@ const getRankingsOverTime = (history, type, key) => {
     return diff === 0 ? "-" : diff > 0 ? `↑ ${diff}` : `↓ ${-diff}`;
   };
 
-    const getDistanceHistory = (name) => {
+    const getDistanceHistory = (name, timescale = "season") => {
         const history = {};
+        const now = new Date();
+
+        // define cutoff based on timescale
+        let cutoff = null;
+        if (timescale === "month") {
+            cutoff = new Date(now);
+            cutoff.setMonth(now.getMonth() - 1); // exactly one month back
+        } else if (timescale === "week") {
+            cutoff = new Date(now);
+            cutoff.setDate(now.getDate() - 7); // exactly 7 days back
+        }
+        // "season" = no cutoff (all data)
 
         sessions.forEach(s => {
             if (!s.name || !s.date || s.distance == null) return;
             if (s.name === name) {
                 const [day, month, year] = s.date.split("/").map(Number);
                 const d = new Date(year, month - 1, day);
-                const dayKey = d.toISOString().split("T")[0];
 
-                const distanceNum = Number(s.distance); // convert to number
-                const multiplier = multipliers[s.type] || 1; // default to 1 if type not found
+                // skip if before cutoff
+                if (cutoff && d < cutoff) return;
+
+                const dayKey = d.toISOString().split("T")[0];
+                const distanceNum = Number(s.distance);
+                const multiplier = multipliers[s.type] || 1;
 
                 if (!isNaN(distanceNum)) {
                     history[dayKey] = (history[dayKey] || 0) + distanceNum * multiplier;
@@ -280,7 +301,7 @@ const getRankingsOverTime = (history, type, key) => {
             }
         });
 
-        // sort the dates
+        // sort dates
         const dates = Object.keys(history).sort((a, b) => new Date(a) - new Date(b));
         const rawDistances = dates.map(d => history[d]);
 
@@ -292,6 +313,7 @@ const getRankingsOverTime = (history, type, key) => {
 
         return { dates, distances: cumulativeDistances };
     };
+
 
     return (
     <div className="container">
@@ -592,10 +614,10 @@ const getRankingsOverTime = (history, type, key) => {
                     {/* Chart */}
                     {activeTab === "sessions" ? (
                         (() => {
-                            const baseHistory = getDistanceHistory(hoveredName);
+                            const baseHistory = getDistanceHistory(hoveredName, timeScale);
                             const compareHistories = compareNames.map(name => ({
                                 name,
-                                ...getDistanceHistory(name)
+                                ...getDistanceHistory(name,timeScale)
                             }));
 
                             const allDates = [...new Set([
@@ -620,6 +642,8 @@ const getRankingsOverTime = (history, type, key) => {
                             ];
 
                             return (
+                                <>
+                                    <p>{graphText[timeScale]}</p>
                                 <Line
                                     data={{ labels: allDates, datasets }}
                                     height={300}
@@ -635,6 +659,7 @@ const getRankingsOverTime = (history, type, key) => {
                                         },
                                     }}
                                 />
+                                </>
                             );
                         })()
                     ) : (

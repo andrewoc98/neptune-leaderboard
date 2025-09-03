@@ -92,20 +92,9 @@ function parseDate(dateStr) {
 }
 
 function getMonthStart(date) {
-    const year = date.getFullYear();
-    const month = date.getMonth(); // 0-indexed (0 = Jan, 1 = Feb, etc.)
-    const day = date.getDate();
-
-    // Move to the previous month
-    const prevMonthDate = new Date(year, month - 1, day);
-
-    // If the month rolled over (e.g., from March 31 to March 3), fix by setting day to last day of previous month
-    if (prevMonthDate.getMonth() !== (month - 1 + 12) % 12) {
-        // Set day to 0 of current month to get last day of previous month
-        return new Date(year, month, 0);
-    }
-
-    return prevMonthDate;
+    const newDate = new Date(date);
+    newDate.setDate(newDate.getDate() - 30);
+    return newDate;
 }
 
 function getWeekStart(date) {
@@ -138,77 +127,84 @@ export function formatDate(date) {
 
 export function getSessionStats(period, distanceMultiplier, allSessions) {
     const today = new Date();
+    today.setHours(23, 59, 59, 999); // End of today
+
     let startDate;
+
     if (period === "month") {
-        startDate = getMonthStart(today);
+        startDate = new Date(today);
+        startDate.setDate(today.getDate() - 29); // 30 days ago
+        startDate.setHours(0, 0, 0, 0); // Start of that day
     } else if (period === "week") {
-        startDate = getWeekStart(today);
+        startDate = new Date(today);
+        startDate.setDate(today.getDate() - 6); // 6 days ago → 7-day window including today
+        startDate.setHours(0, 0, 0, 0);
     } else {
         startDate = new Date(-8640000000000000); // earliest possible date
     }
 
     const stats = {};
 
-
     allSessions.forEach(entry => {
-        if (entry.approved) {
-            const entryDate = parseDate(entry.date);
-            if (entryDate >= startDate && entryDate <= today) {
-                const { name, distance, intense, weights, type } = entry;
+        if (!entry.approved) return;
 
-                if (!stats[name]) {
+        const entryDate = parseDate(entry.date);
+        if (entryDate >= startDate && entryDate <= today) {
+            const { name, distance, intense, weights, type } = entry;
 
-                    stats[name] = {
-                        name,
-                        totalDistance: 0,
-                        totalSessions: 0,
-                        steadyCount: 0,
-                        intensityCount: 0,
-                        weightsCount: 0
-                    };
-                }
+            if (!stats[name]) {
+                stats[name] = {
+                    name,
+                    totalDistance: 0,
+                    totalSessions: 0,
+                    steadyCount: 0,
+                    intensityCount: 0,
+                    weightsCount: 0
+                };
+            }
 
-                stats[name].totalDistance = stats[name].totalDistance + (Number(distance) * distanceMultiplier[type]);
-                stats[name].totalSessions += 1;
+            stats[name].totalDistance += Number(distance) * distanceMultiplier[type];
+            stats[name].totalSessions += 1;
 
-                if (intense) {
-                    stats[name].intensityCount += 1;
-                } else if (weights) {
-                    stats[name].weightsCount += 1;
-                } else {
-                    stats[name].steadyCount += 1;
-                }
+            if (intense) {
+                stats[name].intensityCount += 1;
+            } else if (weights) {
+                stats[name].weightsCount += 1;
+            } else {
+                stats[name].steadyCount += 1;
             }
         }
     });
-    const output = Object.values(stats).sort((a, b) => b.totalDistance - a.totalDistance);
 
-    return output
+    return Object.values(stats).sort((a, b) => b.totalDistance - a.totalDistance);
 }
+
+
 
 export function getDistanceForLastPeriod(period, allSessions) {
     const today = new Date();
-
-    const getLastMonthStart = (date) => new Date(date.getFullYear(), date.getMonth() - 1, 1);
-    const getLastWeekStart = (date) => {
-        const startOfThisWeek = new Date(date);
-        startOfThisWeek.setHours(0, 0, 0, 0);
-        startOfThisWeek.setDate(startOfThisWeek.getDate() - startOfThisWeek.getDay());
-        const lastWeekStart = new Date(startOfThisWeek);
-        lastWeekStart.setDate(lastWeekStart.getDate() - 7);
-        return lastWeekStart;
-    };
+    today.setHours(23, 59, 59, 999); // End of today
 
     let startDate, endDate;
 
     if (period === "month") {
-        startDate = getLastMonthStart(today);
-        endDate = new Date(today.getFullYear(), today.getMonth(), 0, 23, 59, 59, 999);
+        // 60-30 days ago
+        startDate = new Date(today);
+        startDate.setDate(startDate.getDate() - 60);
+        startDate.setHours(0, 0, 0, 0); // Start of day
+
+        endDate = new Date(today);
+        endDate.setDate(endDate.getDate() - 30);
+        endDate.setHours(23, 59, 59, 999); // End of day
     } else if (period === "week") {
-        startDate = getLastWeekStart(today);
-        endDate = new Date(startDate);
-        endDate.setDate(startDate.getDate() + 6);
-        endDate.setHours(23, 59, 59, 999);
+        // 14-7 days ago
+        startDate = new Date(today);
+        startDate.setDate(startDate.getDate() - 14);
+        startDate.setHours(0, 0, 0, 0); // Start of day
+
+        endDate = new Date(today);
+        endDate.setDate(endDate.getDate() - 7);
+        endDate.setHours(23, 59, 59, 999); // End of day
     } else {
         return {};
     }
@@ -225,6 +221,7 @@ export function getDistanceForLastPeriod(period, allSessions) {
             distanceMap[name] += Number(distance);
         }
     });
+
     return distanceMap;
 }
 

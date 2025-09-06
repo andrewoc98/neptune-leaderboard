@@ -28,7 +28,7 @@ export default function User() {
                 setMultipliers(lazyData[1])
                 setQuotes(lazyData[2].quotes)
                 setUsers(lazyData[4])
-                setWorkouts({erg:lazyData[5].erg, water:lazyData[5].water})
+                setWorkouts({erg:lazyData[5].erg.entries, water:lazyData[5].water.entries})
                 setSessions(allSessions)
 
 

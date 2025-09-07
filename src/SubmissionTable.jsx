@@ -144,6 +144,7 @@ export default function ExerciseTable() {
                                             "Devon Goldrick",
                                             "Gavin O'Dwyer",
                                             "John Giles",
+"Jack Darmody",
                                             "Luke Keating",
                                             "Mark Connolly",
                                             "Matt Malone",

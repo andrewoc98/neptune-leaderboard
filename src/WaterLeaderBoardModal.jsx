@@ -84,6 +84,7 @@ export default function WaterLeaderBoardModal() {
                                             <option value="Devon Goldrick">Devon Goldrick</option>
                                             <option value="Gavin O'Dwyer">Gavin O'Dwyer</option>
                                             <option value="John Giles">John Giles</option>
+                                            <option value="Jack Darmody">Jack Darmody</option>
                                             <option value="Luke Keating">Luke Keating</option>
                                             <option value="Mark Connolly">Mark Connolly</option>
                                             <option value="Matt Malone">Matt Malone</option>

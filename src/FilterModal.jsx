@@ -17,6 +17,7 @@ function FilterModal({ isOpen, onClose, filters, onSubmit, onReset }) {
         "Ben Brennan",
         "Devon Goldrick",
         "Gavin O'Dwyer",
+        "Jack Darmody",
         "John Giles",
         "Luke Keating",
         "Mark Connolly",

@@ -29,7 +29,7 @@ export default function SessionModal({ isOpen, onClose, onSubmit }) {
 
     const names = [
         "Alex Gillick", "Andrew O'Connor", "Ben Brennan", "Devon Goldrick",
-        "Gavin O'Dwyer", "John Giles", "Luke Keating", "Mark Connolly",
+        "Gavin O'Dwyer", "Jack Darmody","John Giles", "Luke Keating", "Mark Connolly",
         "Matt Malone", "Odhran Hegarty", "Ryan Farrell", "Tommy Gillick"
     ];
 

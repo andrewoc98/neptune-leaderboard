@@ -1,14 +1,13 @@
 import { useEffect, useState } from "react";
-import { collection, onSnapshot, updateDoc, doc, query, where } from "firebase/firestore";
+import { collection, onSnapshot, updateDoc, doc } from "firebase/firestore";
 import { database } from "./firebase"; // import from your firebase.js
-import "./App.css"
+import "./App.css";
 import { sortByDate } from "./Util";
 import FilterModal from "./FilterModal";
-import {ListFilter} from "lucide-react";
+import { ListFilter, Download } from "lucide-react";
 
 function AdminSessionTable() {
     const [data, setData] = useState([]);
-
     const [filters, setFilters] = useState({
         name: "",
         type: "",
@@ -20,7 +19,6 @@ function AdminSessionTable() {
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const handleUnapprove = async (id) => {
-
         try {
             const docRef = doc(database, "sessionHistory", id);
             await updateDoc(docRef, { approved: false });
@@ -33,22 +31,24 @@ function AdminSessionTable() {
     useEffect(() => {
         const usersRef = collection(database, "sessionHistory");
 
-        // Real-time listener
         const unsubscribe = onSnapshot(usersRef, (snapshot) => {
-            const sessions = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }))
-                .filter(session => session.approved === true);
-            setData(sortByDate(sessions));
+            const sessions = snapshot.docs
+                .map((doc) => ({
+                    id: doc.id,
+                    ...doc.data()
+                }))
+                .filter((session) => session.approved === true);
 
+            setData(sortByDate(sessions));
         });
 
-        // Cleanup listener on unmount
         return () => unsubscribe();
     }, []);
+
     const today = new Date();
-    const todayString = `${String(today.getDate()).padStart(2, "0")}/${String(today.getMonth() + 1).padStart(2, "0")}/${today.getFullYear()}`;
+    const todayString = `${String(today.getDate()).padStart(2, "0")}/${String(
+        today.getMonth() + 1
+    ).padStart(2, "0")}/${today.getFullYear()}`;
 
     const filteredData = data
         .filter((session) => (filters.name ? session.name === filters.name : true))
@@ -65,76 +65,110 @@ function AdminSessionTable() {
             return filters.order === "desc" ? -result : result;
         });
 
-return (
-    <div className="table-container" style={{ width: "90%" }}>
-      <div className="table-section" style={{ position: "relative", marginBottom: "0.5rem", color: "white" }}>
-        <FilterModal
-            isOpen={isModalOpen}
-            onClose={() => setIsModalOpen(false)}
-            filters={filters}
-            onSubmit={(newFilters) => setFilters(newFilters)}
-            onReset={() => setFilters({
-                name: "",
-                type: "",
-                sortBy: "",
-                order: "asc",
-                intense: "",
-                weights: ""
-            })}/>
+    const handleDownload = () => {
+        const json = JSON.stringify(filteredData, null, 2);
+        const blob = new Blob([json], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
 
-          <button
-              className="btn"
-              style={{alignItems:"left", margin: "0.5rem", padding: "0.3rem 0.6rem" }}
-              onClick={() => setIsModalOpen(true)}
-          >
-              <ListFilter />
-          </button>
-        <div className="table-description">
-          <p style={{ textAlign: "center", marginBottom: "0.5rem", color: "white" }}>
-            <b>Approved Sessions:</b> {filteredData.length}
-          </p>
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "sessions.json";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        URL.revokeObjectURL(url);
+    };
+
+    return (
+        <div className="table-container" style={{ width: "90%" }}>
+            <div
+                className="table-section"
+                style={{ position: "relative", marginBottom: "0.5rem", color: "white" }}
+            >
+                <FilterModal
+                    isOpen={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                    filters={filters}
+                    onSubmit={(newFilters) => setFilters(newFilters)}
+                    onReset={() =>
+                        setFilters({
+                            name: "",
+                            type: "",
+                            sortBy: "",
+                            order: "asc",
+                            intense: "",
+                            weights: ""
+                        })
+                    }
+                />
+
+                <div style={{ display: "flex", gap: "0.5rem" }}>
+                    <button
+                        className="btn"
+                        style={{ margin: "0.5rem", padding: "0.3rem 0.6rem" }}
+                        onClick={() => setIsModalOpen(true)}
+                    >
+                        <ListFilter />
+                    </button>
+
+                    <button
+                        className="btn"
+                        style={{ margin: "0.5rem"}}
+                        onClick={handleDownload}
+                    >
+                        <Download style={{ marginRight: "4px" }} />
+                    </button>
+                </div>
+
+                <div className="table-description">
+                    <p style={{ textAlign: "center", marginBottom: "0.5rem", color: "white" }}>
+                        <b>Approved Sessions:</b> {filteredData.length}
+                    </p>
+                </div>
+
+                <table>
+                    <thead style={{ padding: "0" }}>
+                    <tr>
+                        <th>Name</th>
+                        <th>Date</th>
+                        <th>Type</th>
+                        <th>Distance</th>
+                        <th>Unapprove</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {filteredData.map((session) => {
+                        const isToday = session.date === todayString;
+                        return (
+                            <tr
+                                key={session.id}
+                                className="hover-row"
+                                style={{
+                                    cursor: "pointer",
+                                    backgroundColor: isToday ? "rgba(255, 255, 255, 0.1)" : "transparent"
+                                }}
+                            >
+                                <td>{session.name || "N/A"}</td>
+                                <td>{session.date || "N/A"}</td>
+                                <td>{session.type || "N/A"}</td>
+                                <td>{session.distance || "N/A"}</td>
+                                <td>
+                                    <button
+                                        className="unapprove-button"
+                                        onClick={() => handleUnapprove(session.id)}
+                                    >
+                                        X
+                                    </button>
+                                </td>
+                            </tr>
+                        );
+                    })}
+                    </tbody>
+                </table>
+            </div>
         </div>
-
-        <table style={{}}>
-          <thead
-          style={{padding:"0"}}>
-            <tr>
-              <th>Name</th>
-              <th>Date</th>
-              <th>Type</th>
-              <th>Distance</th>
-              <th>Unapprove</th>
-            </tr>
-          </thead>
-          <tbody>
-          {filteredData.map((session) => {
-              const isToday = session.date === todayString;
-              return (
-                  <tr
-                      key={session.id}
-                      className="hover-row"
-                      style={{
-                          cursor: "pointer",
-                          backgroundColor: isToday ? "rgba(255, 255, 255, 0.1)" : "transparent",
-                      }}
-                  >
-                      <td>{session.name || "N/A"}</td>
-                      <td>{session.date || "N/A"}</td>
-                      <td>{session.type || "N/A"}</td>
-                      <td>{session.distance || "N/A"}</td>
-                      <td>
-                          <button className="unapprove-button" onClick={() => handleUnapprove(session.id)}>
-                              X
-                          </button>
-                      </td>
-                  </tr>
-              );
-          })}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
+    );
 }
 
 export default AdminSessionTable;

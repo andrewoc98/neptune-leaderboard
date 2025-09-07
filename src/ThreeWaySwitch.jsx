@@ -4,6 +4,13 @@ function ThreeWaySwitch({ onChange }) {
     const [selected, setSelected] = useState('Season');
     const options = ['Season', 'Month', 'Week'];
 
+    // Abbreviation mapping
+    const abbreviations = {
+        Season: 'sea',
+        Month: 'mon',
+        Week: 'wk',
+    };
+
     const handleSelect = (option) => {
         setSelected(option);
         if (onChange) onChange(option);
@@ -37,10 +44,11 @@ function ThreeWaySwitch({ onChange }) {
                             cursor: 'pointer',
                             fontWeight: 'bold',
                             fontSize: '12px',
+                            textTransform: 'uppercase',
                         }}
                         title={option}
                     >
-                        {option[0]} {/* First letter only */}
+                        {abbreviations[option]}
                     </button>
                 );
             })}

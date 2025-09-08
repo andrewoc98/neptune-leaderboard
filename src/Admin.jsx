@@ -8,9 +8,9 @@ import QuotesModal from "./QuotesModal";
 import AdminSessionTable from "./AdminSessionTable";
 import MultiplierModal from "./MultiplerModal";
 import UserEditModal from "./UserEditModal";
-import SyncStravaButton from "./SyncStravaButton";
+import GmpModal from "./GmpModal";
 
-export default function Admin() {
+export default function Admin({gmpSpeeds}) {
     const [isAuthorized, setIsAuthorized] = useState(false);
     const [passwordInput, setPasswordInput] = useState("");
 
@@ -56,6 +56,7 @@ export default function Admin() {
         <QuotesModal />
         <MultiplierModal/>
         <UserEditModal/>
+        <GmpModal gmpSpeeds={gmpSpeeds}/>
       </div>
         {/* Submission Table */}
         <div style={{ width: '80%', maxWidth: '1200px', }}>

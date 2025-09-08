@@ -362,7 +362,43 @@ export async function fetchAllAthleteActivities() {
     }
 }
 
+/**
+ * Save the speeds object to Firestore
+ * @param {Object} speeds - Object containing all GMP speeds
+ */
+/**
+ * Save the speeds object to Firestore under page-data/gmp
+ * @param {Object} speeds - Object containing all GMP speeds
+ */
+export const saveSpeedsToFirestore = async (speeds) => {
+    try {
+        const docRef = doc(db, "page-data", "gmp");
+        await setDoc(docRef, { speeds, updatedAt: new Date() });
+        console.log("Speeds successfully saved to Firestore:", speeds);
+    } catch (error) {
+        console.error("Error saving speeds to Firestore:", error);
+    }
+};
 
+/**
+ * Fetch the speeds object from Firestore under page-data/gmp
+ * @returns {Promise<Object>} - Returns speeds object or empty object
+ */
+export const getGmpSpeeds = async () => {
+    try {
+        const docRef = doc(db, "page-data", "gmp");
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+            return docSnap.data().speeds || {};
+        } else {
+            console.log("No GMP speeds document found, returning empty object");
+            return {};
+        }
+    } catch (error) {
+        console.error("Error fetching GMP speeds from Firestore:", error);
+        return {};
+    }
+};
 
 
 

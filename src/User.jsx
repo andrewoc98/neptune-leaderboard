@@ -9,37 +9,10 @@ import {loadAllDocuments} from "./firebase";
 import {getAllSessionHistory} from "./Util"
 import ConnectStravaButton from "./ConnectStravaButton";
 
-export default function User() {
+export default function User({leaderboard, quotes, users, workouts, multipliers, sessions}) {
 
   const [openModal, setOpenModal] = useState(false)
-  const [leaderboard, setLeaderboard] = useState([])
-  const [quotes, setQuotes] = useState([])
-  const [users, setUsers] = useState({})
-  const [workouts, setWorkouts] = useState([])
-  const [multipliers, setMultipliers] = useState({})
-  const [sessions, setSessions] = useState([])
 
-    useEffect(() => {
-        const fetchLazyData = async () => {
-            try {
-                const lazyData = await loadAllDocuments();
-                const allSessions = await getAllSessionHistory();
-                setLeaderboard(lazyData[0].entries)
-                setMultipliers(lazyData[1])
-                setQuotes(lazyData[2].quotes)
-                setUsers(lazyData[4])
-                setWorkouts({erg:lazyData[5].erg.entries, water:lazyData[5].water.entries})
-                setSessions(allSessions)
-
-
-            } catch (e) {
-                console.log("Failed to load page documents", e)
-            }
-        }
-
-        fetchLazyData()
-
-    }, []);
   const onClose = () => {
     setOpenModal(false)
   }

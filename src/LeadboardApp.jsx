@@ -10,7 +10,7 @@ import {
 import ThreeWaySwitch from "./ThreeWaySwitch";
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
-export default function LeaderboardApp({sessions, multipliers, workouts, users, leaderboard, setOpenModal }) {
+export default function LeaderboardApp({sessions, multipliers, workouts, users, leaderboard, setOpenModal, gmpSpeeds }) {
   const [boatSelection, setBoatSelection] = useState({
       level:null,
       boat:null
@@ -84,7 +84,7 @@ export default function LeaderboardApp({sessions, multipliers, workouts, users, 
             const num = Number(firstChar);             // try to cast to number
             return isNaN(num) ? 0 : num;               // if NaN, return 0
         })();
-        const result = selectIndividuals(findLatestWithData(leaderboard, "waterData") ,users,numIndividuals, Number(boatSelection.level), type)
+        const result = selectIndividuals(findLatestWithData(leaderboard, "waterData") ,users,numIndividuals, Number(boatSelection.level), type, gmpSpeeds)
         setSelectedNames(result[1])
         setGmp(result[0])
   },[boatSelection])
@@ -196,7 +196,7 @@ const getRankingsOverTime = (history, type, key) => {
           } else if (key === "time") {
             return parseSplitTime(row.time);
           } else if (key === "goldPercentage") {
-            return goldMedalPercentage(row.time, row.boatClass, row.distance);
+            return goldMedalPercentage(row.time, row.boatClass, row.distance, gmpSpeeds);
           }
           return row[key] ?? 0;
         };
@@ -245,8 +245,8 @@ const getRankingsOverTime = (history, type, key) => {
 
   const sortedWater = [...(latestWater?.waterData || [])].sort((a, b) => {
     if (waterSortKey === "goldPercentage") {
-      return goldMedalPercentage(b.time, b.boatClass, b.distance) -
-        goldMedalPercentage(a.time, a.boatClass, a.distance);
+      return goldMedalPercentage(b.time, b.boatClass, b.distance, gmpSpeeds) -
+        goldMedalPercentage(a.time, a.boatClass, a.distance, gmpSpeeds);
     } else if (waterSortKey === "time") {
       return parseTimeToSeconds(a.time) - parseTimeToSeconds(b.time);
     }

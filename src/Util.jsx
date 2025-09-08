@@ -17,30 +17,17 @@ export function adjustedErgScore(split, weight) {
     return Math.floor(adjustedSeconds / 60) + ":" + ((adjustedSeconds % 60).toFixed(1));
 }
 
-export function goldMedalPercentage(time, boatClass, distance) {
+export function goldMedalPercentage(time, boatClass, distance, gmpSpeeds) {
     const [minutesStr, secTenthsStr] = time.split(':');
     const minutes = parseInt(minutesStr, 10);
     const seconds = parseFloat(secTenthsStr);
     const totalSeconds = minutes * 60 + seconds;
 
-    let gmpSpeed = 0;
-    switch (boatClass.toLowerCase()) {
-        case "1x": gmpSpeed = 5.119; break;
-        case "2x": gmpSpeed = 5.56; break;
-        case "4x+": gmpSpeed = 5.76; break;
-        case "4x-": gmpSpeed = 6.02; break;
-        case "2-": gmpSpeed = 5.43; break;
-        case "4+": gmpSpeed = 5.749; break;
-        case "8+": gmpSpeed = 6.276; break;
-        case "4-": gmpSpeed = 5.919; break;
-        default: return NaN; // instead of a string
-    }
+    const gmpSpeed = gmpSpeeds[boatClass.toLowerCase()];
+    if (gmpSpeed === undefined) return NaN;
 
     return (distance / totalSeconds) / gmpSpeed * 100;
 }
-export const getDistanceMultiplier = async () => {
-    return await getMultipliers();
-};
 
 const rankThreshold = {
   0: <TbFishBone size={20} />,
@@ -311,7 +298,7 @@ export function sortByDate(data) {
     });
 }
 
-export function selectIndividuals(data, users, numIndividuals, maxAveragePoints, type) {
+export function selectIndividuals(data, users, numIndividuals, maxAveragePoints, type, gmpSpeeds) {
     if(!maxAveragePoints || !data){
         return [0,[]]
     }
@@ -328,14 +315,14 @@ export function selectIndividuals(data, users, numIndividuals, maxAveragePoints,
                 if (user.scull === undefined) return null;
                 return {
                     name: d.name,
-                    goldMedalPercentage: Number(goldMedalPercentage(d.time, d.boatClass, d.distance)),
+                    goldMedalPercentage: Number(goldMedalPercentage(d.time, d.boatClass, d.distance, gmpSpeeds)),
                     points: user.scull
                 };
             } else if (type === "sweep") {
                 if (!user.sweep || user.sweep.points === undefined) return null;
                 return {
                     name: d.name,
-                    goldMedalPercentage: Number(goldMedalPercentage(d.time, d.boatClass, d.distance)),
+                    goldMedalPercentage: Number(goldMedalPercentage(d.time, d.boatClass, d.distance, gmpSpeeds)),
                     points: user.sweep.points,
                     side: user.sweep.side // Bow, Stroke, or Both
                 };

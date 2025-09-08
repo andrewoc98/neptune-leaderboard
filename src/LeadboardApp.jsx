@@ -356,30 +356,33 @@ const getRankingsOverTime = (history, type, key) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {sortedErg.map((rower, index) => (
-                    <tr key={rower.name}
-                      onClick={() => handleMouseEnter(rower.name)}>
-                      <td>{index + 1}</td>
-                      <td>{rower.name}</td>
-                      <td>{rower.weight}</td>
-                      <td>{rower.split}</td>
-                      <td>{adjustedErgScore(rower.split, rower.weight)}</td>
-                      <td>{getDelta(
-                        rower.name,
-                        index,
-                        sortedErg,
-                        prevErg?.ergData?.map(row => ({
-                          ...row,
-                          split: parseSplitTime(row.split),
-                          adjustedSplit: parseSplitTime(row.adjustedSplit)
-                        })),
-                        ergSortKey,
-                        true
-                      )}</td>
+                {sortedErg.map((rower, index) => (
+                    <tr
+                        key={rower.name}
+                        onClick={() => handleMouseEnter(rower.name)}
+                        className={rower.overRate ? "overrate-row" : ""}
+                    >
+                        <td>{index + 1}</td>
+                        <td>{rower.name}</td>
+                        <td>{rower.weight}</td>
+                        <td>{rower.split}</td>
+                        <td>{adjustedErgScore(rower.split, rower.weight)}</td>
+                        <td>{getDelta(
+                            rower.name,
+                            index,
+                            sortedErg,
+                            prevErg?.ergData?.map(row => ({
+                                ...row,
+                                split: parseSplitTime(row.split),
+                                adjustedSplit: parseSplitTime(row.adjustedSplit)
+                            })),
+                            ergSortKey,
+                            true
+                        )}</td>
                     </tr>
-                  ))}
+                ))}
                 </tbody>
-              </table>
+            </table>
           </div>
         </div>
       )}
@@ -443,37 +446,37 @@ const getRankingsOverTime = (history, type, key) => {
                     <th>Change</th>
                   </tr>
                 </thead>
-                  <tbody>
-                  {sortedWater.map((rower, index) => (
-                      <tr
-                          key={rower.name}
-                          onClick={() => handleMouseEnter(rower.name)}
-                          className={selectedNames.includes(rower.name) ? "gold-row" : ""}
-                      >
-                          <td>{index + 1}</td>
-                          <td>{rower.name}</td>
-                          <td>{rower.boatClass}</td>
-                          <td>{rower.time}</td>
-                          <td>
-                              {goldMedalPercentage(rower.time, rower.boatClass, rower.distance).toFixed(2)}%
-                          </td>
-                          <td>
-                              {getDelta(
-                                  rower.name,
-                                  index,
-                                  sortedWater,
-                                  prevWater?.waterData?.map(row => ({
-                                      ...row,
-                                      time: parseTimeToSeconds(row.time)
-                                  })),
-                                  waterSortKey,
-                                  waterSortKey !== "goldPercentage"
-                              )}
-                          </td>
-                      </tr>
-                  ))}
-                  </tbody>
-              </table>
+                <tbody>
+                {sortedWater.map((rower, index) => (
+                    <tr
+                        key={rower.name}
+                        onClick={() => handleMouseEnter(rower.name)}
+                        className={`${selectedNames.includes(rower.name) ? "gold-row" : ""} ${rower.overRate ? "overrate-row" : ""}`}
+                    >
+                        <td>{index + 1}</td>
+                        <td>{rower.name}</td>
+                        <td>{rower.boatClass}</td>
+                        <td>{rower.time}</td>
+                        <td>
+                            {goldMedalPercentage(rower.time, rower.boatClass, rower.distance, gmpSpeeds).toFixed(2)}%
+                        </td>
+                        <td>
+                            {getDelta(
+                                rower.name,
+                                index,
+                                sortedWater,
+                                prevWater?.waterData?.map(row => ({
+                                    ...row,
+                                    time: parseTimeToSeconds(row.time)
+                                })),
+                                waterSortKey,
+                                waterSortKey !== "goldPercentage"
+                            )}
+                        </td>
+                    </tr>
+                ))}
+                </tbody>
+            </table>
           </div>
         </div>
       )}

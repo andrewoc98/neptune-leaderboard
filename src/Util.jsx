@@ -22,7 +22,6 @@ export function goldMedalPercentage(time, boatClass, distance, gmpSpeeds) {
     const minutes = parseInt(minutesStr, 10);
     const seconds = parseFloat(secTenthsStr);
     const totalSeconds = minutes * 60 + seconds;
-
     const gmpSpeed = gmpSpeeds[boatClass.toLowerCase()];
     if (gmpSpeed === undefined) return NaN;
 

@@ -2,12 +2,12 @@ import { useState } from "react";
 import "./LeadboardModal.css"
 import { saveLeaderBoardtoDB } from "./firebase";
 import { formatDate } from "./Util";
-import {Kayak} from 'lucide-react'
+import { Kayak } from 'lucide-react'
 import { ToastContainer, toast } from "react-toastify";
 
 export default function WaterLeaderBoardModal() {
     const [open, setOpen] = useState(false);
-    const [rows, setRows] = useState([{ name: "", boatClass: "", time: "", distance: "" }]);
+    const [rows, setRows] = useState([{ name: "", boatClass: "", time: "", distance: "", overRate: false }]);
     const [date, setDate] = useState()
     const [errors, setErrors] = useState([]);
 
@@ -18,7 +18,7 @@ export default function WaterLeaderBoardModal() {
     };
 
     const addRow = () => {
-        setRows([...rows, { name: "", boatClass: "", time: "", distance: "" }]);
+        setRows([...rows, { name: "", boatClass: "", time: "", distance: "", overRate: false }]);
     };
 
     const removeRow = (index) => {
@@ -52,14 +52,14 @@ export default function WaterLeaderBoardModal() {
         }
         saveLeaderBoardtoDB({ date: date, waterData: rows }) // Replace with DB post
         setOpen(false);
-        setRows([{ name: "", boatClass: "", time: "", distance: "" }])
+        setRows([{ name: "", boatClass: "", time: "", distance: "", overRate: false }])
         setErrors([])
         toast.success("Leaderboard Uploaded");
     };
 
     return (
         <>
-            <button className="btn" onClick={() => setOpen(true)}><Kayak/></button>
+            <button className="btn" onClick={() => setOpen(true)}><Kayak /></button>
             {open && (
                 <div className="modal-overlay">
                     <div className="modal">
@@ -68,7 +68,11 @@ export default function WaterLeaderBoardModal() {
                         </div>
 
                         <div className="modal-body">
-                            <input className="modal-input" type={'date'} onChange={(e) => setDate(formatDate(e.target.value.replaceAll('-', '/')))} />
+                            <input
+                                className="modal-input"
+                                type={'date'}
+                                onChange={(e) => setDate(formatDate(e.target.value.replaceAll('-', '/')))}
+                            />
                             {rows.map((row, index) => (
                                 <div key={index} className="row">
                                     <div className="field">
@@ -136,11 +140,21 @@ export default function WaterLeaderBoardModal() {
                                         {errors[index]?.distance && <p className="error">{errors[index].distance}</p>}
                                     </div>
 
+                                    <div className="field checkbox-field">
+                                        <label>
+                                            <input
+                                                type="checkbox"
+                                                checked={row.overRate}
+                                                onChange={(e) => handleRowChange(index, "overRate", e.target.checked)}
+                                            />
+                                            Over-rate
+                                        </label>
+                                    </div>
+
                                     <div className="row-actions">
                                         <button className="btn btn-danger" onClick={() => removeRow(index)}>Remove</button>
                                     </div>
                                 </div>
-
                             ))}
 
                             <button className="btn btn-outline" onClick={addRow}>+ Add Row</button>

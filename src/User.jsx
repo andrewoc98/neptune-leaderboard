@@ -9,7 +9,7 @@ import {loadAllDocuments} from "./firebase";
 import {getAllSessionHistory} from "./Util"
 import ConnectStravaButton from "./ConnectStravaButton";
 
-export default function User({leaderboard, quotes, users, workouts, multipliers, sessions}) {
+export default function User({leaderboard, quotes, users, workouts, multipliers, sessions, gmpSpeeds}) {
 
   const [openModal, setOpenModal] = useState(false)
 
@@ -25,7 +25,13 @@ export default function User({leaderboard, quotes, users, workouts, multipliers,
 
   return (
     <>
-      <LeaderboardApp sessions={sessions} multipliers={multipliers} workouts = {workouts} users={users} leaderboard ={leaderboard} setOpenModal={setOpenModal} />
+      <LeaderboardApp sessions={sessions}
+                      multipliers={multipliers}
+                      workouts = {workouts}
+                      users={users}
+                      leaderboard ={leaderboard}
+                      setOpenModal={setOpenModal}
+                      gmpSpeeds={gmpSpeeds}/>
       <Quote quotes={quotes}/>
       <div className="about-stripe">
         <Rules />

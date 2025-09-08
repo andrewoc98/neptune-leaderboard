@@ -59,7 +59,8 @@ function App() {
                          users={users}
                          workouts={workouts}
                          multipliers={multipliers}
-                         sessions={sessions}/>}
+                         sessions={sessions}
+                         gmpSpeeds={gmpSpeeds}/>}
         {admin && <Admin gmpSpeeds={gmpSpeeds}/>}
       </main>
       <ToastContainer

@@ -7,7 +7,7 @@ import { formatDate } from "./Util";
 
 export default function LeaderboardModal() {
     const [open, setOpen] = useState(false);
-    const [rows, setRows] = useState([{ name: "", weight: "", split: "" }]);
+    const [rows, setRows] = useState([{ name: "", weight: "", split: "", overRate: false }]);
     const [errors, setErrors] = useState([]);
     const [date, setDate] = useState("")
 
@@ -18,7 +18,7 @@ export default function LeaderboardModal() {
     };
 
     const addRow = () => {
-        setRows([...rows, { name: "", weight: "", split: "" }]);
+        setRows([...rows, { name: "", weight: "", split: "", overRate: false }]);
     };
 
     const removeRow = (index) => {
@@ -50,7 +50,7 @@ export default function LeaderboardModal() {
         console.log(rows);
         saveLeaderBoardtoDB({ date: date, ergData: rows }) // Replace with DB post
         setOpen(false);
-        setRows([{ name: "", weight: "", split: "" }]);
+        setRows([{ name: "", weight: "", split: "", overRate: false }]);
         setErrors([])
         toast.success("Leaderboard Uploaded");
     };
@@ -116,6 +116,17 @@ export default function LeaderboardModal() {
                                         {errors[index]?.split && (
                                             <p className="error">{errors[index].split}</p>
                                         )}
+                                    </div>
+
+                                    <div className="field checkbox-field">
+                                        <label>
+                                            <input
+                                                type="checkbox"
+                                                checked={row.overRate}
+                                                onChange={(e) => handleRowChange(index, "overRate", e.target.checked)}
+                                            />
+                                            Over-rate
+                                        </label>
                                     </div>
 
                                     <button className="btn btn-danger" onClick={() => removeRow(index)}>Remove</button>

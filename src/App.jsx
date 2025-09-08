@@ -24,14 +24,13 @@ function App() {
                 const lazyData = await loadAllDocuments();
                 const allSessions = await getAllSessionHistory();
 
-                console.log(lazyData[0])
                 setLeaderboard(lazyData[1].entries)
                 setMultipliers(lazyData[2])
                 setQuotes(lazyData[3].quotes)
                 setUsers(lazyData[5])
                 setWorkouts({erg:lazyData[6].erg.entries, water:lazyData[6].water.entries})
                 setSessions(allSessions)
-                setGmpSpeeds(lazyData[0])
+                setGmpSpeeds(lazyData[0].speeds)
 
 
             } catch (e) {

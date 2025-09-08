@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import {Gauge} from "lucide-react"
-import {getGmpSpeeds} from "./firebase";
+import { Gauge } from "lucide-react";
+import { saveSpeedsToFirestore } from "./firebase"; // adjust import path as needed
 
-export default function GmpModal({gmpSpeeds}) {
+export default function GmpModal({ gmpSpeeds }) {
     const [isOpen, setIsOpen] = useState(false);
     const [speeds, setSpeeds] = useState({});
     const [selectedKey, setSelectedKey] = useState("1x");
@@ -10,24 +10,21 @@ export default function GmpModal({gmpSpeeds}) {
     const [minutes, setMinutes] = useState(0);
     const [seconds, setSeconds] = useState(0);
 
+    useEffect(() => {
+        if (!isOpen) return; // Only load speeds when modal opens
+        setSpeeds(gmpSpeeds);
+    }, [isOpen, gmpSpeeds]);
 
     useEffect(() => {
-        if (!isOpen) return; // Only fetch when modal is opened
-        setSpeeds(gmpSpeeds)
-
-    }, [isOpen]);
-
-    // Update minutes/seconds when speed or distance changes
-    useEffect(() => {
+        if (!speeds[selectedKey]) return;
         const totalSeconds = distance / speeds[selectedKey];
         const min = Math.floor(totalSeconds / 60);
         const sec = totalSeconds - min * 60;
         setMinutes(min);
-        setSeconds(parseFloat(sec.toFixed(1))); // one decimal point
+        setSeconds(parseFloat(sec.toFixed(1)));
     }, [selectedKey, speeds, distance]);
 
     const updateSpeedFromTime = (min, sec) => {
-        // Normalize seconds if ≥ 60
         let totalSeconds = min * 60 + sec;
         if (totalSeconds <= 0) return;
         const newMin = Math.floor(totalSeconds / 60);
@@ -36,7 +33,7 @@ export default function GmpModal({gmpSpeeds}) {
         setSeconds(parseFloat(newSec.toFixed(1)));
         setSpeeds((prev) => ({
             ...prev,
-            [selectedKey]: parseFloat((distance / totalSeconds).toFixed(3))
+            [selectedKey]: parseFloat((distance / totalSeconds).toFixed(3)),
         }));
     };
 
@@ -67,19 +64,23 @@ export default function GmpModal({gmpSpeeds}) {
         const totalSeconds = minutes * 60 + seconds;
         setSpeeds((prev) => ({
             ...prev,
-            [selectedKey]: parseFloat((newDistance / totalSeconds).toFixed(3))
+            [selectedKey]: parseFloat((newDistance / totalSeconds).toFixed(3)),
         }));
     };
 
-    const handleSubmit = () => {
-        console.log("Updated speeds:", speeds);
-        setIsOpen(false);
+    const handleSubmit = async () => {
+        try {
+            await saveSpeedsToFirestore(speeds);
+            setIsOpen(false);
+        } catch (error) {
+            console.error("Failed to save speeds:", error);
+        }
     };
 
     return (
         <>
             <button className="btn" onClick={() => setIsOpen(true)}>
-                <Gauge/>
+                <Gauge />
             </button>
 
             {isOpen && (
@@ -117,7 +118,7 @@ export default function GmpModal({gmpSpeeds}) {
                                 <input
                                     type="number"
                                     className="modal-input"
-                                    value={speeds[selectedKey]}
+                                    value={speeds[selectedKey] || ""}
                                     onChange={(e) => handleSpeedChange(e.target.value)}
                                 />
                             </div>
@@ -149,10 +150,16 @@ export default function GmpModal({gmpSpeeds}) {
                         </div>
 
                         <div className="modal-footer">
-                            <button className="modal-button cancel" onClick={() => setIsOpen(false)}>
+                            <button
+                                className="modal-button cancel"
+                                onClick={() => setIsOpen(false)}
+                            >
                                 Cancel
                             </button>
-                            <button className="modal-button submit" onClick={handleSubmit}>
+                            <button
+                                className="modal-button submit"
+                                onClick={handleSubmit}
+                            >
                                 Save
                             </button>
                         </div>

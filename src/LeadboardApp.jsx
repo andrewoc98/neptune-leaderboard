@@ -343,7 +343,6 @@ const getRankingsOverTime = (history, type, key) => {
                   <tr>
                     <th>Rank</th>
                     <th>Name</th>
-                    <th>Weight (kg)</th>
                     <th onClick={() => handleErgSort("split")}
                       className={`sortable ${ergSortKey === "split" ? "sorted-column" : ""}`}>
                       Split /500m
@@ -364,7 +363,6 @@ const getRankingsOverTime = (history, type, key) => {
                     >
                         <td>{index + 1}</td>
                         <td>{rower.name}</td>
-                        <td>{rower.weight}</td>
                         <td>{rower.split}</td>
                         <td>{adjustedErgScore(rower.split, rower.weight)}</td>
                         <td>{getDelta(

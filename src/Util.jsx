@@ -167,7 +167,7 @@ export function getSessionStats(period, distanceMultiplier, allSessions) {
 
 
 
-export function getDistanceForLastPeriod(period, allSessions) {
+export function getDistanceForLastPeriod(period, allSessions, multiplier) {
     const today = new Date();
     today.setHours(23, 59, 59, 999); // End of today
 
@@ -204,7 +204,7 @@ export function getDistanceForLastPeriod(period, allSessions) {
             if (!distanceMap[name]) {
                 distanceMap[name] = 0;
             }
-            distanceMap[name] += Number(distance);
+            distanceMap[name] += Number(distance)*multiplier[entry.type];
         }
     });
 

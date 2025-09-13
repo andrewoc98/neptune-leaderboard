@@ -124,7 +124,7 @@ export default function LeaderboardApp({sessions, multipliers, workouts, users, 
 
     const fetchChange = async () => {
       try {
-        const change = getDistanceForLastPeriod(timeScale, sessions)
+        const change = getDistanceForLastPeriod(timeScale, sessions,multipliers)
         setChangePerRower(change);
       } catch (error) {
         console.error("Error fetching change:", error);

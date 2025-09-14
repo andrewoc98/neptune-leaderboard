@@ -36,12 +36,18 @@ export default function UserEditModal() {
         });
     };
 
-    const openAddUser = () => {
+  const openAddUser = () => {
+    const password = prompt("Enter admin password to add a user:");
+    
+    if (password === "yourSecretPassword") {
         setIsAdding(true);
         setSelectedUser("");
         setFormData({ scull: 0, sweepSide: "Bow", sweepPoints: 0, champs: true });
         setNewUserName("");
-    };
+    } else {
+        alert("Incorrect password. Access denied.");
+    }
+};
 
     const closeModal = () => {
         setIsOpen(false);

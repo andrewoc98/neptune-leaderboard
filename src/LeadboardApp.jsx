@@ -359,23 +359,22 @@ const getRankingsOverTime = (history, type, key) => {
         let cutoff = null;
         if (timescale === "month") {
             cutoff = new Date(now);
-            cutoff.setMonth(now.getMonth() - 1); // exactly one month back
+            cutoff.setMonth(now.getMonth() - 1);
         } else if (timescale === "week") {
             cutoff = new Date(now);
-            cutoff.setDate(now.getDate() - 7); // exactly 7 days back
+            cutoff.setDate(now.getDate() - 7);
         }
         // "season" = no cutoff (all data)
 
         sessions.forEach(s => {
             if (!s.name || !s.date || s.distance == null) return;
             if (s.name === name) {
-                const [day, month, year] = s.date.split("/").map(Number);
-                const d = new Date(year, month - 1, day);
+                const d = s.date; // guaranteed to be a Date object
 
                 // skip if before cutoff
                 if (cutoff && d < cutoff) return;
 
-                const dayKey = d.toISOString().split("T")[0];
+                const dayKey = d.toISOString().split("T")[0]; // YYYY-MM-DD
                 const distanceNum = Number(s.distance);
                 const multiplier = multipliers[s.type] || 1;
 
@@ -397,7 +396,6 @@ const getRankingsOverTime = (history, type, key) => {
 
         return { dates, distances: cumulativeDistances };
     };
-
 
     return (
     <div className="container">

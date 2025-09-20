@@ -72,24 +72,6 @@ export function getRankIcon(value) {
     return result;
 }
 
-function parseDate(dateStr) {
-    const [day, month, year] = dateStr.split("/").map(Number);
-    return new Date(year, month - 1, day);
-}
-
-function getMonthStart(date) {
-    const newDate = new Date(date);
-    newDate.setDate(newDate.getDate() - 30);
-    return newDate;
-}
-
-function getWeekStart(date) {
-    const start = new Date(date);
-    start.setDate(date.getDate() - 6);
-    start.setHours(0, 0, 0, 0);
-    return start;
-}
-
 export async function getAllSessionHistory() {
     const result = [];
     const snapshot = await getDocs(collection(database, "sessionHistory"));
@@ -134,7 +116,7 @@ export function getSessionStats(period, distanceMultiplier, allSessions) {
     allSessions.forEach(entry => {
         if (!entry.approved) return;
 
-        const entryDate = parseDate(entry.date);
+        const entryDate = entry.date
         if (entryDate >= startDate && entryDate <= today) {
             const { name, distance, intense, weights, type } = entry;
 
@@ -198,7 +180,7 @@ export function getDistanceForLastPeriod(period, allSessions, multiplier) {
     const distanceMap = {};
 
     allSessions.forEach(entry => {
-        const entryDate = parseDate(entry.date);
+        const entryDate = entry.date;
         if (entryDate >= startDate && entryDate <= endDate) {
             const { name, distance } = entry;
             if (!distanceMap[name]) {

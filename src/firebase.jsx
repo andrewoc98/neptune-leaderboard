@@ -156,13 +156,13 @@ export async function updateOrAppendWorkout(newEntry) {
 
         const data = snapshot.data();
         const entries = data[refId] || [];
-
+        console.log(entries.entries)
         // Check if an entry with the same date exists
-        const index = entries.findIndex(entry => entry.date === newEntry.date);
+        const index = entries.entries.findIndex(entry => entry.date === newEntry.date);
 
         if (index !== -1) {
             // Update the existing entry
-            entries[index] = newEntry;
+            entries.entries[index] = newEntry;
             await updateDoc(ref, {[refId]:{ entries }});
         } else {
             // Append the new entry

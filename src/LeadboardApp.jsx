@@ -27,7 +27,8 @@ export default function LeaderboardApp({sessions, multipliers, workouts, users, 
   const [flash, setFlash] = useState(false);
   const [changePerRower, setChangePerRower] = useState([])
   const [rankHistory, setRankHistory] = useState({ dates: [], rankMap: {} });
-    const [compareNames, setCompareNames] = useState([]);
+  const [diffHistory, setDiffHistory] = useState({ dates: [], diffMap: {} });
+  const [compareNames, setCompareNames] = useState([]);
 
   const [pieces, setPieces] = useState({erg:{
     currentWeek: 'TBD',
@@ -89,16 +90,15 @@ export default function LeaderboardApp({sessions, multipliers, workouts, users, 
         setGmp(result[0])
   },[boatSelection])
 
-  useEffect(() => {
-    if (leaderboard.length === 0) return;
-    const { dates, rankMap } = getRankingsOverTime(
-      leaderboard,
-      activeTab === "erg" ? "ergData" : "waterData",
-      activeTab === "erg" ? ergSortKey : waterSortKey
-    );
+    useEffect(() => {
+        if (leaderboard.length === 0) return;
+        const type = activeTab === "erg" ? "ergData" : "waterData";
+        const key = activeTab === "erg" ? ergSortKey : waterSortKey;
 
-    setRankHistory({ dates, rankMap });
-  }, [leaderboard, activeTab, ergSortKey, waterSortKey]);
+        const { dates, diffMap } = getDiffsOverTime(leaderboard, type, key);
+        setDiffHistory({ dates, diffMap });
+    }, [leaderboard, activeTab, ergSortKey, waterSortKey]);
+
 
   useEffect(() => {
     const fetchWorkouts = () => {
@@ -214,7 +214,47 @@ const getRankingsOverTime = (history, type, key) => {
   return { dates, rankMap };
 };
 
-  const parseSplitTime = (timeStr) => {
+    const getDiffsOverTime = (history, type, key) => {
+        const nameSet = new Set();
+
+        history.forEach(snapshot => {
+            if (snapshot[type]) {
+                snapshot[type].forEach(row => nameSet.add(row.name));
+            }
+        });
+
+        const names = Array.from(nameSet);
+        const dates = history.map(h => h.date);
+        const diffMap = {};
+
+        names.forEach(name => {
+            diffMap[name] = history.map(snapshot => {
+                const rows = snapshot[type];
+                if (!rows) return null;
+
+                const sorted = [...rows].sort((a, b) => {
+                    const getValue = (row) => secondsFor(row, key) ?? Infinity;
+                    return getValue(a) - getValue(b);
+                });
+
+                if (sorted.length === 0) return null;
+
+                const leader = sorted[0];
+                const row = sorted.find(r => r.name === name);
+                if (!row) return null;
+
+                const leaderSec = secondsFor(leader, key);
+                const rowSec = secondsFor(row, key);
+                if (leaderSec == null || rowSec == null) return null;
+
+                return +(rowSec - leaderSec).toFixed(1); // numeric seconds difference
+            });
+        });
+
+        return { dates, diffMap };
+    };
+
+    const parseSplitTime = (timeStr) => {
     if (!timeStr || typeof timeStr !== "string") return Infinity;
     const [min, sec] = timeStr.split(":");
     return parseInt(min, 10) * 60 + parseFloat(sec);
@@ -258,14 +298,58 @@ const getRankingsOverTime = (history, type, key) => {
     setTimeScale(newSetting.toLowerCase());
   };
 
-  const getDelta = (name, index, currentList, prevList, key, sortAsc = true) => {
-    if (!prevList) return "-";
-    const sortedPrev = [...prevList].sort((a, b) => sortAsc ? a[key] - b[key] : b[key] - a[key]);
-    const prevIndex = sortedPrev.findIndex(r => r.name === name);
-    if (prevIndex === -1) return "-";
-    const diff = prevIndex - index;
-    return diff === 0 ? "-" : diff > 0 ? `↑ ${diff}` : `↓ ${-diff}`;
-  };
+// helper: convert a row + key into seconds (or null if not available)
+    const secondsFor = (row, key) => {
+        if (!row) return null;
+
+        // adjustedSplit is computed from split + weight using your util
+        if (key === "adjustedSplit") {
+            const adj = adjustedErgScore(row.split, row.weight); // should return "m:ss.s"
+            return parseSplitTime(adj);
+        }
+
+        if (key === "split") {
+            return parseSplitTime(row.split);
+        }
+
+        if (key === "time") {
+            return parseTimeToSeconds(row.time);
+        }
+
+        // fallback: if the property is numeric, use it; if it's a time-like string try parse
+        const val = row[key];
+        if (typeof val === "number") return val;
+        if (typeof val === "string") {
+            if (val.includes(":")) return parseSplitTime(val);
+            const n = parseFloat(val);
+            return isNaN(n) ? null : n;
+        }
+
+        return null;
+    };
+
+// returns delta between the leader (currentList[0]) and the named rower
+// e.g. "+1.6s" means that rower is 1.6s behind the leader
+    const getDelta = (name, index, currentList, prevList, key) => {
+        if (!currentList || currentList.length === 0) return "-";
+
+        const leader = currentList[0];
+        const row = currentList.find(r => r.name === name);
+        if (!row) return "-";
+
+        const leaderSec = secondsFor(leader, key);
+        const rowSec = secondsFor(row, key);
+
+        // invalid / missing data
+        if (leaderSec == null || rowSec == null || !isFinite(leaderSec) || !isFinite(rowSec)) return "-";
+
+        const diff = rowSec - leaderSec; // positive => behind leader
+        // small tolerance to avoid showing tiny floating jitter
+        if (Math.abs(diff) < 0.05) return "-";
+
+        return `${diff > 0 ? "+" : "-"}${Math.abs(diff).toFixed(1)}s`;
+    };
+
 
     const getDistanceHistory = (name, timescale = "season") => {
         const history = {};
@@ -351,7 +435,7 @@ const getRankingsOverTime = (history, type, key) => {
                       className={`sortable ${ergSortKey === "adjustedSplit" ? "sorted-column" : ""}`}>
                       Adj. Split /500m
                     </th>
-                    <th>Change</th>
+                    <th>Diff</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -441,7 +525,7 @@ const getRankingsOverTime = (history, type, key) => {
                       className={`sortable ${waterSortKey === "goldPercentage" ? "sorted-column" : ""}`}>
                       Gold Medal %
                     </th>
-                    <th>Change</th>
+                    <th>Diff</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -666,29 +750,34 @@ const getRankingsOverTime = (history, type, key) => {
                     ) : (
                         <Line
                             data={{
-                                labels: rankHistory.dates,
+                                labels: diffHistory.dates,
                                 datasets: [
                                     {
-                                        label: "Rank",
-                                        data: rankHistory.rankMap[hoveredName],
+                                        label: hoveredName,
+                                        data: diffHistory.diffMap[hoveredName],
                                         borderColor: "#3b82f6",
                                         backgroundColor: "#60a5fa",
                                         spanGaps: true,
                                     },
+                                    ...compareNames.map((name, idx) => ({
+                                        label: name,
+                                        data: diffHistory.diffMap[name],
+                                        borderColor: `hsl(${(idx * 60) % 360}, 70%, 50%)`,
+                                        spanGaps: true,
+                                    })),
                                 ],
                             }}
-                            height={"300%"}
+                            height={300}
                             options={{
                                 responsive: true,
                                 maintainAspectRatio: true,
                                 scales: {
                                     y: {
-                                        min: 1,
-                                        reverse: true,
-                                        ticks: { stepSize: 1, precision: 0 ,color:"white" },
-                                        grace: "20%",
+                                        reverse: true, // invert graph so leader (0s) is on top
+                                        title: { display: true, text: "Gap to Leader (s)", color: "white" },
+                                        ticks: { color: "white" },
                                     },
-                                    x: { ticks: { color:"white" } }
+                                    x: { ticks: { color: "white" } },
                                 },
                             }}
                         />

@@ -155,7 +155,7 @@ function AdminSessionTable() {
                                 }}
                             >
                                 <td>{session.name || "N/A"}</td>
-                                <td>{session.date ? session.date.toLocaleDateString() : "N/A"}</td>
+                                <td>{session.date ? session.date.toLocaleDateString("en-GB") : "N/A"}</td>
                                 <td>{session.type || "N/A"}</td>
                                 <td>{session.distance || "N/A"}</td>
                                 <td>

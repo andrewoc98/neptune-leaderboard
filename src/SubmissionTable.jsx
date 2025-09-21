@@ -84,7 +84,7 @@ export default function ExerciseTable() {
                                     <td>{row.weights ? "✔" : "✖"}</td>
                                     <td>{row.intense ? "✔" : "✖"}</td>
                                     <td>{row.type}</td>
-                                    <td>{row.date.toLocaleDateString()}</td>
+                                    <td>{row.date.toLocaleDateString("en-GB")}</td>
                                 </tr>
                             )
                     )}

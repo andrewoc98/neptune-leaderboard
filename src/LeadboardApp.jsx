@@ -635,7 +635,7 @@ const getRankingsOverTime = (history, type, key) => {
                                     const diff = currentDistance - prevDistance;
                                     console.log(diff)
                                     if (diff === 0) return "-";
-
+                                    console
                                     return (
                                         <>
                                             {Math.abs(diff).toLocaleString("en-US")}{" "}

@@ -159,20 +159,38 @@ export function getDistanceForLastPeriod(period, allSessions, distanceMultiplier
     const today = new Date();
     today.setHours(23, 59, 59, 999);
 
-    let startDate;
+    let currentStart, previousStart, previousEnd;
+
     if (period === "month") {
-        startDate = new Date(today);
-        startDate.setDate(today.getDate() - 29);
-        startDate.setHours(0, 0, 0, 0);
+        currentStart = new Date(today);
+        currentStart.setDate(today.getDate() - 29); // last 30 days
+        currentStart.setHours(0, 0, 0, 0);
+
+        previousStart = new Date(today);
+        previousStart.setDate(today.getDate() - 59); // 60 days ago
+        previousStart.setHours(0, 0, 0, 0);
+
+        previousEnd = new Date(today);
+        previousEnd.setDate(today.getDate() - 30); // 30 days ago
+        previousEnd.setHours(23, 59, 59, 999);
     } else if (period === "week") {
-        startDate = new Date(today);
-        startDate.setDate(today.getDate() - 6);
-        startDate.setHours(0, 0, 0, 0);
+        currentStart = new Date(today);
+        currentStart.setDate(today.getDate() - 6); // last 7 days
+        currentStart.setHours(0, 0, 0, 0);
+
+        previousStart = new Date(today);
+        previousStart.setDate(today.getDate() - 13); // 14 days ago
+        previousStart.setHours(0, 0, 0, 0);
+
+        previousEnd = new Date(today);
+        previousEnd.setDate(today.getDate() - 7); // 7 days ago
+        previousEnd.setHours(23, 59, 59, 999);
     } else {
-        startDate = new Date(-8640000000000000);
+        return {}; // no change for season
     }
 
     const distanceByRower = {};
+    const prevDistanceByRower = {};
 
     allSessions.forEach(session => {
         if (!session.approved) return;
@@ -181,15 +199,26 @@ export function getDistanceForLastPeriod(period, allSessions, distanceMultiplier
         if (!entryDate) return;
         entryDate.setHours(0, 0, 0, 0);
 
-        if (entryDate >= startDate && entryDate <= today) {
-            const { name, distance, type } = session;
-            const multiplier = distanceMultiplier[type] || 1; // fallback to 1
+        const { name, distance, type } = session;
+        const multiplier = distanceMultiplier[type] || 1;
+
+        if (entryDate >= currentStart && entryDate <= today) {
             distanceByRower[name] = (distanceByRower[name] || 0) + Number(distance) * multiplier;
+        } else if (entryDate >= previousStart && entryDate <= previousEnd) {
+            prevDistanceByRower[name] = (prevDistanceByRower[name] || 0) + Number(distance) * multiplier;
         }
     });
 
-    return distanceByRower;
+    // return delta between current and previous period
+    const changeByRower = {};
+    const allNames = new Set([...Object.keys(distanceByRower), ...Object.keys(prevDistanceByRower)]);
+    allNames.forEach(name => {
+        changeByRower[name] = (distanceByRower[name] || 0) - (prevDistanceByRower[name] || 0);
+    });
+
+    return changeByRower;
 }
+
 
 
 export function listenToUnApprovedSessions(callback) {

@@ -1,6 +1,6 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { collection, getDocs, getFirestore, arrayUnion  } from "firebase/firestore";
+import {collection, getDocs, getFirestore, arrayUnion, query, where, onSnapshot} from "firebase/firestore";
 import { doc, setDoc, deleteDoc } from "firebase/firestore";
 import { getDoc, updateDoc } from "firebase/firestore";
 import { v4 as uuidv4 } from 'uuid';
@@ -380,8 +380,20 @@ export const saveSpeedsToFirestore = async (speeds) => {
     }
 };
 
+export function listenToUnApprovedSessions(callback) {
+    const sessionsRef = collection(database, "sessionHistory");
 
+    // Create a query for unapproved sessions
+    const q = query(sessionsRef, where("approved", "==", false));
 
+    // Listen in real-time
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+        const sessions = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+        callback(sessions);
+    });
 
-
-
+    return unsubscribe; // allows you to call this in useEffect cleanup
+}

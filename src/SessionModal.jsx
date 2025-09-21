@@ -3,29 +3,18 @@ import './modal.css';
 import { rowerSession } from "./firebase";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { formatDate } from './Util';
 
 export default function SessionModal({ isOpen, onClose, onSubmit }) {
     const [formData, setFormData] = useState({
-        names: [],   // now an array
+        names: [],
         distance: '',
         weights: false,
         intense: false,
         notes: '',
         type: 'Erg',
-        date: verifydate(new Date().toLocaleDateString()),
+        date: new Date(), // store as Date object
         split: ''
     });
-
-    function verifydate(dateStr) {
-        if (!dateStr) return "";
-        const parts = dateStr.split("/");
-        if (parts.length !== 3) return dateStr;
-        let [day, month, year] = parts;
-        day = day.padStart(2, "0");
-        month = month.padStart(2, "0");
-        return `${day}/${month}/${year}`;
-    }
 
     const names = [
         "Alex Gillick", "Andrew O'Connor", "Ben Brennan", "Devon Goldrick",
@@ -42,10 +31,10 @@ export default function SessionModal({ isOpen, onClose, onSubmit }) {
         if (!formData.distance && !formData.weights) newErrors.distance = 'Distance is required';
 
         if (formData.weights) {
-            setFormData({ ...formData, distance: 0, type: 'Other' });
+            setFormData(prev => ({ ...prev, distance: 0, type: 'Other' }));
         }
 
-        setFormData({ ...formData, distance: Number(formData.distance) });
+        setFormData(prev => ({ ...prev, distance: Number(prev.distance) }));
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -58,11 +47,8 @@ export default function SessionModal({ isOpen, onClose, onSubmit }) {
             rowerSession(sessionData);
         });
 
-        toast.success("Sessions have been submitted for review", {
-            toastId: "session-submit"
-        });
+        toast.success("Sessions have been submitted for review", { toastId: "session-submit" });
 
-        // reset
         setFormData({
             names: [],
             distance: '',
@@ -70,12 +56,15 @@ export default function SessionModal({ isOpen, onClose, onSubmit }) {
             intense: false,
             notes: '',
             type: 'Erg',
-            date: verifydate(new Date().toLocaleDateString()),
+            date: new Date(), // reset to current date
             split: ''
         });
 
         onClose();
     };
+
+    // Convert Date object to YYYY-MM-DD for <input type="date">
+    const formatDateForInput = (date) => date.toISOString().split('T')[0];
 
     return (
         <>
@@ -95,22 +84,17 @@ export default function SessionModal({ isOpen, onClose, onSubmit }) {
                                                 setFormData({ ...formData, names: [...formData.names, selected] });
                                             }
                                         }}
-                                        value="" // always reset dropdown after choosing
+                                        value=""
                                     >
                                         <option value="">Add a rower</option>
-                                        {names.map((n) => (
-                                            <option key={n} value={n}>
-                                                {n}
-                                            </option>
-                                        ))}
+                                        {names.map((n) => <option key={n} value={n}>{n}</option>)}
                                     </select>
                                 </div>
 
-                                {/* Display selected names as removable chips */}
                                 <div className="selected-names">
                                     {formData.names.map((n) => (
                                         <span key={n} className="chip">
-        {n}
+                                            {n}
                                             <button
                                                 type="button"
                                                 className="remove-chip"
@@ -121,16 +105,15 @@ export default function SessionModal({ isOpen, onClose, onSubmit }) {
                                                     })
                                                 }
                                             >
-          ×
-        </button>
-      </span>
+                                                ×
+                                            </button>
+                                        </span>
                                     ))}
                                 </div>
 
                                 {errors.names && <p className="modal-error">{errors.names}</p>}
                             </div>
 
-                            {/* Distance Input */}
                             {!formData.weights && (
                                 <>
                                     <div className="modal-field">
@@ -163,16 +146,13 @@ export default function SessionModal({ isOpen, onClose, onSubmit }) {
                                             onChange={(e) => setFormData({ ...formData, type: e.target.value })}
                                         >
                                             {workoutTypes.map(element => (
-                                                <option key={element} value={element}>
-                                                    {element}
-                                                </option>
+                                                <option key={element} value={element}>{element}</option>
                                             ))}
                                         </select>
                                     </div>
                                 </>
                             )}
 
-                            {/* Checkboxes */}
                             <div className="modal-field checkbox-field">
                                 <label className="checkbox-label">
                                     <input
@@ -199,10 +179,8 @@ export default function SessionModal({ isOpen, onClose, onSubmit }) {
                                 <input
                                     className='modal-input'
                                     type="date"
-                                    placeholder="Date dd/mm/yyyy"
-                                    onChange={(e) => {
-                                        setFormData({ ...formData, date: formatDate(e.target.value.replaceAll('-', '/')) })
-                                    }}
+                                    value={formatDateForInput(formData.date)}
+                                    onChange={(e) => setFormData({ ...formData, date: new Date(e.target.value) })}
                                 />
                                 {errors.date && <p className="modal-error">{errors.date}</p>}
                             </div>
@@ -216,7 +194,6 @@ export default function SessionModal({ isOpen, onClose, onSubmit }) {
                                 />
                             </div>
 
-                            {/* Buttons */}
                             <div className="modal-footer">
                                 <button onClick={onClose} className="modal-button cancel">Cancel</button>
                                 <button onClick={handleSubmit} className="modal-button submit">Submit</button>

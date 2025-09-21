@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { collection, onSnapshot, updateDoc, doc } from "firebase/firestore";
-import { database } from "./firebase"; // import from your firebase.js
+import { database } from "./firebase";
 import "./App.css";
 import { sortByDate } from "./Util";
 import FilterModal from "./FilterModal";
@@ -33,10 +33,14 @@ function AdminSessionTable() {
 
         const unsubscribe = onSnapshot(usersRef, (snapshot) => {
             const sessions = snapshot.docs
-                .map((doc) => ({
-                    id: doc.id,
-                    ...doc.data()
-                }))
+                .map((doc) => {
+                    const data = doc.data();
+                    return {
+                        id: doc.id,
+                        ...data,
+                        date: data.date ? data.date.toDate() : new Date() // convert Firestore timestamp to JS Date
+                    };
+                })
                 .filter((session) => session.approved === true);
 
             setData(sortByDate(sessions));
@@ -46,9 +50,7 @@ function AdminSessionTable() {
     }, []);
 
     const today = new Date();
-    const todayString = `${String(today.getDate()).padStart(2, "0")}/${String(
-        today.getMonth() + 1
-    ).padStart(2, "0")}/${today.getFullYear()}`;
+    today.setHours(0, 0, 0, 0); // normalize time for comparison
 
     const filteredData = data
         .filter((session) => (filters.name ? session.name === filters.name : true))
@@ -60,7 +62,7 @@ function AdminSessionTable() {
             if (filters.sortBy === "distance") {
                 result = (a.distance || 0) - (b.distance || 0);
             } else if (filters.sortBy === "date") {
-                result = new Date(a.date) - new Date(b.date);
+                result = a.date - b.date;
             }
             return filters.order === "desc" ? -result : result;
         });
@@ -114,7 +116,7 @@ function AdminSessionTable() {
 
                     <button
                         className="btn"
-                        style={{ margin: "0.5rem"}}
+                        style={{ margin: "0.5rem" }}
                         onClick={handleDownload}
                     >
                         <Download style={{ marginRight: "4px" }} />
@@ -139,7 +141,10 @@ function AdminSessionTable() {
                     </thead>
                     <tbody>
                     {filteredData.map((session) => {
-                        const isToday = session.date === todayString;
+                        const sessionDate = new Date(session.date);
+                        sessionDate.setHours(0, 0, 0, 0); // normalize
+                        const isToday = sessionDate.getTime() === today.getTime();
+
                         return (
                             <tr
                                 key={session.id}
@@ -150,7 +155,7 @@ function AdminSessionTable() {
                                 }}
                             >
                                 <td>{session.name || "N/A"}</td>
-                                <td>{session.date || "N/A"}</td>
+                                <td>{session.date ? session.date.toLocaleDateString() : "N/A"}</td>
                                 <td>{session.type || "N/A"}</td>
                                 <td>{session.distance || "N/A"}</td>
                                 <td>

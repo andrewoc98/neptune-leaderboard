@@ -289,13 +289,10 @@ export function sortByDate(data) {
         if (!a.date) return 1; // push items without a date to the end
         if (!b.date) return -1;
 
-        const [dayA, monthA, yearA] = a.date.split('/').map(Number);
-        const [dayB, monthB, yearB] = b.date.split('/').map(Number);
+        const dateA = a.date instanceof Date ? a.date : new Date(a.date);
+        const dateB = b.date instanceof Date ? b.date : new Date(b.date);
 
-        // Descending: compare year, month, day in reverse
-        if (yearA !== yearB) return yearB - yearA;
-        if (monthA !== monthB) return monthB - monthA;
-        return dayB - dayA;
+        return dateB - dateA; // descending
     });
 }
 

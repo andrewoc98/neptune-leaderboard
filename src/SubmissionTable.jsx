@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "./SubmissionTable.css";
-import "./LeadboardModal.css"; // import modal styles
-import { formatDate, listenToUnApprovedSessions } from "./Util";
-import { approveSession, rejectSession } from "./firebase";
-import { ToastContainer, toast } from "react-toastify";
+import "./LeadboardModal.css";
+import { listenToUnApprovedSessions, approveSession, rejectSession } from "./firebase";
 
 export default function ExerciseTable() {
     const [data, setData] = useState([]);
@@ -12,24 +10,24 @@ export default function ExerciseTable() {
 
     useEffect(() => {
         const unsubscribe = listenToUnApprovedSessions((sessions) => {
-            setData(sessions);
+            const converted = sessions.map(s => ({
+                ...s,
+                date: s.date ? s.date.toDate() : new Date()
+            }));
+            setData(converted);
         });
 
-        return () => unsubscribe(); // clean up listener on unmount
+        return () => unsubscribe();
     }, []);
 
     const handleApprove = async (entry) => {
-        console.log(entry)
-        if(!entry.date || entry.date === '') {
-            entry.date = fromInputDate(`${new Date().getFullYear()}-${(new Date().getMonth()+1)}-${String(new Date().getDate()).padStart(2,0)}`)
-            console.log('Catch ran '+entry.date)
+        if (!entry.date || !(entry.date instanceof Date)) {
+            entry.date = new Date(); // default to now
         }
         const success = await approveSession(entry);
         if (success) {
-            setData((prev) =>
-                prev.map((item) =>
-                    item.id === entry.id ? { ...item, approved: true } : item
-                )
+            setData(prev =>
+                prev.map(item => item.id === entry.id ? { ...item, approved: true } : item)
             );
             closeModal();
         }
@@ -37,29 +35,14 @@ export default function ExerciseTable() {
 
     const handleReject = async (entry) => {
         const confirmed = window.confirm("Are you sure you want to unapprove this session?");
-        if(!confirmed){
-            return
-        }
+        if (!confirmed) return;
+
         const success = await rejectSession(entry);
         if (success) {
-            setData((prev) => prev.filter((item) => item.id !== entry.id));
+            setData(prev => prev.filter(item => item.id !== entry.id));
             closeModal();
         }
     };
-    // Convert from "dd/mm/yyyy" → "yyyy-mm-dd" (for input display)
-    const toInputDate = (dateStr) => {
-        if (!dateStr) return "";
-        const [dd, mm, yyyy] = dateStr.split("/");
-        return `${yyyy}-${mm.padStart(2, "0")}-${dd.padStart(2, "0")}`;
-    };
-
-    // Convert from "yyyy-mm-dd" → "dd/mm/yyyy" (for saving)
-    const fromInputDate = (dateStr) => {
-        if (!dateStr) return "";
-        const [yyyy, mm, dd] = dateStr.split("-");
-        return `${dd}/${mm}/${yyyy}`;
-    };
-
 
     const openModal = (entry) => {
         setSelectedEntry({ ...entry });
@@ -72,45 +55,45 @@ export default function ExerciseTable() {
     };
 
     const handleModalChange = (field, value) => {
-        setSelectedEntry((prev) => ({ ...prev, [field]: value }));
+        setSelectedEntry(prev => ({ ...prev, [field]: value }));
     };
+
+    // Convert Date object to YYYY-MM-DD for input
+    const formatDateForInput = (date) => date.toISOString().split("T")[0];
 
     return (
         <>
             <div className="table-container">
                 <table className="exercise-table">
                     <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Distance(m)</th>
-                            <th>Weights</th>
-                            <th>Intense</th>
-                            <th>Type</th>
-                            <th>Date</th>
-                        </tr>
+                    <tr>
+                        <th>Name</th>
+                        <th>Distance(m)</th>
+                        <th>Weights</th>
+                        <th>Intense</th>
+                        <th>Type</th>
+                        <th>Date</th>
+                    </tr>
                     </thead>
                     <tbody>
-                        {data.map(
-                            (row) =>
-                                !row.approved && (
-                                    <tr key={row.id} onClick={() => openModal(row)}>
-                                        <td>{row.name}</td>
-                                        <td>{Number(row.distance).toLocaleString('en-US')}</td>
-                                        <td>{row.weights ? "✔" : "✖"}</td>
-                                        <td>{row.intense ? "✔" : "✖"}</td>
-                                        <td>{row.type}</td>
-                                        <td>{row.date}</td>
-                                    </tr>
-                                )
-                        )}
+                    {data.map(row =>
+                            !row.approved && (
+                                <tr key={row.id} onClick={() => openModal(row)}>
+                                    <td>{row.name}</td>
+                                    <td>{Number(row.distance).toLocaleString('en-US')}</td>
+                                    <td>{row.weights ? "✔" : "✖"}</td>
+                                    <td>{row.intense ? "✔" : "✖"}</td>
+                                    <td>{row.type}</td>
+                                    <td>{row.date.toLocaleDateString()}</td>
+                                </tr>
+                            )
+                    )}
                     </tbody>
                 </table>
 
-                {/* Modal */}
                 {modalOpen && selectedEntry && (
-                    <div className="modal-overlay" style={{height:'100%'}}>
+                    <div className="modal-overlay" style={{ height: '100%' }}>
                         <div className="modal-content">
-                            {/* Close (X) button */}
                             <button
                                 onClick={closeModal}
                                 style={{
@@ -138,23 +121,12 @@ export default function ExerciseTable() {
                                         onChange={(e) => handleModalChange("name", e.target.value)}
                                     >
                                         {[
-                                            "Alex Gillick",
-                                            "Andrew O'Connor",
-                                            "Ben Brennan",
-                                            "Devon Goldrick",
-                                            "Gavin O'Dwyer",
-                                            "John Giles",
-"Jack Darmody",
-                                            "Luke Keating",
-                                            "Mark Connolly",
-                                            "Matt Malone",
-                                            "Odhran Hegarty",
-                                            "Ryan Farrell",
+                                            "Alex Gillick","Andrew O'Connor","Ben Brennan","Devon Goldrick",
+                                            "Gavin O'Dwyer","John Giles","Jack Darmody","Luke Keating",
+                                            "Mark Connolly","Matt Malone","Odhran Hegarty","Ryan Farrell",
                                             "Tommy Gillick",
-                                        ].map((name) => (
-                                            <option key={name} value={name}>
-                                                {name}
-                                            </option>
+                                        ].map(name => (
+                                            <option key={name} value={name}>{name}</option>
                                         ))}
                                     </select>
                                 </div>
@@ -166,16 +138,8 @@ export default function ExerciseTable() {
                                         value={selectedEntry.type}
                                         onChange={(e) => handleModalChange("type", e.target.value)}
                                     >
-                                        {[
-                                            "Erg",
-                                            "Water",
-                                            "Bike",
-                                            "Run",
-                                            "Other"
-                                        ].map((name) => (
-                                            <option key={name} value={name}>
-                                                {name}
-                                            </option>
+                                        {["Erg","Water","Bike","Run","Other"].map(name => (
+                                            <option key={name} value={name}>{name}</option>
                                         ))}
                                     </select>
                                 </div>
@@ -186,21 +150,21 @@ export default function ExerciseTable() {
                                         type="number"
                                         className="modal-input"
                                         value={selectedEntry.distance}
-                                        onChange={(e) =>
-                                            handleModalChange("distance", Number(e.target.value))
-                                        }
+                                        onChange={(e) => handleModalChange("distance", Number(e.target.value))}
                                     />
                                 </div>
+
                                 <div className="modal-field">
                                     <label className="modal-label">Split</label>
                                     <input
                                         type="text"
                                         className="modal-input"
-                                        value={selectedEntry['split']}
+                                        value={selectedEntry.split}
                                         placeholder="Split mm:ss (Optional)"
                                         onChange={(e) => handleModalChange("split", e.target.value)}
                                     />
                                 </div>
+
                                 <div className="modal-field checkbox-field">
                                     <label className="checkbox-label">
                                         <input
@@ -211,6 +175,7 @@ export default function ExerciseTable() {
                                         Weights
                                     </label>
                                 </div>
+
                                 <div className="modal-field checkbox-field">
                                     <label className="checkbox-label">
                                         <input
@@ -236,10 +201,8 @@ export default function ExerciseTable() {
                                     <input
                                         type="date"
                                         className="modal-input"
-                                        value={toInputDate(selectedEntry.date)}
-                                        onChange={(e) =>
-                                            handleModalChange("date", fromInputDate(e.target.value))
-                                        }
+                                        value={formatDateForInput(selectedEntry.date)}
+                                        onChange={(e) => handleModalChange("date", new Date(e.target.value))}
                                     />
                                 </div>
                             </div>

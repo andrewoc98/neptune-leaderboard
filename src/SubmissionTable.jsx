@@ -10,15 +10,43 @@ export default function ExerciseTable() {
 
     useEffect(() => {
         const unsubscribe = listenToUnApprovedSessions((sessions) => {
-            const converted = sessions.map(s => ({
-                ...s,
-                date: s.date ? s.date.toDate() : new Date()
-            }));
+            console.log(sessions);
+
+            const converted = sessions.map(s => {
+                let dateVal;
+
+                if (s.date instanceof Date) {
+                    dateVal = s.date;
+
+                } else if (s.date?.toDate) {
+                    dateVal = s.date.toDate(); // Firestore Timestamp
+
+                } else if (typeof s.date === "string") {
+                    // Handle dd/mm/yyyy strings
+                    if (/^\d{2}\/\d{2}\/\d{4}$/.test(s.date)) {
+                        const [day, month, year] = s.date.split("/").map(Number);
+                        dateVal = new Date(year, month - 1, day);
+                    } else {
+                        // Fallback: try to parse as ISO or other standard
+                        dateVal = new Date(s.date);
+                    }
+
+                } else {
+                    dateVal = new Date(); // fallback
+                }
+
+                return {
+                    ...s,
+                    date: dateVal
+                };
+            });
+
             setData(converted);
         });
 
         return () => unsubscribe();
     }, []);
+
 
     const handleApprove = async (entry) => {
         if (!entry.date || !(entry.date instanceof Date)) {

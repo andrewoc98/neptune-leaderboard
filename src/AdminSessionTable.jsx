@@ -35,10 +35,29 @@ function AdminSessionTable() {
             const sessions = snapshot.docs
                 .map((doc) => {
                     const data = doc.data();
+                    let dateVal;
+
+                    if (data.date instanceof Date) {
+                        dateVal = data.date;
+                    } else if (data.date?.toDate) {
+                        dateVal = data.date.toDate(); // Firestore Timestamp
+                    } else if (typeof data.date === "string") {
+                        // handle dd/mm/yyyy
+                        if (/^\d{2}\/\d{2}\/\d{4}$/.test(data.date)) {
+                            const [day, month, year] = data.date.split("/").map(Number);
+                            dateVal = new Date(year, month - 1, day);
+                        } else {
+                            // fallback for ISO strings or other formats
+                            dateVal = new Date(data.date);
+                        }
+                    } else {
+                        dateVal = new Date(); // fallback to now
+                    }
+
                     return {
                         id: doc.id,
                         ...data,
-                        date: data.date ? data.date.toDate() : new Date() // convert Firestore timestamp to JS Date
+                        date: dateVal
                     };
                 })
                 .filter((session) => session.approved === true);

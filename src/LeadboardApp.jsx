@@ -113,6 +113,7 @@ export default function LeaderboardApp({sessions, multipliers, workouts, users, 
   }, [workouts])
 
   useEffect(() => {
+
     const fetchData = async () => {
       try {
         const stats = getSessionStats(timeScale, multipliers, sessions);
@@ -133,6 +134,7 @@ export default function LeaderboardApp({sessions, multipliers, workouts, users, 
 
     fetchData();
     fetchChange();
+
   }, [timeScale, multipliers, sessions]);
 
   const findLatestWithData = (history, type) => {
@@ -352,10 +354,9 @@ const getRankingsOverTime = (history, type, key) => {
 
 
     const getDistanceHistory = (name, timescale = "season") => {
-        const history = {};
+        const history = [];
         const now = new Date();
 
-        // define cutoff based on timescale
         let cutoff = null;
         if (timescale === "month") {
             cutoff = new Date(now);
@@ -364,37 +365,52 @@ const getRankingsOverTime = (history, type, key) => {
             cutoff = new Date(now);
             cutoff.setDate(now.getDate() - 7);
         }
-        // "season" = no cutoff (all data)
+
+        const daily = {};
 
         sessions.forEach(s => {
-            if (!s.name || !s.date || s.distance == null) return;
-            if (s.name === name) {
-                const d = s.date; // guaranteed to be a Date object
+            if (s.name !== name || !s.date || s.distance == null) return;
 
-                // skip if before cutoff
-                if (cutoff && d < cutoff) return;
+            const d = s.date instanceof Date ? new Date(s.date) : parseDateString(s.date);
+            if (!d || isNaN(d)) return; // skip invalid
+            d.setHours(0, 0, 0, 0);
 
-                const dayKey = d.toISOString().split("T")[0]; // YYYY-MM-DD
-                const distanceNum = Number(s.distance);
-                const multiplier = multipliers[s.type] || 1;
+            if (cutoff && d < cutoff) return;
 
-                if (!isNaN(distanceNum)) {
-                    history[dayKey] = (history[dayKey] || 0) + distanceNum * multiplier;
-                }
-            }
+            const key = d.getTime();
+            const multiplier = multipliers[s.type] || 1;
+            daily[key] = (daily[key] || 0) + s.distance * multiplier;
         });
 
-        // sort dates
-        const dates = Object.keys(history).sort((a, b) => new Date(a) - new Date(b));
-        const rawDistances = dates.map(d => history[d]);
+        let cumulative = 0;
+        return Object.entries(daily)
+            .sort(([a], [b]) => a - b)
+            .map(([ts, dist]) => {
+                cumulative += dist;
+                return { date: new Date(Number(ts)), distance: cumulative };
+            });
+    };
 
-        // compute cumulative distances
-        const cumulativeDistances = rawDistances.reduce((acc, cur, i) => {
-            acc.push(cur + (i > 0 ? acc[i - 1] : 0));
-            return acc;
-        }, []);
+    const parseDateString = (input) => {
+        if (!input) return null;
 
-        return { dates, distances: cumulativeDistances };
+        // Already a JS Date
+        if (input instanceof Date) return input;
+
+        // Firestore Timestamp object
+        if (typeof input === "object" && "seconds" in input) {
+            return new Date(input.seconds * 1000 + Math.floor(input.nanoseconds / 1e6));
+        }
+
+        // String case ("September 4, 2025 at 12:00:00 AM UTC+1")
+        if (typeof input === "string") {
+            const cleaned = input.replace(" at", "");
+            const normalized = cleaned.replace("UTC", "GMT"); // JS understands GMT offsets
+            const d = new Date(normalized);
+            return isNaN(d) ? null : d;
+        }
+
+        return null;
     };
 
     return (
@@ -607,25 +623,27 @@ const getRankingsOverTime = (history, type, key) => {
                         <td>{intensityPercent}</td>
                         <td>{weightsPercent}</td>
                         <td>{totalDistance.toLocaleString('en-US')}</td>
-                        <td>
-                          {timeScale === 'season' ? (
-                            getRankIcon(totalDistance)
-                          ) : changePerRower[rower.name] != null && changePerRower[rower.name] !== 0 ? (
-                            <>
-                              {totalDistance - changePerRower[rower.name] !== 0
-                                ? (Math.abs(totalDistance - changePerRower[rower.name]).toLocaleString('en-US'))
-                                : ""}
-                              {" "}
-                              {totalDistance - changePerRower[rower.name] === 0
-                                ? "-"
-                                : totalDistance - changePerRower[rower.name] > 0
-                                  ? " ▲"
-                                  : " ▼"}
-                            </>
-                          ) : (
-                            "-"
-                          )}
-                        </td>
+                            <td>
+                                {timeScale === "season" ? (
+                                    getRankIcon(totalDistance)
+                                ) : (() => {
+                                    if (!changePerRower || !(rower.name in changePerRower)) return "-";
+
+                                    const prevDistance = Number(changePerRower[rower.name] || 0);
+
+                                    const currentDistance = Number(totalDistance || 0);
+                                    const diff = currentDistance - prevDistance;
+                                    console.log(diff)
+                                    if (diff === 0) return "-";
+
+                                    return (
+                                        <>
+                                            {Math.abs(diff).toLocaleString("en-US")}{" "}
+                                            {diff > 0 ? "▲" : "▼"}
+                                        </>
+                                    );
+                                })()}
+                            </td>
                       </tr>
                     );
                   })}
@@ -698,28 +716,39 @@ const getRankingsOverTime = (history, type, key) => {
                     {activeTab === "sessions" ? (
                         (() => {
                             const baseHistory = getDistanceHistory(hoveredName, timeScale);
-                            const compareHistories = compareNames.map(name => ({
-                                name,
-                                ...getDistanceHistory(name,timeScale)
+                            const compareHistories = compareNames.map(n => ({
+                                name: n,
+                                history: getDistanceHistory(n, timeScale)
                             }));
 
-                            const allDates = [...new Set([
-                                ...baseHistory.dates,
-                                ...compareHistories.flatMap(h => h.dates),
-                            ])].sort();
+                            const allDates = [
+                                ...baseHistory.map(p => p.date.getTime()),
+                                ...compareHistories.flatMap(h => h.history.map(p => p.date.getTime()))
+                            ];
+                            const sortedDates = Array.from(new Set(allDates)).sort((a, b) => a - b);
+                            const seriesFor = (history) =>
+                                sortedDates.map(ts => {
+                                    const point = history.find(p => p.date.getTime() === ts);
+                                    return point ? point.distance : null;
+                                });
+
+                            const displayDates = sortedDates.map(ts => {
+                                const d = new Date(ts);
+                                return `${d.getMonth() + 1}/${d.getDate()}`; // e.g. "9/21"
+                            });
 
                             const datasets = [
                                 {
                                     label: hoveredName,
-                                    data: allDates.map(d => baseHistory.distances[baseHistory.dates.indexOf(d)] ?? null),
+                                    data: seriesFor(baseHistory),
                                     borderColor: "#3b82f6",
                                     backgroundColor: "#60a5fa",
                                     spanGaps: true,
                                 },
-                                ...compareHistories.map((h, idx) => ({
+                                ...compareHistories.map((h, i) => ({
                                     label: h.name,
-                                    data: allDates.map(d => h.distances[h.dates.indexOf(d)] ?? null),
-                                    borderColor: `hsl(${(idx * 60) % 360}, 70%, 50%)`,
+                                    data: seriesFor(h.history),
+                                    borderColor: `hsl(${i * 60}, 70%, 50%)`,
                                     spanGaps: true,
                                 }))
                             ];
@@ -727,21 +756,22 @@ const getRankingsOverTime = (history, type, key) => {
                             return (
                                 <>
                                     <p>{graphText[timeScale]}</p>
-                                <Line
-                                    data={{ labels: allDates, datasets }}
-                                    height={300}
-                                    options={{
-                                        responsive: true,
-                                        maintainAspectRatio: true,
-                                        scales: {
-                                            y: {
-                                                ticks: { color: "white" },
-                                                title: { display: true, text: "Distance (m)", color: "white" },
+                                    <Line
+                                        data={{ labels: displayDates, datasets }}
+                                        height={300}
+                                        options={{
+                                            responsive: true,
+                                            maintainAspectRatio: true,
+                                            scales: {
+                                                y: {
+                                                    ticks: { color: "white" },
+                                                    title: { display: true, text: "Distance (m)", color: "white" },
+                                                },
+                                                x: { ticks: { color: "white" } },
                                             },
-                                            x: { ticks: { color: "white" } },
-                                        },
-                                    }}
-                                />
+                                        }}
+                                    />
+
                                 </>
                             );
                         })()

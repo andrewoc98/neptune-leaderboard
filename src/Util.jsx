@@ -93,22 +93,41 @@ export function formatDate(date) {
 }
 
 
+function parseFirestoreDate(d) {
+    if (!d) return null;
+
+    // Firestore Timestamp
+    if (d.seconds !== undefined && d.nanoseconds !== undefined) {
+        return new Date(d.seconds * 1000 + Math.floor(d.nanoseconds / 1e6));
+    }
+
+    // JS Date
+    if (d instanceof Date) return d;
+
+    // String
+    if (typeof d === "string") {
+        const parsed = new Date(d);
+        return isNaN(parsed) ? null : parsed;
+    }
+
+    return null;
+}
+
 export function getSessionStats(period, distanceMultiplier, allSessions) {
     const today = new Date();
-    today.setHours(23, 59, 59, 999); // End of today
+    today.setHours(23, 59, 59, 999);
 
     let startDate;
-
     if (period === "month") {
         startDate = new Date(today);
-        startDate.setDate(today.getDate() - 29); // 30 days ago
-        startDate.setHours(0, 0, 0, 0); // Start of that day
+        startDate.setDate(today.getDate() - 29);
+        startDate.setHours(0, 0, 0, 0);
     } else if (period === "week") {
         startDate = new Date(today);
-        startDate.setDate(today.getDate() - 6); // 6 days ago → 7-day window including today
+        startDate.setDate(today.getDate() - 6);
         startDate.setHours(0, 0, 0, 0);
     } else {
-        startDate = new Date(-8640000000000000); // earliest possible date
+        startDate = new Date(-8640000000000000);
     }
 
     const stats = {};
@@ -116,90 +135,62 @@ export function getSessionStats(period, distanceMultiplier, allSessions) {
     allSessions.forEach(entry => {
         if (!entry.approved) return;
 
-        const entryDate = entry.date
+        const entryDate = parseFirestoreDate(entry.date);
+        if (!entryDate) return;
+        entryDate.setHours(0, 0, 0, 0);
+
         if (entryDate >= startDate && entryDate <= today) {
             const { name, distance, intense, weights, type } = entry;
-
             if (!stats[name]) {
-                stats[name] = {
-                    name,
-                    totalDistance: 0,
-                    totalSessions: 0,
-                    steadyCount: 0,
-                    intensityCount: 0,
-                    weightsCount: 0
-                };
+                stats[name] = { name, totalDistance: 0, totalSessions: 0, steadyCount: 0, intensityCount: 0, weightsCount: 0 };
             }
-
             stats[name].totalDistance += Number(distance) * distanceMultiplier[type];
             stats[name].totalSessions += 1;
-
-            if (intense) {
-                stats[name].intensityCount += 1;
-            } else if (weights) {
-                stats[name].weightsCount += 1;
-            } else {
-                stats[name].steadyCount += 1;
-            }
+            if (intense) stats[name].intensityCount += 1;
+            else if (weights) stats[name].weightsCount += 1;
+            else stats[name].steadyCount += 1;
         }
     });
 
     return Object.values(stats).sort((a, b) => b.totalDistance - a.totalDistance);
 }
 
-
-
-export function getDistanceForLastPeriod(period, allSessions, multiplier) {
+export function getDistanceForLastPeriod(period, allSessions, distanceMultiplier) {
     const today = new Date();
-    today.setHours(23, 59, 59, 999); // End of today
+    today.setHours(23, 59, 59, 999);
 
-    let startDate, endDate;
-
+    let startDate;
     if (period === "month") {
-        // 60-30 days ago
         startDate = new Date(today);
-        startDate.setDate(startDate.getDate() - 60);
-        startDate.setHours(0, 0, 0, 0); // Start of day
-
-        endDate = new Date(today);
-        endDate.setDate(endDate.getDate() - 30);
-        endDate.setHours(23, 59, 59, 999); // End of day
+        startDate.setDate(today.getDate() - 29);
+        startDate.setHours(0, 0, 0, 0);
     } else if (period === "week") {
-        // 14-7 days ago
         startDate = new Date(today);
-        startDate.setDate(startDate.getDate() - 14);
-        startDate.setHours(0, 0, 0, 0); // Start of day
-
-        endDate = new Date(today);
-        endDate.setDate(endDate.getDate() - 7);
-        endDate.setHours(23, 59, 59, 999); // End of day
+        startDate.setDate(today.getDate() - 6);
+        startDate.setHours(0, 0, 0, 0);
     } else {
-        return {};
+        startDate = new Date(-8640000000000000);
     }
 
-    const distanceMap = {};
+    const distanceByRower = {};
 
-    allSessions.forEach(entry => {
-        const entryDate = entry.date;
-        if (entryDate >= startDate && entryDate <= endDate) {
-            const { name, distance } = entry;
-            if (!distanceMap[name]) {
-                distanceMap[name] = 0;
-            }
-            distanceMap[name] += Number(distance)*multiplier[entry.type];
+    allSessions.forEach(session => {
+        if (!session.approved) return;
+
+        const entryDate = parseFirestoreDate(session.date);
+        if (!entryDate) return;
+        entryDate.setHours(0, 0, 0, 0);
+
+        if (entryDate >= startDate && entryDate <= today) {
+            const { name, distance, type } = session;
+            const multiplier = distanceMultiplier[type] || 1; // fallback to 1
+            distanceByRower[name] = (distanceByRower[name] || 0) + Number(distance) * multiplier;
         }
     });
 
-    return distanceMap;
+    return distanceByRower;
 }
 
-export async function getUnApprovedSessions() {
-
-    const allSessions = await getAllSessionHistory();
-
-    return allSessions.filter(item => item.approved === false);
-
-}
 
 export function listenToUnApprovedSessions(callback) {
     const q = query(

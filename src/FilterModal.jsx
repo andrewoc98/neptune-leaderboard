@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 
-function FilterModal({ isOpen, onClose, filters, onSubmit, onReset }) {
+function FilterModal({ isOpen, onClose, filters, onSubmit, onReset, users }) {
     const [localFilters, setLocalFilters] = useState(filters);
 
-    const workoutTypes = ['Erg', 'Water', 'Bike', 'Run', 'Other']
+    const workoutTypes = ['Erg', 'Water', 'Bike', 'Run', 'Other'];
 
     useEffect(() => {
         if (isOpen) setLocalFilters(filters);
@@ -11,21 +11,8 @@ function FilterModal({ isOpen, onClose, filters, onSubmit, onReset }) {
 
     if (!isOpen) return null;
 
-    const nameOptions = [
-        "Alex Gillick",
-        "Andrew O'Connor",
-        "Ben Brennan",
-        "Devon Goldrick",
-        "Gavin O'Dwyer",
-        "Jack Darmody",
-        "John Giles",
-        "Luke Keating",
-        "Mark Connolly",
-        "Matt Malone",
-        "Odhran Hegarty",
-        "Ryan Farrell",
-        "Tommy Gillick",
-    ];
+    // Get names dynamically from the users object
+    const nameOptions = Object.keys(users).filter((key) => key !== "id");
 
     return (
         <div className="modal-overlay">
@@ -39,7 +26,9 @@ function FilterModal({ isOpen, onClose, filters, onSubmit, onReset }) {
                         <select
                             className="modal-select"
                             value={localFilters.name}
-                            onChange={(e) => setLocalFilters({ ...localFilters, name: e.target.value })}
+                            onChange={(e) =>
+                                setLocalFilters({ ...localFilters, name: e.target.value })
+                            }
                         >
                             <option value="">All</option>
                             {nameOptions.map((name) => (
@@ -56,7 +45,9 @@ function FilterModal({ isOpen, onClose, filters, onSubmit, onReset }) {
                         <select
                             className="modal-select"
                             value={localFilters.type}
-                            onChange={(e) => setLocalFilters({ ...localFilters, type: e.target.value })}
+                            onChange={(e) =>
+                                setLocalFilters({ ...localFilters, type: e.target.value })
+                            }
                         >
                             <option value="">All</option>
                             {workoutTypes.map((type) => (
@@ -73,7 +64,9 @@ function FilterModal({ isOpen, onClose, filters, onSubmit, onReset }) {
                         <select
                             className="modal-select"
                             value={localFilters.sortBy}
-                            onChange={(e) => setLocalFilters({ ...localFilters, sortBy: e.target.value })}
+                            onChange={(e) =>
+                                setLocalFilters({ ...localFilters, sortBy: e.target.value })
+                            }
                         >
                             <option value="">None</option>
                             <option value="distance">Distance</option>
@@ -87,7 +80,9 @@ function FilterModal({ isOpen, onClose, filters, onSubmit, onReset }) {
                         <select
                             className="modal-select"
                             value={localFilters.order}
-                            onChange={(e) => setLocalFilters({ ...localFilters, order: e.target.value })}
+                            onChange={(e) =>
+                                setLocalFilters({ ...localFilters, order: e.target.value })
+                            }
                         >
                             <option value="asc">Ascending</option>
                             <option value="desc">Descending</option>

@@ -4,7 +4,7 @@ import { rowerSession } from "./firebase";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-export default function SessionModal({ isOpen, onClose, onSubmit }) {
+export default function SessionModal({ isOpen, onClose, users }) {
     const [formData, setFormData] = useState({
         names: [],
         distance: '',
@@ -16,11 +16,8 @@ export default function SessionModal({ isOpen, onClose, onSubmit }) {
         split: ''
     });
 
-    const names = [
-        "Alex Gillick", "Andrew O'Connor", "Ben Brennan", "Devon Goldrick",
-        "Gavin O'Dwyer", "Jack Darmody","John Giles", "Luke Keating", "Mark Connolly",
-        "Matt Malone", "Odhran Hegarty", "Ryan Farrell", "Tommy Gillick"
-    ];
+    // Dynamically get names from users object (skip "id")
+    const names = Object.keys(users).filter((key) => key !== "id");
 
     const [errors, setErrors] = useState({});
     const workoutTypes = ['Erg', 'Water', 'Bike', 'Run', 'Other'];
@@ -63,7 +60,6 @@ export default function SessionModal({ isOpen, onClose, onSubmit }) {
         onClose();
     };
 
-    // Convert Date object to YYYY-MM-DD for <input type="date">
     const formatDateForInput = (date) => date.toISOString().split('T')[0];
 
     return (

@@ -6,7 +6,7 @@ import { sortByDate } from "./Util";
 import FilterModal from "./FilterModal";
 import { ListFilter, Download } from "lucide-react";
 
-function AdminSessionTable() {
+function AdminSessionTable({users}) {
     const [data, setData] = useState([]);
     const [filters, setFilters] = useState({
         name: "",
@@ -87,7 +87,21 @@ function AdminSessionTable() {
         });
 
     const handleDownload = () => {
-        const json = JSON.stringify(filteredData, null, 2);
+        // Filter the users prop down to only the ones in filteredData
+        const filteredUsers = {};
+        filteredData.forEach((session) => {
+            if (session.name && users[session.name]) {
+                filteredUsers[session.name] = users[session.name];
+            }
+        });
+
+        // Build final JSON structure
+        const jsonOutput = {
+            users: filteredUsers,
+            sessions: filteredData,
+        };
+
+        const json = JSON.stringify(jsonOutput, null, 2);
         const blob = new Blob([json], { type: "application/json" });
         const url = URL.createObjectURL(blob);
 
@@ -108,6 +122,7 @@ function AdminSessionTable() {
                 style={{ position: "relative", marginBottom: "0.5rem", color: "white" }}
             >
                 <FilterModal
+                    users={users}
                     isOpen={isModalOpen}
                     onClose={() => setIsModalOpen(false)}
                     filters={filters}
@@ -130,7 +145,7 @@ function AdminSessionTable() {
                         style={{ margin: "0.5rem", padding: "0.3rem 0.6rem" }}
                         onClick={() => setIsModalOpen(true)}
                     >
-                        <ListFilter />
+                        <ListFilter/>
                     </button>
 
                     <button

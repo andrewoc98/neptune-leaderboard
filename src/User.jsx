@@ -38,6 +38,6 @@ export default function User({leaderboard, quotes, users, workouts, multipliers,
         <QuoteModal/>
 
       </div>
-      <SessionModal isOpen={openModal} onClose={onClose} onSubmit={onSubmit} setOpen />
+      <SessionModal isOpen={openModal} onClose={onClose} onSubmit={onSubmit} setOpen users={users}/>
     </>);
 }

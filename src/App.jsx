@@ -31,6 +31,7 @@ function App() {
                 setWorkouts({erg:lazyData[6].erg.entries, water:lazyData[6].water.entries})
                 setSessions(allSessions)
                 setGmpSpeeds(lazyData[0].speeds)
+
             } catch (e) {
                 console.log("Failed to load page documents", e)
             }
@@ -40,7 +41,8 @@ function App() {
 
   useEffect(()=>{
       console.log(workouts)
-  },[workouts])
+      console.log(users)
+  },[workouts,users])
 
   return (
     <div className="App">
@@ -61,7 +63,7 @@ function App() {
                          multipliers={multipliers}
                          sessions={sessions}
                          gmpSpeeds={gmpSpeeds}/>}
-        {admin && <Admin gmpSpeeds={gmpSpeeds}/>}
+        {admin && <Admin users={users} gmpSpeeds={gmpSpeeds}/>}
       </main>
       <ToastContainer
         pauseOnHover={false}

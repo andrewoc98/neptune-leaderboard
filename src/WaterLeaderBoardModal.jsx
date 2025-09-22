@@ -5,7 +5,7 @@ import { formatDate } from "./Util";
 import { Kayak } from 'lucide-react'
 import { ToastContainer, toast } from "react-toastify";
 
-export default function WaterLeaderBoardModal() {
+export default function WaterLeaderBoardModal({ users }) {
     const [open, setOpen] = useState(false);
     const [rows, setRows] = useState([{ name: "", boatClass: "", time: "", distance: "", overRate: false }]);
     const [date, setDate] = useState()
@@ -28,18 +28,10 @@ export default function WaterLeaderBoardModal() {
     const validate = () => {
         const newErrors = rows.map((row) => {
             let msg = {};
-            if (!row.name) {
-                msg.name = "Name is required.";
-            }
-            if (!row.boatClass) {
-                msg.boatClass = "Boat class is required.";
-            }
-            if (!row.time.match(/^\d+:\d{2}(\.\d)?$/)) {
-                msg.time = "Time must be in format mm:ss.s";
-            }
-            if (!row.distance || Number(row.distance) <= 0) {
-                msg.distance = "Distance must be a positive number.";
-            }
+            if (!row.name) msg.name = "Name is required.";
+            if (!row.boatClass) msg.boatClass = "Boat class is required.";
+            if (!row.time.match(/^\d+:\d{2}(\.\d)?$/)) msg.time = "Time must be in format mm:ss.s";
+            if (!row.distance || Number(row.distance) <= 0) msg.distance = "Distance must be a positive number.";
             return msg;
         });
         setErrors(newErrors);
@@ -47,15 +39,16 @@ export default function WaterLeaderBoardModal() {
     };
 
     const handleSubmit = () => {
-        if (!validate() || !date) {
-            return; // stop submission if errors exist
-        }
-        saveLeaderBoardtoDB({ date: date, waterData: rows }) // Replace with DB post
+        if (!validate() || !date) return;
+        saveLeaderBoardtoDB({ date: date, waterData: rows });
         setOpen(false);
-        setRows([{ name: "", boatClass: "", time: "", distance: "", overRate: false }])
-        setErrors([])
+        setRows([{ name: "", boatClass: "", time: "", distance: "", overRate: false }]);
+        setErrors([]);
         toast.success("Leaderboard Uploaded");
     };
+
+    // Generate rower names dynamically from users object
+    const nameOptions = Object.keys(users).filter(key => key !== "id");
 
     return (
         <>
@@ -82,19 +75,9 @@ export default function WaterLeaderBoardModal() {
                                             onChange={(e) => handleRowChange(index, "name", e.target.value)}
                                         >
                                             <option value="">Select name</option>
-                                            <option value="Alex Gillick">Alex Gillick</option>
-                                            <option value="Andrew O'Connor">Andrew O'Connor</option>
-                                            <option value="Ben Brennan">Ben Brennan</option>
-                                            <option value="Devon Goldrick">Devon Goldrick</option>
-                                            <option value="Gavin O'Dwyer">Gavin O'Dwyer</option>
-                                            <option value="John Giles">John Giles</option>
-                                            <option value="Jack Darmody">Jack Darmody</option>
-                                            <option value="Luke Keating">Luke Keating</option>
-                                            <option value="Mark Connolly">Mark Connolly</option>
-                                            <option value="Matt Malone">Matt Malone</option>
-                                            <option value="Odhran Hegarty">Odhran Hegarty</option>
-                                            <option value="Ryan Farrell">Ryan Farrell</option>
-                                            <option value="Tommy Gillick">Tommy Gillick</option>
+                                            {nameOptions.map(name => (
+                                                <option key={name} value={name}>{name}</option>
+                                            ))}
                                         </select>
                                         {errors[index]?.name && <p className="error">{errors[index].name}</p>}
                                     </div>

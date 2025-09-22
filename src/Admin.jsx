@@ -10,7 +10,7 @@ import MultiplierModal from "./MultiplerModal";
 import UserEditModal from "./UserEditModal";
 import GmpModal from "./GmpModal";
 
-export default function Admin({gmpSpeeds}) {
+export default function Admin({gmpSpeeds,users}) {
     const [isAuthorized, setIsAuthorized] = useState(false);
     const [passwordInput, setPasswordInput] = useState("");
 
@@ -50,8 +50,8 @@ export default function Admin({gmpSpeeds}) {
 
       {/* Action Buttons */}
       <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '1rem' }}>
-        <LeaderboardModal />
-        <WaterLeaderBoardModal />
+        <LeaderboardModal users={users}/>
+        <WaterLeaderBoardModal users={users}/>
         <Workout />
         <QuotesModal />
         <MultiplierModal/>
@@ -60,11 +60,11 @@ export default function Admin({gmpSpeeds}) {
       </div>
         {/* Submission Table */}
         <div style={{ width: '80%', maxWidth: '1200px', }}>
-            <SubmissionTable />
+            <SubmissionTable users={users}/>
         </div>
       {/* Admin Session Table */}
       <div style={{ width: '90%', maxWidth: '1200px' }}>
-        <AdminSessionTable />
+        <AdminSessionTable users={users}/>
       </div>
 
     </div>

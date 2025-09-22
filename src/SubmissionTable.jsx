@@ -3,42 +3,32 @@ import "./SubmissionTable.css";
 import "./LeadboardModal.css";
 import { listenToUnApprovedSessions, approveSession, rejectSession } from "./firebase";
 
-export default function ExerciseTable() {
+export default function ExerciseTable({ users }) {
     const [data, setData] = useState([]);
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedEntry, setSelectedEntry] = useState(null);
 
     useEffect(() => {
         const unsubscribe = listenToUnApprovedSessions((sessions) => {
-            console.log(sessions);
-
             const converted = sessions.map(s => {
                 let dateVal;
 
                 if (s.date instanceof Date) {
                     dateVal = s.date;
-
                 } else if (s.date?.toDate) {
                     dateVal = s.date.toDate(); // Firestore Timestamp
-
                 } else if (typeof s.date === "string") {
-                    // Handle dd/mm/yyyy strings
                     if (/^\d{2}\/\d{2}\/\d{4}$/.test(s.date)) {
                         const [day, month, year] = s.date.split("/").map(Number);
                         dateVal = new Date(year, month - 1, day);
                     } else {
-                        // Fallback: try to parse as ISO or other standard
                         dateVal = new Date(s.date);
                     }
-
                 } else {
-                    dateVal = new Date(); // fallback
+                    dateVal = new Date();
                 }
 
-                return {
-                    ...s,
-                    date: dateVal
-                };
+                return { ...s, date: dateVal };
             });
 
             setData(converted);
@@ -47,11 +37,8 @@ export default function ExerciseTable() {
         return () => unsubscribe();
     }, []);
 
-
     const handleApprove = async (entry) => {
-        if (!entry.date || !(entry.date instanceof Date)) {
-            entry.date = new Date(); // default to now
-        }
+        if (!entry.date || !(entry.date instanceof Date)) entry.date = new Date();
         const success = await approveSession(entry);
         if (success) {
             setData(prev =>
@@ -86,8 +73,10 @@ export default function ExerciseTable() {
         setSelectedEntry(prev => ({ ...prev, [field]: value }));
     };
 
-    // Convert Date object to YYYY-MM-DD for input
     const formatDateForInput = (date) => date.toISOString().split("T")[0];
+
+    // Dynamically get user names (skip "id")
+    const nameOptions = Object.keys(users).filter((key) => key !== "id");
 
     return (
         <>
@@ -148,12 +137,7 @@ export default function ExerciseTable() {
                                         value={selectedEntry.name}
                                         onChange={(e) => handleModalChange("name", e.target.value)}
                                     >
-                                        {[
-                                            "Alex Gillick","Andrew O'Connor","Ben Brennan","Devon Goldrick",
-                                            "Gavin O'Dwyer","John Giles","Jack Darmody","Luke Keating",
-                                            "Mark Connolly","Matt Malone","Odhran Hegarty","Ryan Farrell",
-                                            "Tommy Gillick",
-                                        ].map(name => (
+                                        {nameOptions.map(name => (
                                             <option key={name} value={name}>{name}</option>
                                         ))}
                                     </select>

@@ -1,15 +1,15 @@
 import { useState } from "react";
-import "./LeadboardModal.css"
+import "./LeadboardModal.css";
 import { saveLeaderBoardtoDB } from "./firebase";
-import { BicepsFlexed } from 'lucide-react'
+import { BicepsFlexed } from "lucide-react";
 import { ToastContainer, toast } from "react-toastify";
 import { formatDate } from "./Util";
 
-export default function LeaderboardModal() {
+export default function LeaderboardModal({ users }) {
     const [open, setOpen] = useState(false);
     const [rows, setRows] = useState([{ name: "", weight: "", split: "", overRate: false }]);
     const [errors, setErrors] = useState([]);
-    const [date, setDate] = useState("")
+    const [date, setDate] = useState("");
 
     const handleRowChange = (index, field, value) => {
         const updated = [...rows];
@@ -35,29 +35,33 @@ export default function LeaderboardModal() {
                 msg.split = "Split must be in format mm:ss.s";
             }
             if (!row.weight) {
-                msg.weight = "Weight is required"
+                msg.weight = "Weight is required";
             }
             return msg;
         });
         setErrors(newErrors);
-        return newErrors.every(err => Object.keys(err).length === 0);
+        return newErrors.every((err) => Object.keys(err).length === 0);
     };
 
     const handleSubmit = () => {
         if (!validate() || !date) {
             return; // stop if invalid
         }
-        console.log(rows);
-        saveLeaderBoardtoDB({ date: date, ergData: rows }) // Replace with DB post
+        saveLeaderBoardtoDB({ date: date, ergData: rows }); // Replace with DB post
         setOpen(false);
         setRows([{ name: "", weight: "", split: "", overRate: false }]);
-        setErrors([])
+        setErrors([]);
         toast.success("Leaderboard Uploaded");
     };
 
+    // Dynamically pull names from users object (skip "id")
+    const nameOptions = Object.keys(users).filter((key) => key !== "id");
+
     return (
         <>
-            <button className="btn" onClick={() => setOpen(true)}><BicepsFlexed /></button>
+            <button className="btn" onClick={() => setOpen(true)}>
+                <BicepsFlexed />
+            </button>
             {open && (
                 <div className="modal-overlay">
                     <div className="modal">
@@ -66,29 +70,29 @@ export default function LeaderboardModal() {
                         </div>
 
                         <div className="modal-body">
-                            <input className="modal-input" type={'date'} onChange={(e) => setDate(formatDate(e.target.value.replaceAll('-', '/')))} />
+                            <input
+                                className="modal-input"
+                                type="date"
+                                onChange={(e) =>
+                                    setDate(formatDate(e.target.value.replaceAll("-", "/")))
+                                }
+                            />
                             {rows.map((row, index) => (
                                 <div key={index} className="row">
                                     <div className="field">
                                         <label>Name</label>
                                         <select
                                             value={row.name}
-                                            onChange={(e) => handleRowChange(index, "name", e.target.value)}
+                                            onChange={(e) =>
+                                                handleRowChange(index, "name", e.target.value)
+                                            }
                                         >
                                             <option value="">Select name</option>
-                                            <option value="Alex Gillick">Alex Gillick</option>
-                                            <option value="Andrew O'Connor">Andrew O'Connor</option>
-                                            <option value="Ben Brennan">Ben Brennan</option>
-                                            <option value="Devon Goldrick">Devon Goldrick</option>
-                                            <option value="Gavin O'Dwyer">Gavin O'Dwyer</option>
-                                            <option value="Jack Darmody">Jack Darmody</option>
-                                            <option value="John Giles">John Giles</option>
-                                            <option value="Luke Keating">Luke Keating</option>
-                                            <option value="Mark Connolly">Mark Connolly</option>
-                                            <option value="Matt Malone">Matt Malone</option>
-                                            <option value="Odhran Hegarty">Odhran Hegarty</option>
-                                            <option value="Ryan Farrell">Ryan Farrell</option>
-                                            <option value="Tommy Gillick">Tommy Gillick</option>
+                                            {nameOptions.map((name) => (
+                                                <option key={name} value={name}>
+                                                    {name}
+                                                </option>
+                                            ))}
                                         </select>
                                         {errors[index]?.name && (
                                             <p className="error">{errors[index].name}</p>
@@ -100,9 +104,14 @@ export default function LeaderboardModal() {
                                         <input
                                             type="number"
                                             value={row.weight}
-                                            onChange={(e) => handleRowChange(index, "weight", e.target.value)}
+                                            onChange={(e) =>
+                                                handleRowChange(index, "weight", e.target.value)
+                                            }
                                             placeholder="Weight"
                                         />
+                                        {errors[index]?.weight && (
+                                            <p className="error">{errors[index].weight}</p>
+                                        )}
                                     </div>
 
                                     <div className="field">
@@ -110,7 +119,9 @@ export default function LeaderboardModal() {
                                         <input
                                             type="text"
                                             value={row.split}
-                                            onChange={(e) => handleRowChange(index, "split", e.target.value)}
+                                            onChange={(e) =>
+                                                handleRowChange(index, "split", e.target.value)
+                                            }
                                             placeholder="Split (mm:ss.s)"
                                         />
                                         {errors[index]?.split && (
@@ -123,22 +134,39 @@ export default function LeaderboardModal() {
                                             <input
                                                 type="checkbox"
                                                 checked={row.overRate}
-                                                onChange={(e) => handleRowChange(index, "overRate", e.target.checked)}
+                                                onChange={(e) =>
+                                                    handleRowChange(
+                                                        index,
+                                                        "overRate",
+                                                        e.target.checked
+                                                    )
+                                                }
                                             />
                                             Over-rate
                                         </label>
                                     </div>
 
-                                    <button className="btn btn-danger" onClick={() => removeRow(index)}>Remove</button>
+                                    <button
+                                        className="btn btn-danger"
+                                        onClick={() => removeRow(index)}
+                                    >
+                                        Remove
+                                    </button>
                                 </div>
                             ))}
 
-                            <button className="btn btn-outline" onClick={addRow}>+ Add Row</button>
+                            <button className="btn btn-outline" onClick={addRow}>
+                                + Add Row
+                            </button>
                         </div>
 
                         <div className="modal-footer">
-                            <button className="btn btn-outline" onClick={() => setOpen(false)}>Cancel</button>
-                            <button className="btn" onClick={handleSubmit}>Save Leaderboard</button>
+                            <button className="btn btn-outline" onClick={() => setOpen(false)}>
+                                Cancel
+                            </button>
+                            <button className="btn" onClick={handleSubmit}>
+                                Save Leaderboard
+                            </button>
                         </div>
                     </div>
                 </div>

@@ -162,59 +162,6 @@ export default function LeaderboardApp({sessions, multipliers, workouts, users, 
   const prevErg = latestErg ? findPrevWithData(leaderboard, "ergData", latestErg) : null;
   const prevWater = latestWater ? findPrevWithData(leaderboard, "waterData", latestWater) : null;
 
-  const parseTime = (timeStr) => {
-    const parts = timeStr.split(":");
-    if (parts.length === 2) {
-      const [min, sec] = parts;
-      return parseFloat(min) * 60 + parseFloat(sec);
-    }
-    return parseFloat(timeStr); // fallback if already number
-  };
-
-const getRankingsOverTime = (history, type, key) => {
-  const nameSet = new Set();
-  console.log(history)
-  history.forEach(snapshot => {
-    if (snapshot[type]) {
-      snapshot[type].forEach(row => nameSet.add(row.name));
-    }
-  });
-
-  const names = Array.from(nameSet);
-  const dates = history.map(h => h.date);
-  const rankMap = {};
-
-  names.forEach(name => {
-    rankMap[name] = history.map(snapshot => {
-      const rows = snapshot[type];
-      if (!rows) return null;
-
-      const sorted = [...rows].sort((a, b) => {
-        const getValue = (row) => {
-          if (key === "adjustedSplit") {
-            return parseSplitTime(adjustedErgScore(row.split, row.weight));
-          } else if (key === "split") {
-            return parseSplitTime(row.split);
-          } else if (key === "time") {
-            return parseSplitTime(row.time);
-          } else if (key === "goldPercentage") {
-            return goldMedalPercentage(row.time, row.boatClass, row.distance, gmpSpeeds);
-          }
-          return row[key] ?? 0;
-        };
-
-        // Ascending for time-based splits
-        const sortAsc = ["split", "adjustedSplit", "time"].includes(key);
-        return sortAsc ? getValue(a) - getValue(b) : getValue(b) - getValue(a);
-      });
-
-      const index = sorted.findIndex(r => r.name === name);
-      return index >= 0 ? index + 1 : null;
-    });
-  });
-
-  return { dates, rankMap };
-};
 
     const getDiffsOverTime = (history, type, key) => {
         const nameSet = new Set();
@@ -412,6 +359,32 @@ const getRankingsOverTime = (history, type, key) => {
 
         return null;
     };
+
+    // compute average weekly mileage for an athlete
+    const getAverageWeeklyMileage = (name) => {
+        if (!sessions || sessions.length === 0) return 0;
+
+        // filter to athlete’s sessions
+        const athleteSessions = sessions.filter(s => s.name === name && s.distance != null);
+        if (athleteSessions.length === 0) return 0;
+
+        // get min and max dates
+        const dates = athleteSessions.map(s => parseDateString(s.date)).filter(Boolean);
+        if (dates.length === 0) return 0;
+
+        const minDate = new Date(Math.min(...dates));
+        const maxDate = new Date(Math.max(...dates));
+        const weeks = Math.max(1, Math.ceil((maxDate - minDate) / (1000 * 60 * 60 * 24 * 7)));
+
+        // sum distance (apply multipliers if needed)
+        const totalDistance = athleteSessions.reduce((sum, s) => {
+            const multiplier = multipliers[s.type] || 1;
+            return sum + s.distance * multiplier;
+        }, 0);
+
+        return Math.round(totalDistance / weeks);
+    };
+
 
     return (
     <div className="container">
@@ -652,9 +625,6 @@ const getRankingsOverTime = (history, type, key) => {
           </div>
         </div>
       )}
-
-      {/* Modal with Chart */}
-        {/* Modal with Chart */}
         {hoveredName && (
             <div className="modal">
                 <div className="modal-content">
@@ -668,15 +638,24 @@ const getRankingsOverTime = (history, type, key) => {
       >
         &times;
       </span>
+
                     <h2 style={{ marginBottom: "1rem" }}>{hoveredName}'s Profile</h2>
 
-                    {/* Athlete info */}
-                    <p><b>Sculling Points: </b> {users[hoveredName].scull}</p>
-                    <p><b>Sweep Points: </b> {users[hoveredName].sweep.points}</p>
-                    <p><b>Sweep Side: </b> {users[hoveredName].sweep.side}</p>
-                    <p><b>Available for Champs: </b> {users[hoveredName].champs ? "Yes" : "No"}</p>
-                    <div style={{ marginBottom: "1rem" }}>
-                        <label style={{ color: "white" }}>Compare with: </label>
+                    {/* Athlete Info */}
+                    <div className="profile-section">
+                        <h3 className="section-title">Athlete Info</h3>
+                        <div className="info-grid">
+                            <div><b>Sculling Points:</b> {users[hoveredName].scull}</div>
+                            <div><b>Sweep Points:</b> {users[hoveredName].sweep.points}</div>
+                            <div><b>Sweep Side:</b> {users[hoveredName].sweep.side}</div>
+                            <div><b>Champs Eligible:</b> {users[hoveredName].champs ? "Yes" : "No"}</div>
+                            <div><b>Avg Weekly Mileage:</b> {getAverageWeeklyMileage(hoveredName).toLocaleString()} m</div>
+                        </div>
+                    </div>
+
+                    {/* Compare Section */}
+                    <div className="profile-section">
+                        <h3 className="section-title">Compare With</h3>
                         <select
                             className="modal-select"
                             onChange={(e) => {
@@ -696,7 +675,6 @@ const getRankingsOverTime = (history, type, key) => {
                                 ))}
                         </select>
 
-                        {/* Selected names displayed as chips */}
                         <div className="selected-names">
                             {compareNames.map(n => (
                                 <div key={n} className="chip">
@@ -712,107 +690,111 @@ const getRankingsOverTime = (history, type, key) => {
                         </div>
                     </div>
 
-                    {/* Chart */}
-                    {activeTab === "sessions" ? (
-                        (() => {
-                            const baseHistory = getDistanceHistory(hoveredName, timeScale);
-                            const compareHistories = compareNames.map(n => ({
-                                name: n,
-                                history: getDistanceHistory(n, timeScale)
-                            }));
+                    {/* Chart Section */}
+                    <div className="profile-section">
+                        <h3 className="section-title">Performance</h3>
+                        {activeTab === "sessions" ? (
+                            (() => {
+                                const baseHistory = getDistanceHistory(hoveredName, timeScale);
+                                const compareHistories = compareNames.map(n => ({
+                                    name: n,
+                                    history: getDistanceHistory(n, timeScale)
+                                }));
 
-                            const allDates = [
-                                ...baseHistory.map(p => p.date.getTime()),
-                                ...compareHistories.flatMap(h => h.history.map(p => p.date.getTime()))
-                            ];
-                            const sortedDates = Array.from(new Set(allDates)).sort((a, b) => a - b);
-                            const seriesFor = (history) =>
-                                sortedDates.map(ts => {
-                                    const point = history.find(p => p.date.getTime() === ts);
-                                    return point ? point.distance : null;
+                                const allDates = [
+                                    ...baseHistory.map(p => p.date.getTime()),
+                                    ...compareHistories.flatMap(h => h.history.map(p => p.date.getTime()))
+                                ];
+                                const sortedDates = Array.from(new Set(allDates)).sort((a, b) => a - b);
+
+                                const seriesFor = (history) =>
+                                    sortedDates.map(ts => {
+                                        const point = history.find(p => p.date.getTime() === ts);
+                                        return point ? point.distance : null;
+                                    });
+
+                                const displayDates = sortedDates.map(ts => {
+                                    const d = new Date(ts);
+                                    return `${d.getMonth() + 1}/${d.getDate()}`; // e.g. "9/21"
                                 });
 
-                            const displayDates = sortedDates.map(ts => {
-                                const d = new Date(ts);
-                                return `${d.getMonth() + 1}/${d.getDate()}`; // e.g. "9/21"
-                            });
-
-                            const datasets = [
-                                {
-                                    label: hoveredName,
-                                    data: seriesFor(baseHistory),
-                                    borderColor: "#3b82f6",
-                                    backgroundColor: "#60a5fa",
-                                    spanGaps: true,
-                                },
-                                ...compareHistories.map((h, i) => ({
-                                    label: h.name,
-                                    data: seriesFor(h.history),
-                                    borderColor: `hsl(${i * 60}, 70%, 50%)`,
-                                    spanGaps: true,
-                                }))
-                            ];
-
-                            return (
-                                <>
-                                    <p>{graphText[timeScale]}</p>
-                                    <Line
-                                        data={{ labels: displayDates, datasets }}
-                                        height={300}
-                                        options={{
-                                            responsive: true,
-                                            maintainAspectRatio: true,
-                                            scales: {
-                                                y: {
-                                                    ticks: { color: "white" },
-                                                    title: { display: true, text: "Distance (m)", color: "white" },
-                                                },
-                                                x: { ticks: { color: "white" } },
-                                            },
-                                        }}
-                                    />
-
-                                </>
-                            );
-                        })()
-                    ) : (
-                        <Line
-                            data={{
-                                labels: diffHistory.dates,
-                                datasets: [
+                                const datasets = [
                                     {
                                         label: hoveredName,
-                                        data: diffHistory.diffMap[hoveredName],
+                                        data: seriesFor(baseHistory),
                                         borderColor: "#3b82f6",
                                         backgroundColor: "#60a5fa",
                                         spanGaps: true,
                                     },
-                                    ...compareNames.map((name, idx) => ({
-                                        label: name,
-                                        data: diffHistory.diffMap[name],
-                                        borderColor: `hsl(${(idx * 60) % 360}, 70%, 50%)`,
+                                    ...compareHistories.map((h, i) => ({
+                                        label: h.name,
+                                        data: seriesFor(h.history),
+                                        borderColor: `hsl(${i * 60}, 70%, 50%)`,
                                         spanGaps: true,
-                                    })),
-                                ],
-                            }}
-                            height={300}
-                            options={{
-                                responsive: true,
-                                maintainAspectRatio: true,
-                                scales: {
-                                    y: {
-                                        reverse: true, // invert graph so leader (0s) is on top
-                                        title: { display: true, text: "Gap to Leader (s)", color: "white" },
-                                        ticks: { color: "white" },
+                                    }))
+                                ];
+
+                                return (
+                                    <>
+                                        <p>{graphText[timeScale]}</p>
+                                        <Line
+                                            data={{ labels: displayDates, datasets }}
+                                            height={300}
+                                            options={{
+                                                responsive: true,
+                                                maintainAspectRatio: true,
+                                                scales: {
+                                                    y: {
+                                                        ticks: { color: "white" },
+                                                        title: { display: true, text: "Distance (m)", color: "white" },
+                                                    },
+                                                    x: { ticks: { color: "white" } },
+                                                },
+                                            }}
+                                        />
+                                    </>
+                                );
+                            })()
+                        ) : (
+                            <Line
+                                data={{
+                                    labels: diffHistory.dates,
+                                    datasets: [
+                                        {
+                                            label: hoveredName,
+                                            data: diffHistory.diffMap[hoveredName],
+                                            borderColor: "#3b82f6",
+                                            backgroundColor: "#60a5fa",
+                                            spanGaps: true,
+                                        },
+                                        ...compareNames.map((name, idx) => ({
+                                            label: name,
+                                            data: diffHistory.diffMap[name],
+                                            borderColor: `hsl(${(idx * 60) % 360}, 70%, 50%)`,
+                                            spanGaps: true,
+                                        })),
+                                    ],
+                                }}
+                                height={300}
+                                options={{
+                                    responsive: true,
+                                    maintainAspectRatio: true,
+                                    scales: {
+                                        y: {
+                                            reverse: true, // invert graph so leader (0s) is on top
+                                            title: { display: true, text: "Gap to Leader (s)", color: "white" },
+                                            ticks: { color: "white" },
+                                        },
+                                        x: { ticks: { color: "white" } },
                                     },
-                                    x: { ticks: { color: "white" } },
-                                },
-                            }}
-                        />
-                    )}
+                                }}
+                            />
+                        )}
+                    </div>
                 </div>
             </div>
         )}
+
     </div>
   );
 }

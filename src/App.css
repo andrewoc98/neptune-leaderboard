@@ -363,3 +363,22 @@ tr:hover {
 .overrate-row {
     background-color: rgba(255, 99, 71, 0.25); /* tomato red tint */
 }
+
+.profile-section {
+    margin-bottom: 1rem;
+    padding: 0.5rem 0;
+    border-top: 1px solid #444;
+}
+
+.section-title {
+    color: #ddd;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem 1rem;
+    color: white;
+}

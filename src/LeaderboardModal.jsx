@@ -1,6 +1,6 @@
 import { useState } from "react";
 import "./LeadboardModal.css";
-import { saveLeaderBoardtoDB } from "./firebase";
+import { saveLeaderBoardtoDB, updateUserWeight } from "./firebase";
 import { BicepsFlexed } from "lucide-react";
 import { ToastContainer, toast } from "react-toastify";
 import { formatDate } from "./Util";
@@ -13,7 +13,17 @@ export default function LeaderboardModal({ users }) {
 
     const handleRowChange = (index, field, value) => {
         const updated = [...rows];
-        updated[index][field] = value;
+
+        if (field === "name") {
+            updated[index].name = value;
+            // auto-populate weight from users object if exists
+            if (users[value]?.weight) {
+                updated[index].weight = users[value].weight;
+            }
+        } else {
+            updated[index][field] = value;
+        }
+
         setRows(updated);
     };
 
@@ -43,18 +53,27 @@ export default function LeaderboardModal({ users }) {
         return newErrors.every((err) => Object.keys(err).length === 0);
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (!validate() || !date) {
             return; // stop if invalid
         }
-        saveLeaderBoardtoDB({ date: date, ergData: rows }); // Replace with DB post
+
+        // save leaderboard
+        await saveLeaderBoardtoDB({ date: date, ergData: rows });
+
+        // update weights in DB if changed
+        for (const row of rows) {
+            if (row.name && row.weight && users[row.name]?.weight !== row.weight) {
+                await updateUserWeight(row.name, row.weight);
+            }
+        }
+
         setOpen(false);
         setRows([{ name: "", weight: "", split: "", overRate: false }]);
         setErrors([]);
         toast.success("Leaderboard Uploaded");
     };
 
-    // Dynamically pull names from users object (skip "id")
     const nameOptions = Object.keys(users).filter((key) => key !== "id");
 
     return (

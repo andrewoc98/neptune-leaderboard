@@ -397,3 +397,19 @@ export function listenToUnApprovedSessions(callback) {
 
     return unsubscribe; // allows you to call this in useEffect cleanup
 }
+
+export async function updateUserWeight(name, weight) {
+    try {
+        // Reference the users document inside page-data
+        const usersRef = doc(database, "page-data", "users");
+
+        // Update just this user's weight
+        await updateDoc(usersRef, {
+            [`${name}.weight`]: Number(weight),
+        });
+
+        console.log(`Updated ${name}'s weight to ${weight}`);
+    } catch (error) {
+        console.error("Error updating user weight:", error);
+    }
+}

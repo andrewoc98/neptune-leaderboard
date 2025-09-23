@@ -1,15 +1,18 @@
-import React, {useEffect, useState} from "react";
-import {getUsers, updateUsers} from "./firebase";
-import {UserRound} from "lucide-react";
-
-// Sample users data should come from Firestore normally, but here it's static
-
+import React, { useEffect, useState } from "react";
+import { getUsers, updateUsers } from "./firebase";
+import { UserRound } from "lucide-react";
 
 export default function UserEditModal() {
     const [isOpen, setIsOpen] = useState(false);
     const [users, setUsers] = useState({});
     const [selectedUser, setSelectedUser] = useState("");
-    const [formData, setFormData] = useState({ scull: "", sweepSide: "", sweepPoints: "", champs:true});
+    const [formData, setFormData] = useState({
+        scull: "",
+        sweepSide: "",
+        sweepPoints: "",
+        champs: true,
+        weight: ""
+    });
     const [isAdding, setIsAdding] = useState(false);
     const [newUserName, setNewUserName] = useState("");
 
@@ -17,13 +20,14 @@ export default function UserEditModal() {
         const fetchUsers = async () => {
             try {
                 const users = await getUsers();
-                setUsers(users)
+                setUsers(users);
             } catch (error) {
                 console.error("Error users:", error);
             }
-        }
+        };
         fetchUsers();
     }, []);
+
     const openModal = (userName) => {
         setIsAdding(false);
         setSelectedUser(userName);
@@ -32,22 +36,29 @@ export default function UserEditModal() {
             scull: user.scull,
             sweepSide: user.sweep.side,
             sweepPoints: user.sweep.points,
-            champs:user.champs
+            champs: user.champs,
+            weight: user.weight || ""
         });
     };
 
-  const openAddUser = () => {
-    const password = prompt("Enter admin password to add a user:");
-    
-    if (password === "yourSecretPassword") {
-        setIsAdding(true);
-        setSelectedUser("");
-        setFormData({ scull: 0, sweepSide: "Bow", sweepPoints: 0, champs: true });
-        setNewUserName("");
-    } else {
-        alert("Incorrect password. Access denied.");
-    }
-};
+    const openAddUser = () => {
+        const password = prompt("Enter admin password to add a user:");
+
+        if (password === "yourSecretPassword") {
+            setIsAdding(true);
+            setSelectedUser("");
+            setFormData({
+                scull: 0,
+                sweepSide: "Bow",
+                sweepPoints: 0,
+                champs: true,
+                weight: 0
+            });
+            setNewUserName("");
+        } else {
+            alert("Incorrect password. Access denied.");
+        }
+    };
 
     const closeModal = () => {
         setIsOpen(false);
@@ -57,9 +68,11 @@ export default function UserEditModal() {
     };
 
     const handleChange = (e) => {
-
-        const { name, value } = e.target;
-        setFormData((prev) => ({ ...prev, [name]: value }));
+        const { name, value, type, checked } = e.target;
+        setFormData((prev) => ({
+            ...prev,
+            [name]: type === "checkbox" ? checked : value
+        }));
     };
 
     const handleSubmit = async () => {
@@ -71,10 +84,11 @@ export default function UserEditModal() {
                     scull: Number(formData.scull),
                     sweep: {
                         side: formData.sweepSide,
-                        points: Number(formData.sweepPoints),
+                        points: Number(formData.sweepPoints)
                     },
-                    champs: true
-                },
+                    champs: true,
+                    weight: Number(formData.weight)
+                }
             };
         } else if (selectedUser) {
             updatedData = {
@@ -83,10 +97,11 @@ export default function UserEditModal() {
                     scull: Number(formData.scull),
                     sweep: {
                         side: formData.sweepSide,
-                        points: Number(formData.sweepPoints),
+                        points: Number(formData.sweepPoints)
                     },
-                    champs: formData.champs
-                },
+                    champs: formData.champs,
+                    weight: Number(formData.weight)
+                }
             };
         } else {
             return;
@@ -116,7 +131,7 @@ export default function UserEditModal() {
     return (
         <div>
             <button onClick={() => setIsOpen(true)} className="btn">
-                <UserRound/>
+                <UserRound />
             </button>
 
             {isOpen && (
@@ -129,12 +144,20 @@ export default function UserEditModal() {
                                     <ul className="quotes-list">
                                         {Object.keys(users).map((user) => (
                                             <li key={user} className="quote-card">
-                                                <div className="quote-text">{user}</div>
+                                                <div className="quote-text">
+                                                    {user}
+                                                </div>
                                                 <div className="quote-actions">
-                                                    <button onClick={() => openModal(user)} className="modal-button submit">
+                                                    <button
+                                                        onClick={() => openModal(user)}
+                                                        className="modal-button submit"
+                                                    >
                                                         Edit
                                                     </button>
-                                                    <button onClick={() => handleDelete(user)} className="modal-button cancel">
+                                                    <button
+                                                        onClick={() => handleDelete(user)}
+                                                        className="modal-button cancel"
+                                                    >
                                                         Delete
                                                     </button>
                                                 </div>
@@ -143,32 +166,48 @@ export default function UserEditModal() {
                                     </ul>
                                 </div>
                                 <div className="modal-footer">
-                                    <button className="modal-button submit" onClick={openAddUser}>
+                                    <button
+                                        className="modal-button submit"
+                                        onClick={openAddUser}
+                                    >
                                         + Add User
                                     </button>
-                                    <button className="modal-button cancel" onClick={closeModal}>
+                                    <button
+                                        className="modal-button cancel"
+                                        onClick={closeModal}
+                                    >
                                         Close
                                     </button>
                                 </div>
                             </>
                         ) : (
                             <>
-                                <h2 className="modal-title">{isAdding ? "Add New User" : `Edit ${selectedUser}`}</h2>
+                                <h2 className="modal-title">
+                                    {isAdding
+                                        ? "Add New User"
+                                        : `Edit ${selectedUser}`}
+                                </h2>
                                 <div className="modal-body">
                                     {isAdding && (
                                         <div className="modal-field">
-                                            <label className="modal-label">User Name</label>
+                                            <label className="modal-label">
+                                                User Name
+                                            </label>
                                             <input
                                                 type="text"
                                                 value={newUserName}
-                                                onChange={(e) => setNewUserName(e.target.value)}
+                                                onChange={(e) =>
+                                                    setNewUserName(e.target.value)
+                                                }
                                                 className="modal-input"
                                             />
                                         </div>
                                     )}
 
                                     <div className="modal-field">
-                                        <label className="modal-label">Scull Points</label>
+                                        <label className="modal-label">
+                                            Scull Points
+                                        </label>
                                         <input
                                             type="number"
                                             name="scull"
@@ -179,7 +218,9 @@ export default function UserEditModal() {
                                     </div>
 
                                     <div className="modal-field">
-                                        <label className="modal-label">Sweep Side</label>
+                                        <label className="modal-label">
+                                            Sweep Side
+                                        </label>
                                         <select
                                             name="sweepSide"
                                             value={formData.sweepSide}
@@ -193,11 +234,26 @@ export default function UserEditModal() {
                                     </div>
 
                                     <div className="modal-field">
-                                        <label className="modal-label">Sweep Points</label>
+                                        <label className="modal-label">
+                                            Sweep Points
+                                        </label>
                                         <input
                                             type="number"
                                             name="sweepPoints"
                                             value={formData.sweepPoints}
+                                            onChange={handleChange}
+                                            className="modal-input"
+                                        />
+                                    </div>
+
+                                    <div className="modal-field">
+                                        <label className="modal-label">
+                                            Weight (kg)
+                                        </label>
+                                        <input
+                                            type="number"
+                                            name="weight"
+                                            value={formData.weight}
                                             onChange={handleChange}
                                             className="modal-input"
                                         />
@@ -209,9 +265,7 @@ export default function UserEditModal() {
                                                 type="checkbox"
                                                 name="champs"
                                                 checked={formData.champs}
-                                                onChange={(e) =>
-                                                    setFormData((prev) => ({ ...prev, champs: e.target.checked }))
-                                                }
+                                                onChange={handleChange}
                                             />
                                             Available for Champs
                                         </label>
@@ -219,15 +273,30 @@ export default function UserEditModal() {
                                 </div>
 
                                 <div className="modal-footer">
-                                    <button className="modal-button cancel" onClick={() => (isAdding ? setIsAdding(false) : setSelectedUser(""))}>
+                                    <button
+                                        className="modal-button cancel"
+                                        onClick={() =>
+                                            isAdding
+                                                ? setIsAdding(false)
+                                                : setSelectedUser("")
+                                        }
+                                    >
                                         Back
                                     </button>
                                     {!isAdding && (
-                                        <button className="modal-button cancel" onClick={() => handleDelete(selectedUser)}>
+                                        <button
+                                            className="modal-button cancel"
+                                            onClick={() =>
+                                                handleDelete(selectedUser)
+                                            }
+                                        >
                                             Delete
                                         </button>
                                     )}
-                                    <button className="modal-button submit" onClick={handleSubmit}>
+                                    <button
+                                        className="modal-button submit"
+                                        onClick={handleSubmit}
+                                    >
                                         Save
                                     </button>
                                 </div>

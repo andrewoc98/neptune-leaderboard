@@ -68,22 +68,33 @@ export const rowerSession = async (entry) => {
 };
 
 export async function saveLeaderBoardtoDB(newEntry) {
-    const ref = doc(database, "page-data", 'leaderboards');
+    const ref = doc(database, "page-data", "leaderboards");
     const snap = await getDoc(ref);
-    console.log(newEntry)
     if (!snap.exists()) throw new Error("Document not found");
 
     let entries = snap.data().entries || [];
 
-    // Set the date to the previous Sunday using your function
+    // Normalize the date to the previous Sunday
     newEntry.date = getPreviousSunday(newEntry.date);
 
     const index = entries.findIndex(e => e.date === newEntry.date);
 
     if (index >= 0) {
-        if (newEntry.ergData !== undefined) entries[index].ergData = newEntry.ergData;
-        if (newEntry.waterData !== undefined) entries[index].waterData = newEntry.waterData;
+        // Append instead of overwrite
+        if (newEntry.ergData !== undefined) {
+            entries[index].ergData = [
+                ...(entries[index].ergData || []),
+                ...newEntry.ergData
+            ];
+        }
+        if (newEntry.waterData !== undefined) {
+            entries[index].waterData = [
+                ...(entries[index].waterData || []),
+                ...newEntry.waterData
+            ];
+        }
     } else {
+        // Create a new entry if no matching date exists
         entries.push({
             date: newEntry.date,
             ergData: newEntry.ergData ?? [],
@@ -93,6 +104,7 @@ export async function saveLeaderBoardtoDB(newEntry) {
 
     await updateDoc(ref, { entries });
 }
+
 
 export function getWorkouts(workout) {
     const today = new Date();

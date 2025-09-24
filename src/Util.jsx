@@ -5,17 +5,24 @@ import { GiPorcupinefish, GiSharkJaws, GiDolphin, GiSpermWhale, GiAnglerFish, Gi
 import './App.css';
 
 export function adjustedErgScore(split, weight) {
-
-    const [minutesStr, secTenthsStr] = split.split(':')
+    const [minutesStr, secTenthsStr] = split.split(":");
 
     const minutes = parseInt(minutesStr, 10);
     const seconds = parseFloat(secTenthsStr);
     const totalSeconds = minutes * 60 + seconds;
     const factor = Math.pow(weight / 122.47, 1 / 9);
 
-    const adjustedSeconds = (factor * totalSeconds).toFixed(1)
-    return Math.floor(adjustedSeconds / 60) + ":" + ((adjustedSeconds % 60).toFixed(1));
+    const adjustedSeconds = (factor * totalSeconds).toFixed(1);
+
+    const mins = Math.floor(adjustedSeconds / 60);
+    const secs = (adjustedSeconds % 60).toFixed(1);
+
+    // Pad seconds so "0.0" -> "00.0"
+    const formattedSecs = secs < 10 ? "0" + secs : secs;
+
+    return `${mins}:${formattedSecs}`;
 }
+
 
 export function goldMedalPercentage(time, boatClass, distance, gmpSpeeds) {
     const [minutesStr, secTenthsStr] = time.split(':');

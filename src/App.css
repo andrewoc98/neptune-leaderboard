@@ -382,3 +382,29 @@ tr:hover {
     gap: 0.5rem 1rem;
     color: white;
 }
+.table-legend {
+    display: flex;
+    justify-content: flex-end; /* push it to the right */
+    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+    color: white;
+    gap: 1rem;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.legend-box {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 1px solid white;
+    border-radius: 3px;
+}
+
+.legend-box.overrate-row {
+    background-color: rgba(255, 0, 0, 0.5); /* same red as your row highlight */
+}

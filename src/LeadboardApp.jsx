@@ -409,7 +409,13 @@ export default function LeaderboardApp({sessions, multipliers, workouts, users, 
                 <b>Next Week Session:</b> {pieces.erg.nextWeek}
               </p>
             </div>
-            <table>
+              <div className="table-legend">
+  <span className="legend-item">
+    <span className="legend-box overrate-row"></span> Over Rate Cap
+  </span>
+              </div>
+
+              <table>
                 <thead>
                   <tr>
                     <th>Rank</th>

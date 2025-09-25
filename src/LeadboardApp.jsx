@@ -311,6 +311,8 @@ export default function LeaderboardApp({sessions, multipliers, workouts, users, 
         } else if (timescale === "week") {
             cutoff = new Date(now);
             cutoff.setDate(now.getDate() - 7);
+        } else if (timescale === "season") {
+            cutoff = new Date(2025, 8, 1);
         }
 
         const daily = {};
@@ -368,22 +370,44 @@ export default function LeaderboardApp({sessions, multipliers, workouts, users, 
         const athleteSessions = sessions.filter(s => s.name === name && s.distance != null);
         if (athleteSessions.length === 0) return 0;
 
-        // get min and max dates
+        // parse all dates
         const dates = athleteSessions.map(s => parseDateString(s.date)).filter(Boolean);
         if (dates.length === 0) return 0;
 
         const minDate = new Date(Math.min(...dates));
         const maxDate = new Date(Math.max(...dates));
-        const weeks = Math.max(1, Math.ceil((maxDate - minDate) / (1000 * 60 * 60 * 24 * 7)));
+
+        // reference start date = Sept 1, 2025
+        const septFirst = new Date("2025-09-01T00:00:00Z");
+
+        // pick whichever is later: Sept 1, 2025 OR first session
+        const startDate = minDate > septFirst ? minDate : septFirst;
+
+        // filter sessions so we only keep ones on/after startDate
+        const validSessions = athleteSessions.filter(s => {
+            const d = parseDateString(s.date);
+            return d && d >= startDate;
+        });
+
+        if (validSessions.length === 0) return 0;
+
+        // recompute max date from filtered sessions
+        const filteredDates = validSessions.map(s => parseDateString(s.date));
+        const filteredMaxDate = new Date(Math.max(...filteredDates));
+
+        // compute weeks between startDate and last valid session
+        const weeks = Math.max(1, Math.ceil((filteredMaxDate - startDate) / (1000 * 60 * 60 * 24 * 7)));
 
         // sum distance (apply multipliers if needed)
-        const totalDistance = athleteSessions.reduce((sum, s) => {
+        const totalDistance = validSessions.reduce((sum, s) => {
             const multiplier = multipliers[s.type] || 1;
             return sum + s.distance * multiplier;
         }, 0);
 
         return Math.round(totalDistance / weeks);
     };
+
+
 
 
     return (

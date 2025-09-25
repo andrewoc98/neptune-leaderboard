@@ -134,7 +134,7 @@ export function getSessionStats(period, distanceMultiplier, allSessions) {
         startDate.setDate(today.getDate() - 6);
         startDate.setHours(0, 0, 0, 0);
     } else {
-        startDate = new Date(-8640000000000000);
+        startDate = new Date(2025, 8, 1);
     }
 
     const stats = {};

@@ -632,17 +632,12 @@ export default function LeaderboardApp({sessions, multipliers, workouts, users, 
                                 ) : (() => {
                                     if (!changePerRower || !(rower.name in changePerRower)) return "-";
 
-                                    const prevDistance = Number(changePerRower[rower.name] || 0);
+                                    const change = Number(changePerRower[rower.name] || 0);
 
-                                    const currentDistance = Number(totalDistance || 0);
-                                    const diff = currentDistance - prevDistance;
-                                    console.log(diff)
-                                    if (diff === 0) return "-";
-                                    console
                                     return (
                                         <>
-                                            {Math.abs(diff).toLocaleString("en-US")}{" "}
-                                            {diff > 0 ? "▲" : "▼"}
+                                            {Math.abs(change).toLocaleString("en-US")}{" "}
+                                            {change > 0 ? "▲" : "▼"}
                                         </>
                                     );
                                 })()}

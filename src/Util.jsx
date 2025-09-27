@@ -222,7 +222,7 @@ export function getDistanceForLastPeriod(period, allSessions, distanceMultiplier
     allNames.forEach(name => {
         changeByRower[name] = (distanceByRower[name] || 0) - (prevDistanceByRower[name] || 0);
     });
-
+    console.log(changeByRower)
     return changeByRower;
 }
 

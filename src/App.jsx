@@ -23,21 +23,32 @@ function App() {
             try {
                 const lazyData = await loadAllDocuments();
                 const allSessions = await getAllSessionHistory();
-                console.log(lazyData)
-                setLeaderboard(lazyData[1].entries)
-                setMultipliers(lazyData[2])
-                setQuotes(lazyData[3].quotes)
-                setUsers(lazyData[5])
-                setWorkouts({erg:lazyData[6].erg.entries, water:lazyData[6].water.entries})
-                setSessions(allSessions)
-                setGmpSpeeds(lazyData[0].speeds)
+
+                // sort users alphabetically by key
+                const unsortedUsers = lazyData[5];
+                const sortedUsers = Object.keys(unsortedUsers)
+                    .filter(key => key !== "id") // keep "id" at the top
+                    .sort((a, b) => a.localeCompare(b))
+                    .reduce((obj, key) => {
+                        obj[key] = unsortedUsers[key];
+                        return obj;
+                    }, { id: unsortedUsers.id });
+
+                setLeaderboard(lazyData[1].entries);
+                setMultipliers(lazyData[2]);
+                setQuotes(lazyData[3].quotes);
+                setUsers(sortedUsers);
+                setWorkouts({ erg: lazyData[6].erg.entries, water: lazyData[6].water.entries });
+                setSessions(allSessions);
+                setGmpSpeeds(lazyData[0].speeds);
 
             } catch (e) {
-                console.log("Failed to load page documents", e)
+                console.log("Failed to load page documents", e);
             }
-        }
-        fetchLazyData()
+        };
+        fetchLazyData();
     }, []);
+
 
   useEffect(()=>{
       console.log(workouts)

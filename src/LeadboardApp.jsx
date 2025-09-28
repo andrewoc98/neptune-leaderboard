@@ -339,6 +339,65 @@ export default function LeaderboardApp({sessions, multipliers, workouts, users, 
                 return { date: new Date(Number(ts)), distance: cumulative };
             });
     };
+    const getPrevDistanceHistory = (name, timescale = "season") => {
+        if (timescale === "season") {
+            return [];
+        }
+
+        const now = new Date();
+        let start = null;
+        let end = null;
+        let offsetDays = 0;
+
+        if (timescale === "month") {
+            start = new Date(now);
+            start.setDate(now.getDate() - 60);
+
+            end = new Date(now);
+            end.setDate(now.getDate() - 30);
+
+            offsetDays = 30;
+        } else if (timescale === "week") {
+            start = new Date(now);
+            start.setDate(now.getDate() - 14);
+
+            end = new Date(now);
+            end.setDate(now.getDate() - 7);
+
+            offsetDays = 7;
+        }
+
+        const daily = {};
+
+        sessions.forEach(s => {
+            if (s.name !== name || !s.date || s.distance == null) return;
+
+            const d = s.date instanceof Date ? new Date(s.date) : parseDateString(s.date);
+            if (!d || isNaN(d)) return; // skip invalid
+            d.setHours(0, 0, 0, 0);
+
+            // filter by range
+            if ((start && d < start) || (end && d > end)) return;
+
+            const key = d.getTime();
+            const multiplier = multipliers[s.type] || 1;
+            daily[key] = (daily[key] || 0) + s.distance * multiplier;
+        });
+
+        let cumulative = 0;
+        return Object.entries(daily)
+            .sort(([a], [b]) => a - b)
+            .map(([ts, dist]) => {
+                cumulative += dist;
+
+                const shiftedDate = new Date(Number(ts));
+                shiftedDate.setDate(shiftedDate.getDate() + offsetDays);
+
+                return { date: shiftedDate, distance: cumulative };
+            });
+    };
+
+
 
     const parseDateString = (input) => {
         if (!input) return null;
@@ -721,14 +780,22 @@ export default function LeaderboardApp({sessions, multipliers, workouts, users, 
                         {activeTab === "sessions" ? (
                             (() => {
                                 const baseHistory = getDistanceHistory(hoveredName, timeScale);
+                                const prevHistory =
+                                    timeScale === "season" || compareNames.length > 0
+                                        ? []
+                                        : getPrevDistanceHistory(hoveredName, timeScale);
+
                                 const compareHistories = compareNames.map(n => ({
                                     name: n,
-                                    history: getDistanceHistory(n, timeScale)
+                                    history: getDistanceHistory(n, timeScale),
                                 }));
 
                                 const allDates = [
                                     ...baseHistory.map(p => p.date.getTime()),
-                                    ...compareHistories.flatMap(h => h.history.map(p => p.date.getTime()))
+                                    ...prevHistory.map(p => p.date.getTime()),
+                                    ...compareHistories.flatMap(h =>
+                                        h.history.map(p => p.date.getTime())
+                                    ),
                                 ];
                                 const sortedDates = Array.from(new Set(allDates)).sort((a, b) => a - b);
 
@@ -740,7 +807,7 @@ export default function LeaderboardApp({sessions, multipliers, workouts, users, 
 
                                 const displayDates = sortedDates.map(ts => {
                                     const d = new Date(ts);
-                                    return `${d.getMonth() + 1}/${d.getDate()}`; // e.g. "9/21"
+                                    return `${d.getMonth() + 1}/${d.getDate()}`;
                                 });
 
                                 const datasets = [
@@ -751,12 +818,22 @@ export default function LeaderboardApp({sessions, multipliers, workouts, users, 
                                         backgroundColor: "#60a5fa",
                                         spanGaps: true,
                                     },
+                                    ...(prevHistory.length > 0
+                                        ? [{
+                                            label: hoveredName + " (prev)",
+                                            data: seriesFor(prevHistory),
+                                            borderColor: "#3b82f6",
+                                            borderDash: [6, 6],
+                                            fill: false,
+                                            spanGaps: true,
+                                        }]
+                                        : []),
                                     ...compareHistories.map((h, i) => ({
                                         label: h.name,
                                         data: seriesFor(h.history),
                                         borderColor: `hsl(${i * 60}, 70%, 50%)`,
                                         spanGaps: true,
-                                    }))
+                                    })),
                                 ];
 
                                 return (
@@ -774,6 +851,12 @@ export default function LeaderboardApp({sessions, multipliers, workouts, users, 
                                                         title: { display: true, text: "Distance (m)", color: "white" },
                                                     },
                                                     x: { ticks: { color: "white" } },
+                                                },
+                                                plugins: {
+                                                    tooltip: {
+                                                        filter: (tooltipItem) =>
+                                                            !tooltipItem.dataset.label.includes("(prev)"),
+                                                    },
                                                 },
                                             }}
                                         />
@@ -806,7 +889,7 @@ export default function LeaderboardApp({sessions, multipliers, workouts, users, 
                                     maintainAspectRatio: true,
                                     scales: {
                                         y: {
-                                            reverse: true, // invert graph so leader (0s) is on top
+                                            reverse: true,
                                             title: { display: true, text: "Gap to Leader (s)", color: "white" },
                                             ticks: { color: "white" },
                                         },

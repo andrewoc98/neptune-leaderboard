@@ -455,7 +455,7 @@ export default function LeaderboardApp({sessions, multipliers, workouts, users, 
         const filteredMaxDate = new Date(Math.max(...filteredDates));
 
         // compute weeks between startDate and last valid session
-        const weeks = Math.max(1, Math.ceil((filteredMaxDate - startDate) / (1000 * 60 * 60 * 24 * 7)));
+        const weeks = Math.max(1 / 7, (filteredMaxDate - startDate) / (1000 * 60 * 60 * 24 * 7));
 
         // sum distance (apply multipliers if needed)
         const totalDistance = validSessions.reduce((sum, s) => {

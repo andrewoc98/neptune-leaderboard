@@ -25,24 +25,6 @@ export default function Admin({gmpSpeeds,users}) {
         }
     };
 
-    if (!isAuthorized) {
-        return (
-            <div style={{ padding: "2rem", allignItems: 'centre' }}>
-                <h1 style={{ color: 'white' }}>Admin Login</h1>
-                <form onSubmit={handleSubmit}>
-                    <input
-                        className='modal-input'
-                        type="password"
-                        value={passwordInput}
-                        onChange={(e) => setPasswordInput(e.target.value)}
-                        placeholder="Enter password"
-                        style={{ padding: "0.5rem", marginRight: "0.5rem", width: '20%' }}
-                    />
-                    <button type="submit">Enter</button>
-                </form>
-            </div>
-        );
-    }
   return (
     <div style={{ padding: "2rem", color: 'white', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2rem' }}>
       

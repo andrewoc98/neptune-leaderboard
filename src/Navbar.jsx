@@ -12,7 +12,7 @@ export default function Navbar({ user, admin, setAdmin, onAuthClick }) {
                         onClick={() => setAdmin(!admin)}
                         className="navbar-btn admin-btn"
                     >
-                        {admin ? "Admin Dashboard" : "View Leaderboard"}
+                        {!admin ? "Admin Dashboard" : "View Leaderboard"}
                     </button>
                 )}
 

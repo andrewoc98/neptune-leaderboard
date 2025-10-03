@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { auth, provider, signInWithPopup, signOut } from "./firebase";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { database } from "./firebase";
-import "./modal.css";
+import "./auth.css";
 
 export default function AuthModal({ users, user, isOpen, onClose }) {
     const [showModal, setShowModal] = useState(false);
@@ -24,7 +24,7 @@ export default function AuthModal({ users, user, isOpen, onClose }) {
         if (isOpen) setShowModal(true);
     }, [isOpen]);
 
-    // If `users` prop changes, update roster
+    // Update roster if prop changes
     useEffect(() => {
         if (users) setRoster(users);
     }, [users]);
@@ -64,19 +64,16 @@ export default function AuthModal({ users, user, isOpen, onClose }) {
             const result = await signInWithPopup(auth, provider);
             const signedInUser = result.user;
 
-            // Ensure roster is up to date
             await fetchRoster();
-            console.log(signedInUser.uid)
+
             const alreadyLinked = Object.entries(roster).find(
                 ([, data]) => data.uid === signedInUser.uid
             );
 
             if (alreadyLinked) {
-                console.log("✅ User already linked:", alreadyLinked[0]);
                 onClose();
                 setShowModal(false);
             } else {
-                console.log("⚠️ User not linked yet, showing roster picker.");
                 setNeedsAssignment(true);
             }
         } catch (err) {
@@ -89,10 +86,8 @@ export default function AuthModal({ users, user, isOpen, onClose }) {
 
         if (selectedName && selectedName !== "new") {
             await assignToExistingUser(selectedName, auth.currentUser);
-            console.log(`✅ Linked to existing user: ${selectedName}`);
         } else if (newName.trim()) {
             await createNewUserEntry(newName.trim(), auth.currentUser);
-            console.log(`✅ Created new entry for: ${newName}`);
         }
 
         setNeedsAssignment(false);
@@ -109,10 +104,10 @@ export default function AuthModal({ users, user, isOpen, onClose }) {
     if (!showModal) return null;
 
     return (
-        <div className="modal-overlay">
-            <div className="modal-content">
+        <div className="auth-modal-overlay">
+            <div className="auth-modal-content">
                 <button
-                    className="modal-close"
+                    className="auth-modal-close"
                     onClick={() => {
                         setShowModal(false);
                         onClose();
@@ -121,20 +116,17 @@ export default function AuthModal({ users, user, isOpen, onClose }) {
                     ×
                 </button>
 
-                <h2 className="modal-title">
-                    {user ? "Account" : "Sign In"}
-                </h2>
+                <h2 className="auth-modal-title">{user ? "Account" : "Sign In"}</h2>
 
-                <div className="modal-body">
+                <div className="auth-modal-body">
                     {!user ? (
                         <button
                             onClick={handleLogin}
-                            className="modal-button submit w-full flex items-center justify-center gap-2"
+                            className="auth-modal-button auth-google-button"
                         >
                             <img
                                 src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
                                 alt="Google"
-                                className="w-5 h-5"
                             />
                             Continue with Google
                         </button>
@@ -143,47 +135,51 @@ export default function AuthModal({ users, user, isOpen, onClose }) {
                             {!needsAssignment ? (
                                 <button
                                     onClick={handleLogout}
-                                    className="modal-button cancel w-full"
+                                    className="auth-modal-button cancel"
                                 >
                                     Logout
                                 </button>
                             ) : (
-                                <div className="assignment-form space-y-4">
-                                    <div className="modal-field">
-                                        <label className="modal-label">Select your name:</label>
+                                <div className="auth-assignment-form">
+                                    <div className="auth-modal-field">
+                                        <label className="auth-modal-label">
+                                            Select your name:
+                                        </label>
                                         <select
                                             value={selectedName}
                                             onChange={(e) => setSelectedName(e.target.value)}
-                                            className="modal-select"
+                                            className="auth-modal-select"
                                         >
                                             <option value="">-- Choose your name --</option>
-                                            {Object.keys(roster).map((name) =>
-                                                name !== "id" ? (
+                                            {Object.keys(roster)
+                                                .filter((name) => name !== "id")
+                                                .map((name) => (
                                                     <option key={name} value={name}>
                                                         {name}
                                                     </option>
-                                                ) : null
-                                            )}
+                                                ))}
                                             <option value="new">I’m not on the list</option>
                                         </select>
                                     </div>
 
                                     {selectedName === "new" && (
-                                        <div className="modal-field">
-                                            <label className="modal-label">Enter your name:</label>
+                                        <div className="auth-modal-field">
+                                            <label className="auth-modal-label">
+                                                Enter your name:
+                                            </label>
                                             <input
                                                 type="text"
                                                 placeholder="Full name"
                                                 value={newName}
                                                 onChange={(e) => setNewName(e.target.value)}
-                                                className="modal-input"
+                                                className="auth-modal-input"
                                             />
                                         </div>
                                     )}
 
                                     <button
                                         onClick={handleAssign}
-                                        className="modal-button submit w-full"
+                                        className="auth-modal-button submit"
                                     >
                                         Confirm
                                     </button>

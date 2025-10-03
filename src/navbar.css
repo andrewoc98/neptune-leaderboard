@@ -1,180 +1,66 @@
-/* Overlay */
-.auth-modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(15, 23, 42, 0.85);
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    z-index: 100;
-    backdrop-filter: blur(4px);
-    overflow-y: auto;
-    padding: 2rem 1rem;
-}
-
-/* Modal Content */
-.auth-modal-content {
-    background: #1e293b;
-    border-radius: 16px;
-    padding: 1.5rem 1rem;
-    width: 95%;
-    max-width: 400px;
-    box-shadow: 0 12px 24px rgba(0,0,0,0.6);
-    color: #f8f9fa;
-    animation: fadeIn 0.25s ease;
-    display: flex;
-    flex-direction: column;
-    max-height: 90vh;
-    position: relative;
-}
-
-/* Title */
-.auth-modal-title {
-    font-size: 1.4rem;
-    font-weight: 700;
-    text-align: center;
-    color: #4ade80;
-    margin-bottom: 1rem;
-}
-
-/* Close Button */
-.auth-modal-close {
-    position: absolute;
-    top: 0.75rem;
-    right: 0.75rem;
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    color: #f8f9fa;
-    cursor: pointer;
-    transition: color 0.2s;
-}
-
-.auth-modal-close:hover {
-    color: #f87171;
-}
-
-/* Modal Body */
-.auth-modal-body {
-    flex-grow: 1;
-    overflow-y: auto;
-    margin-bottom: 1rem;
-    padding-right: 0.25rem; /* scrollbar safe */
-}
-
-/* Fields */
-.auth-modal-field {
-    margin-bottom: 0.75rem;
-    display: flex;
-    flex-direction: column;
-}
-
-.auth-modal-label {
-    margin-bottom: 0.25rem;
-    font-weight: 600;
-    color: #d1d5db;
-    font-size: 0.95rem;
-}
-
-.auth-modal-input,
-.auth-modal-select {
-    padding: 0.45rem 0.65rem;
-    border-radius: 8px;
-    border: 1px solid #374151;
-    background: #111827;
-    color: #f8f9fa;
-    font-size: 0.9rem;
-    outline: none;
-    transition: border 0.2s ease, box-shadow 0.2s ease;
-}
-
-.auth-modal-input:focus,
-.auth-modal-select:focus {
-    border-color: #4ade80;
-    box-shadow: 0 0 6px rgba(74, 222, 128, 0.3);
-}
-
-/* Buttons */
-.auth-modal-button {
-    padding: 0.45rem 0.85rem;
-    border-radius: 8px;
-    border: none;
-    font-weight: 600;
-    cursor: pointer;
-    font-size: 0.95rem;
-    transition: all 0.2s ease;
+/* Navbar Container */
+.app-navbar {
     width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    background: #0f172a; /* match app background */
+    border-bottom: 2px solid #4ade80; /* neon green accent */
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    backdrop-filter: blur(6px);
 }
 
-.auth-modal-button.submit {
-    background: #4ade80;
-    color: #1f2937;
+/* Navbar Left */
+.navbar-left .app-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #4ade80; /* neon green title */
 }
 
-.auth-modal-button.submit:hover {
-    background: #22c55e;
+/* Navbar Right */
+.navbar-right {
+    display: flex;
+    gap: 0.75rem;
+    flex-shrink: 1; /* allow shrinking */
+    flex-wrap: wrap; /* wrap buttons if needed */
+    margin-right: 1.25rem;
+}
+
+
+/* Navbar Buttons */
+.navbar-btn {
+    padding: 0.4rem 0.9rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border-radius: 12px;
+    border: 1px solid #4ade80;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap; /* prevent text from breaking */
+    flex-shrink: 1;      /* allow button to shrink if needed */
+}
+
+/* Admin Button */
+.admin-btn {
+    background: transparent;
+    color: #4ade80;
+}
+
+.admin-btn:hover {
+    background: #1e293b;
     transform: translateY(-1px);
 }
 
-.auth-modal-button.cancel {
-    background: #374151;
-    color: #d1d5db;
+/* Auth Button */
+.auth-btn {
+    background: #4ade80;
+    color: #0f172a;
 }
 
-.auth-modal-button.cancel:hover {
-    background: #4b5563;
-}
-
-/* Google Button */
-.auth-google-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    background: white;
-    color: #444;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    font-size: 0.95rem;
-}
-
-.auth-google-button img {
-    width: 20px;
-    height: 20px;
-}
-
-/* Assignment form spacing */
-.auth-assignment-form {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-}
-
-/* Animations */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* Responsive tweaks */
-@media (max-width: 480px) {
-    .auth-modal-content {
-        width: 95%;
-        padding: 1rem 0.75rem;
-    }
-
-    .auth-modal-title {
-        font-size: 1.25rem;
-    }
-
-    .auth-modal-button {
-        padding: 0.4rem 0.7rem;
-        font-size: 0.9rem;
-    }
-
-    .auth-modal-input,
-    .auth-modal-select {
-        font-size: 0.88rem;
-        padding: 0.4rem 0.6rem;
-    }
+.auth-btn:hover {
+    background: #22c55e;
+    transform: translateY(-1px);
 }

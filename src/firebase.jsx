@@ -6,7 +6,7 @@ import { getDoc, updateDoc } from "firebase/firestore";
 import { v4 as uuidv4 } from 'uuid';
 import { getPreviousSunday, getISOWeek } from "./Util";
 import axios from "axios";
-
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
 
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
@@ -23,7 +23,10 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 export const database = getFirestore(app);
+export const auth = getAuth(app);
+export const provider = new GoogleAuthProvider();
 
+export { signInWithPopup, signOut, onAuthStateChanged };
 export const approveSession = async (entry) => {
     try {
         const entryRef = doc(database, "sessionHistory", entry.id.toString());
@@ -35,6 +38,26 @@ export const approveSession = async (entry) => {
         return false;
     }
 };
+
+export async function getRoster() {
+    const ref = doc(database, "page-data", "users");
+    const snap = await getDoc(ref);
+    return snap.exists() ? snap.data() : {};
+}
+
+export async function createNewUserEntry(newName, user) {
+    const ref = doc(database, "page-data", "users");
+    await updateDoc(ref, {
+        [newName]: {
+            uid: user.uid,
+            email: user.email,
+            scull: 0,
+            weight: 0,
+            champs: false,
+            sweep: { points: 0, side: "Both" }
+        }
+    });
+}
 
 /**
  * Rejects a session entry and deletes it from Firebase
@@ -126,6 +149,8 @@ export function getWorkouts(workout) {
     function extractWorkouts(entries) {
         let res = {};
         if(entries){
+            console.log(entries)
+            console.log(entries.type)
         entries.forEach((entry) => {
             if (entry.week === currentWeekStr) {
                 res.currentWeek = entry.workout;
@@ -146,46 +171,50 @@ export function getWorkouts(workout) {
 }
 
 export async function updateOrAppendWorkout(newEntry) {
-    let refId = ''
-
-    if (newEntry.type === 'Erg') {
-        refId = 'erg'
-    } else if (newEntry.type === 'Water') {
-        refId = 'water'
-    } else {
-        console.error("Error in submitting workout");
-        return
+    // Determine reference field based on type
+    const refId = newEntry.type === 'Erg' ? 'erg' :
+        newEntry.type === 'Water' ? 'water' : null;
+    if (!refId) {
+        console.error("Error in submitting workout: unknown type");
+        return;
     }
-    const ref = doc(database, "page-data", 'workouts');
+
+    const ref = doc(database, "page-data", "workouts");
 
     try {
         const snapshot = await getDoc(ref);
+
+        // If document doesn't exist, create it with the first entry
         if (!snapshot.exists()) {
-            // If document doesn't exist, create it with initial array
-            await updateDoc(ref, { entries: [newEntry] });
+            await setDoc(ref, { [refId]: { entries: [newEntry] } });
+            console.log("Workout created successfully!");
             return;
         }
 
         const data = snapshot.data();
-        const entries = data[refId] || [];
-        console.log(entries.entries)
-        // Check if an entry with the same date exists
-        const index = entries.entries.findIndex(entry => entry.date === newEntry.date);
+        const currentEntries = data[refId]?.entries || [];
+
+        // Find an entry with the same week
+        const index = currentEntries.findIndex(entry => entry.week === newEntry.week);
 
         if (index !== -1) {
-            // Update the existing entry
-            entries.entries[index] = newEntry;
-            await updateDoc(ref, {[refId]:{ entries }});
+            // Update the workout section of the existing entry
+            currentEntries[index].workout = newEntry.workout;
         } else {
-            // Append the new entry
-            await updateDoc(ref, { [refId]: arrayUnion(newEntry) });
+            // Add a new entry for this week
+            currentEntries.push(newEntry);
         }
 
+        // Update the database
+        await updateDoc(ref, { [refId]: { entries: currentEntries } });
         console.log("Workout updated successfully!");
     } catch (error) {
         console.error("Error updating workout:", error);
     }
 }
+
+
+
 
 export async function addQuote(newQuote) {
   try {

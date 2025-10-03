@@ -1,33 +1,54 @@
 import './App.css';
 import Admin from "./Admin";
 import User from "./User";
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import { ToastContainer } from 'react-toastify';
 import { Prestige } from './Prestige';
-import {loadAllDocuments} from "./firebase";
-import {getAllSessionHistory} from "./Util";
+import { loadAllDocuments } from "./firebase";
+import { getAllSessionHistory } from "./Util";
+import { auth, onAuthStateChanged } from "./firebase";
+import Navbar from "./Navbar";
+import AuthModal from "./AuthModal";
 
 function App() {
+    const [admin, setAdmin] = useState(false);
+    const [leaderboard, setLeaderboard] = useState([]);
+    const [quotes, setQuotes] = useState([]);
+    const [users, setUsers] = useState({});
+    const [workouts, setWorkouts] = useState([]);
+    const [multipliers, setMultipliers] = useState({});
+    const [sessions, setSessions] = useState([]);
+    const [gmpSpeeds, setGmpSpeeds] = useState({});
+    const [user, setUser] = useState(null);
 
-  const [admin, setAdmin] = useState(false);
-  const [leaderboard, setLeaderboard] = useState([])
-  const [quotes, setQuotes] = useState([])
-  const [users, setUsers] = useState({})
-  const [workouts, setWorkouts] = useState([])
-  const [multipliers, setMultipliers] = useState({})
-  const [sessions, setSessions] = useState([])
-  const [gmpSpeeds, setGmpSpeeds] = useState({})
+    const [modalOpen, setModalOpen] = useState(false);
 
+    // Track auth state
     useEffect(() => {
-        const fetchLazyData = async () => {
+        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+            if (currentUser) {
+                // Find the user in the users object with matching uid
+                const matchedUser = Object.values(users).find(user => user.uid === currentUser.uid);
+                setUser(matchedUser || null);
+            } else {
+                setUser(null);
+            }
+        });
+
+        return () => unsubscribe();
+    }, [users]); // re-run if users changes
+
+
+    // Fetch data
+    useEffect(() => {
+        const fetchData = async () => {
             try {
                 const lazyData = await loadAllDocuments();
                 const allSessions = await getAllSessionHistory();
 
-                // sort users alphabetically by key
                 const unsortedUsers = lazyData[5];
                 const sortedUsers = Object.keys(unsortedUsers)
-                    .filter(key => key !== "id") // keep "id" at the top
+                    .filter(key => key !== "id")
                     .sort((a, b) => a.localeCompare(b))
                     .reduce((obj, key) => {
                         obj[key] = unsortedUsers[key];
@@ -43,49 +64,64 @@ function App() {
                 setGmpSpeeds(lazyData[0].speeds);
 
             } catch (e) {
-                console.log("Failed to load page documents", e);
+                console.error("Failed to load page documents", e);
             }
         };
-        fetchLazyData();
+
+        fetchData();
     }, []);
 
+    useEffect(() => {
+        console.log(user)
+    }, [user]);
 
-  useEffect(()=>{
-      console.log(workouts)
-      console.log(users)
-  },[workouts,users])
+    return (
+        <div className="App">
+            {/* Navbar with always-visible Auth button */}
+            <Navbar
 
-  return (
-    <div className="App">
-      <header style={{ padding: "1rem" }}>
-        <button
-          className="tab-button"
-          onClick={() => setAdmin(!admin)}
-        >
-          {admin ? "View Leaderboard" : "Admin Dashboard"}
-        </button>
-      </header>
-      <main className="container">
-        {!admin && <User
+                user={user}
+                admin={admin}
+                setAdmin={setAdmin}
+                onAuthClick={() => setModalOpen(true)}
+            />
+
+            {/* Auth Modal (full app overlay, 2-second fade-in) */}
+            <AuthModal
+                users={users}
+                user={user}
+                isOpen={modalOpen}
+                onClose={() => setModalOpen(false)}
+            />
+
+            {/* Main content */}
+            <main className="container mt-4">
+                {!admin ? (
+                    <User
                         leaderboard={leaderboard}
-                         quotes={quotes}
-                         users={users}
-                         workouts={workouts}
-                         multipliers={multipliers}
-                         sessions={sessions}
-                         gmpSpeeds={gmpSpeeds}/>}
-        {admin && <Admin users={users} gmpSpeeds={gmpSpeeds}/>}
-      </main>
-      <ToastContainer
-        pauseOnHover={false}
-        pauseOnFocusLoss={false}
-        position="top-right"
-        autoClose={1500}
-        limit={1}
-      />
-      <Prestige />
-    </div>
-  );
+                        quotes={quotes}
+                        users={users}
+                        workouts={workouts}
+                        multipliers={multipliers}
+                        sessions={sessions}
+                        gmpSpeeds={gmpSpeeds}
+                    />
+                ) : (
+                    <Admin users={users} gmpSpeeds={gmpSpeeds}/>
+                )}
+            </main>
+
+            <ToastContainer
+                pauseOnHover={false}
+                pauseOnFocusLoss={false}
+                position="top-right"
+                autoClose={1500}
+                limit={1}
+            />
+
+            <Prestige />
+        </div>
+    );
 }
 
 export default App;

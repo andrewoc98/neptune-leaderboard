@@ -1,0 +1,66 @@
+/* Navbar Container */
+.app-navbar {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    background: #0f172a; /* match app background */
+    border-bottom: 2px solid #4ade80; /* neon green accent */
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    backdrop-filter: blur(6px);
+}
+
+/* Navbar Left */
+.navbar-left .app-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #4ade80; /* neon green title */
+}
+
+/* Navbar Right */
+.navbar-right {
+    display: flex;
+    gap: 0.75rem;
+    flex-shrink: 1; /* allow shrinking */
+    flex-wrap: wrap; /* wrap buttons if needed */
+    margin-right: 1.25rem;
+}
+
+
+/* Navbar Buttons */
+.navbar-btn {
+    padding: 0.4rem 0.9rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border-radius: 12px;
+    border: 1px solid #4ade80;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap; /* prevent text from breaking */
+    flex-shrink: 1;      /* allow button to shrink if needed */
+}
+
+/* Admin Button */
+.admin-btn {
+    background: transparent;
+    color: #4ade80;
+}
+
+.admin-btn:hover {
+    background: #1e293b;
+    transform: translateY(-1px);
+}
+
+/* Auth Button */
+.auth-btn {
+    background: #4ade80;
+    color: #0f172a;
+}
+
+.auth-btn:hover {
+    background: #22c55e;
+    transform: translateY(-1px);
+}

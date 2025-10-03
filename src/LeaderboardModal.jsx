@@ -7,7 +7,7 @@ import { formatDate } from "./Util";
 
 export default function LeaderboardModal({ users }) {
     const [open, setOpen] = useState(false);
-    const [rows, setRows] = useState([{ name: "", weight: "", split: "", overRate: false }]);
+    const [rows, setRows] = useState([{ name: "", weight: "", split: "", overRate: false, dnf: false }]);
     const [errors, setErrors] = useState([]);
     const [date, setDate] = useState("");
 
@@ -28,7 +28,7 @@ export default function LeaderboardModal({ users }) {
     };
 
     const addRow = () => {
-        setRows([...rows, { name: "", weight: "", split: "", overRate: false }]);
+        setRows([...rows, { name: "", weight: "", split: "", overRate: false, dnf: false }]);
     };
 
     const removeRow = (index) => {
@@ -69,7 +69,7 @@ export default function LeaderboardModal({ users }) {
         }
 
         setOpen(false);
-        setRows([{ name: "", weight: "", split: "", overRate: false }]);
+        setRows([{ name: "", weight: "", split: "", overRate: false, dnf: false }]);
         setErrors([]);
         toast.success("Leaderboard Uploaded");
     };
@@ -162,6 +162,22 @@ export default function LeaderboardModal({ users }) {
                                                 }
                                             />
                                             Over-rate
+                                        </label>
+                                    </div>
+                                    <div className="field checkbox-field">
+                                        <label>
+                                            <input
+                                                type="checkbox"
+                                                checked={row.dnf}
+                                                onChange={(e) =>
+                                                    handleRowChange(
+                                                        index,
+                                                        "dnf",
+                                                        e.target.checked
+                                                    )
+                                                }
+                                            />
+                                            DNF
                                         </label>
                                     </div>
 

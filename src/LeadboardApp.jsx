@@ -168,7 +168,11 @@ export default function LeaderboardApp({sessions, multipliers, workouts, users, 
 
         history.forEach(snapshot => {
             if (snapshot[type]) {
-                snapshot[type].forEach(row => nameSet.add(row.name));
+                snapshot[type].forEach(row => {
+                    if (!row?.dnf) {   // ⬅️ skip DNF rows
+                        nameSet.add(row.name);
+                    }
+                });
             }
         });
 
@@ -181,27 +185,30 @@ export default function LeaderboardApp({sessions, multipliers, workouts, users, 
                 const rows = snapshot[type];
                 if (!rows) return null;
 
-                const sorted = [...rows].sort((a, b) => {
+                // filter out DNF rows
+                const filteredRows = rows.filter(r => !r?.dnf);
+                if (filteredRows.length === 0) return null;
+
+                const sorted = [...filteredRows].sort((a, b) => {
                     const getValue = (row) => secondsFor(row, key) ?? Infinity;
                     return getValue(a) - getValue(b);
                 });
 
-                if (sorted.length === 0) return null;
-
                 const leader = sorted[0];
-                const row = sorted.find(r => r.name === name);
+                const row = filteredRows.find(r => r.name === name);
                 if (!row) return null;
 
                 const leaderSec = secondsFor(leader, key);
                 const rowSec = secondsFor(row, key);
                 if (leaderSec == null || rowSec == null) return null;
 
-                return +(rowSec - leaderSec).toFixed(1); // numeric seconds difference
+                return +(rowSec - leaderSec).toFixed(1);
             });
         });
 
         return { dates, diffMap };
     };
+
 
     const parseSplitTime = (timeStr) => {
     if (!timeStr || typeof timeStr !== "string") return Infinity;
@@ -209,18 +216,26 @@ export default function LeaderboardApp({sessions, multipliers, workouts, users, 
     return parseInt(min, 10) * 60 + parseFloat(sec);
   };
 
-  const sortedErg = [...(latestErg?.ergData || [])].sort((a, b) => {
-    const getValue = (rower, key) => {
-      if (key === "adjustedSplit") {
-        return parseSplitTime(adjustedErgScore(rower.split, rower.weight));
-      } else if (key === "split") {
-        return parseSplitTime(rower.split);
-      }
-      return Infinity; // fallback
-    };
+    const sortedErg = [...(latestErg?.ergData || [])].sort((a, b) => {
+        // If either rower is DNF, push them to the bottom
+        const aDNF = !!a?.dnf;
+        const bDNF = !!b?.dnf;
+        if (aDNF && !bDNF) return 1;
+        if (!aDNF && bDNF) return -1;
+        if (aDNF && bDNF) return 0;
 
-    return getValue(a, ergSortKey) - getValue(b, ergSortKey);
-  });
+        const getValue = (rower, key) => {
+            if (key === "adjustedSplit") {
+                return parseSplitTime(adjustedErgScore(rower.split, rower.weight));
+            } else if (key === "split") {
+                return parseSplitTime(rower.split);
+            }
+            return Infinity; // fallback
+        };
+
+        return getValue(a, ergSortKey) - getValue(b, ergSortKey);
+    });
+
 
 
   const handleErgSort = (key) => setErgSortKey(key);
@@ -514,32 +529,37 @@ export default function LeaderboardApp({sessions, multipliers, workouts, users, 
                     <th>Diff</th>
                   </tr>
                 </thead>
-                <tbody>
-                {sortedErg.map((rower, index) => (
-                    <tr
-                        key={rower.name}
-                        onClick={() => handleMouseEnter(rower.name)}
-                        className={rower.overRate ? "overrate-row" : ""}
-                    >
-                        <td>{index + 1}</td>
-                        <td>{rower.name}</td>
-                        <td>{rower.split}</td>
-                        <td>{adjustedErgScore(rower.split, rower.weight)}</td>
-                        <td>{getDelta(
-                            rower.name,
-                            index,
-                            sortedErg,
-                            prevErg?.ergData?.map(row => ({
-                                ...row,
-                                split: parseSplitTime(row.split),
-                                adjustedSplit: parseSplitTime(row.adjustedSplit)
-                            })),
-                            ergSortKey,
-                            true
-                        )}</td>
-                    </tr>
-                ))}
-                </tbody>
+                  <tbody>
+                  {sortedErg.map((rower, index) => (
+                      <tr
+                          key={rower.name}
+                          onClick={() => handleMouseEnter(rower.name)}
+                          className={rower.overRate ? "overrate-row" : ""}
+                      >
+                          <td>{index + 1}</td>
+                          <td>{rower.name}</td>
+                          <td>{rower.split}</td>
+                          <td>{rower.dnf ? "-" : adjustedErgScore(rower.split, rower.weight)}</td>
+                          <td>
+                              {rower.dnf
+                                  ? "DNF"
+                                  : getDelta(
+                                      rower.name,
+                                      index,
+                                      sortedErg,
+                                      prevErg?.ergData?.map(row => ({
+                                          ...row,
+                                          split: parseSplitTime(row.split),
+                                          adjustedSplit: parseSplitTime(row.adjustedSplit)
+                                      })),
+                                      ergSortKey,
+                                      true
+                                  )}
+                          </td>
+                      </tr>
+                  ))}
+                  </tbody>
+
             </table>
           </div>
         </div>

@@ -111,6 +111,11 @@ export default function AuthModal({ users, user: parentUser, isOpen, onClose }) 
 
     if (!showModal) return null;
 
+    // Only filter for display purposes
+    const displayableRoster = Object.entries(roster).filter(
+        ([name, data]) => name !== "id" && !data.uid
+    );
+
     return (
         <div className="auth-modal-overlay">
             <div className="auth-modal-content">
@@ -150,13 +155,11 @@ export default function AuthModal({ users, user: parentUser, isOpen, onClose }) 
                                     className="auth-modal-select"
                                 >
                                     <option value="">-- Choose your name --</option>
-                                    {Object.entries(roster)
-                                        .filter(([name, data]) => name !== "id" && !data.uid)
-                                        .map(([name]) => (
-                                            <option key={name} value={name}>
-                                                {name}
-                                            </option>
-                                        ))}
+                                    {displayableRoster.map(([name]) => (
+                                        <option key={name} value={name}>
+                                            {name}
+                                        </option>
+                                    ))}
                                     <option value="new">I’m not on the list</option>
                                 </select>
                             </div>

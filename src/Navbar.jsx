@@ -7,7 +7,7 @@ export default function Navbar({ user, admin, setAdmin, onAuthClick }) {
             <div className="navbar-left">
             </div>
             <div className="navbar-right">
-                {user && (user.role === "role" || user.role === "super-admin") && (
+                {user && (user.role === "admin" || user.role === "super-admin") && (
                     <button
                         onClick={() => setAdmin(!admin)}
                         className="navbar-btn admin-btn"

@@ -152,42 +152,60 @@ th.sortable:hover {
   background: #22c55e !important;
 }
 
-/* Modal */
-/* Modal backdrop */
+
 .modal {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0,0,0,0.6); /* semi-transparent dark overlay */
+    width: 90%;
+    height: 90%;
+    background-color: rgba(0,0,0,0.6); /* semi-transparent overlay */
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 1000;
-    overflow: auto; /* allow scrolling if content is too tall */
+    padding: 0.75rem; /* ensures spacing around modal on small screens */
+    overflow-y: auto;
 }
 
 /* Modal content box */
 .modal-content {
-    background-color: #0f172a;  /* match dark theme */
-    padding: 1.5rem;
-    border-radius: 1rem;
-    width: 90%;
-    max-width: 700px;           /* smaller width */
-    max-height: 80vh;           /* limit height to viewport */
-    overflow-y: auto;           /* scroll vertically if content exceeds max-height */
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    background-color: #0f172a;
+    padding: 1.25rem;
+    border-radius: 0.75rem;
+    width: 85%;
+    max-width: 550px;      /* smaller max width */
+    max-height: 70vh;      /* shorter overall */
+    overflow-y: auto;      /* scroll if content too tall */
+    box-shadow: 0 6px 20px rgba(0,0,0,0.4);
     position: relative;
 }
 
+
 .close-button {
-  position: absolute;
-  top: 8px;
-  right: 12px;
-  font-size: 1.5rem;
-  color: #1f2937;
-  cursor: pointer;
+    position: absolute;
+    top: 6px;
+    right: 10px;
+    font-size: 1.25rem;
+    color: #e5e7eb;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.close-button:hover {
+    color: #f87171; /* soft red hover */
+}
+
+/* Small entrance animation */
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
 
 /* Responsive */
@@ -408,4 +426,11 @@ tr:hover {
 .legend-box.overrate-row {
     background-color: rgba(255, 0, 0, 0.5); /* same red as your row highlight */
 }
+
+.chart-container {
+    width: 100%;
+    height: 16rem; /* ~256px; scales with font size */
+    margin-top: 0.5rem;
+}
+
 

@@ -734,7 +734,6 @@ export default function LeaderboardApp({sessions, multipliers, workouts, users, 
                 <div className="modal-content">
       <span
           className="close-button"
-          style={{ color: "white" }}
           onClick={() => {
               setHoveredName(null);
               setCompareNames([]); // reset comparisons when closing
@@ -794,6 +793,7 @@ export default function LeaderboardApp({sessions, multipliers, workouts, users, 
                         </div>
                     </div>
 
+                    {/* Chart Section */}
                     {/* Chart Section */}
                     <div className="profile-section">
                         <h3 className="section-title">Performance</h3>
@@ -859,64 +859,66 @@ export default function LeaderboardApp({sessions, multipliers, workouts, users, 
                                 return (
                                     <>
                                         <p>{graphText[timeScale]}</p>
-                                        <Line
-                                            data={{ labels: displayDates, datasets }}
-                                            height={300}
-                                            options={{
-                                                responsive: true,
-                                                maintainAspectRatio: true,
-                                                scales: {
-                                                    y: {
-                                                        ticks: { color: "white" },
-                                                        title: { display: true, text: "Distance (m)", color: "white" },
+                                        <div className="chart-container">
+                                            <Line
+                                                data={{ labels: displayDates, datasets }}
+                                                options={{
+                                                    responsive: true,
+                                                    maintainAspectRatio: false,
+                                                    scales: {
+                                                        y: {
+                                                            ticks: { color: "white" },
+                                                            title: { display: true, text: "Distance (m)", color: "white" },
+                                                        },
+                                                        x: { ticks: { color: "white" } },
                                                     },
-                                                    x: { ticks: { color: "white" } },
-                                                },
-                                                plugins: {
-                                                    tooltip: {
-                                                        filter: (tooltipItem) =>
-                                                            !tooltipItem.dataset.label.includes("(prev)"),
+                                                    plugins: {
+                                                        tooltip: {
+                                                            filter: (tooltipItem) =>
+                                                                !tooltipItem.dataset.label.includes("(prev)"),
+                                                        },
                                                     },
-                                                },
-                                            }}
-                                        />
+                                                }}
+                                            />
+                                        </div>
                                     </>
                                 );
                             })()
                         ) : (
-                            <Line
-                                data={{
-                                    labels: diffHistory.dates,
-                                    datasets: [
-                                        {
-                                            label: hoveredName,
-                                            data: diffHistory.diffMap[hoveredName],
-                                            borderColor: "#3b82f6",
-                                            backgroundColor: "#60a5fa",
-                                            spanGaps: true,
+                            <div className="chart-container">
+                                <Line
+                                    data={{
+                                        labels: diffHistory.dates,
+                                        datasets: [
+                                            {
+                                                label: hoveredName,
+                                                data: diffHistory.diffMap[hoveredName],
+                                                borderColor: "#3b82f6",
+                                                backgroundColor: "#60a5fa",
+                                                spanGaps: true,
+                                            },
+                                            ...compareNames.map((name, idx) => ({
+                                                label: name,
+                                                data: diffHistory.diffMap[name],
+                                                borderColor: `hsl(${(idx * 60) % 360}, 70%, 50%)`,
+                                                spanGaps: true,
+                                            })),
+                                        ],
+                                    }}
+                                    options={{
+                                        responsive: true,
+                                        maintainAspectRatio: false,
+                                        scales: {
+                                            y: {
+                                                reverse: true,
+                                                title: { display: true, text: "Gap to Leader (s)", color: "white" },
+                                                ticks: { color: "white" },
+                                            },
+                                            x: { ticks: { color: "white" } },
                                         },
-                                        ...compareNames.map((name, idx) => ({
-                                            label: name,
-                                            data: diffHistory.diffMap[name],
-                                            borderColor: `hsl(${(idx * 60) % 360}, 70%, 50%)`,
-                                            spanGaps: true,
-                                        })),
-                                    ],
-                                }}
-                                height={300}
-                                options={{
-                                    responsive: true,
-                                    maintainAspectRatio: true,
-                                    scales: {
-                                        y: {
-                                            reverse: true,
-                                            title: { display: true, text: "Gap to Leader (s)", color: "white" },
-                                            ticks: { color: "white" },
-                                        },
-                                        x: { ticks: { color: "white" } },
-                                    },
-                                }}
-                            />
+                                    }}
+                                />
+                            </div>
                         )}
                     </div>
                 </div>

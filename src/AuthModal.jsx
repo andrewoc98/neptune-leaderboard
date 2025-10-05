@@ -19,29 +19,21 @@ export default function AuthModal({ users, user: parentUser, isOpen, onClose }) 
 
     // Auto-open modal if no user
     useEffect(() => {
-        if (!localUser) {
+        if (!localUser || !parentUser) {
             const timer = setTimeout(() => setShowModal(true), 2000);
             return () => clearTimeout(timer);
         }
-    }, [localUser]);
+    }, [localUser, parentUser]);
 
     // Sync manual open/close
     useEffect(() => {
-        if (isOpen && !localUser) setShowModal(true);
-    }, [isOpen]);
+        if (isOpen || !parentUser) setShowModal(true);
+    }, [isOpen, parentUser]);
 
     // Update roster if prop changes
     useEffect(() => {
         if (users) setRoster(users);
     }, [users]);
-
-    async function fetchRoster() {
-        const ref = doc(database, "page-data", "users");
-        const snap = await getDoc(ref);
-        if (snap.exists()) {
-            setRoster(snap.data());
-        }
-    }
 
     async function assignToExistingUser(selectedName, currentUser) {
         const ref = doc(database, "page-data", "users");
@@ -71,14 +63,27 @@ export default function AuthModal({ users, user: parentUser, isOpen, onClose }) 
             const signedInUser = result.user;
             setLocalUser(signedInUser);
 
-            const alreadyLinked = Object.entries(roster).find(
-                ([, data]) => data.uid && data.uid === signedInUser.uid
+            // Always fetch the latest users roster
+            const ref = doc(database, "page-data", "users");
+            const snap = await getDoc(ref);
+            const currentUsers = snap.exists() ? snap.data() : {};
+            setRoster(currentUsers);
+
+            if (!currentUsers || Object.keys(currentUsers).length === 0) {
+                console.log("Roster not ready yet");
+                return; // prevent premature assignment
+            }
+
+            const alreadyLinked = Object.entries(currentUsers).find(
+                ([, data]) => data.email && data.email === signedInUser.email
             );
 
             if (alreadyLinked) {
+                console.log("linked");
                 onClose();
                 setShowModal(false);
             } else {
+                console.log("not linked");
                 setNeedsAssignment(true);
             }
         } catch (err) {

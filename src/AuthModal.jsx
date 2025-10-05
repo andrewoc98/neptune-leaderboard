@@ -27,7 +27,7 @@ export default function AuthModal({ users, user: parentUser, isOpen, onClose }) 
 
     // Sync manual open/close
     useEffect(() => {
-        if (isOpen) setShowModal(true);
+        if (isOpen && !localUser) setShowModal(true);
     }, [isOpen]);
 
     // Update roster if prop changes
@@ -76,11 +76,9 @@ export default function AuthModal({ users, user: parentUser, isOpen, onClose }) 
             );
 
             if (alreadyLinked) {
-                console.log("linked");
                 onClose();
                 setShowModal(false);
             } else {
-                console.log("not linked");
                 setNeedsAssignment(true);
             }
         } catch (err) {

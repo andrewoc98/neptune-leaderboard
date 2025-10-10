@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { auth, provider, signInWithPopup, signOut } from "./firebase";
+import { auth, provider, signInWithPopup, signOut, onAuthStateChanged } from "./firebase";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { database } from "./firebase";
 import "./auth.css";
@@ -11,24 +11,29 @@ export default function AuthModal({ users, user: parentUser, isOpen, onClose }) 
     const [newName, setNewName] = useState("");
     const [needsAssignment, setNeedsAssignment] = useState(false);
     const [localUser, setLocalUser] = useState(parentUser || null);
+    const [loadingAuth, setLoadingAuth] = useState(true);
 
-    // Keep local user synced with parent
+    // Track Firebase auth state
     useEffect(() => {
-        setLocalUser(parentUser || null);
-    }, [parentUser]);
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            setLocalUser(user || null);
+            setLoadingAuth(false); // finished checking
+        });
+        return () => unsubscribe();
+    }, []);
 
-    // Auto-open modal if no user
+    // Sync manual open/close & auth state
     useEffect(() => {
-        if (!localUser || !parentUser) {
-            const timer = setTimeout(() => setShowModal(true), 2000);
-            return () => clearTimeout(timer);
+        if (!loadingAuth) {
+            if (isOpen) {
+                setShowModal(true);
+            } else if (!localUser || !parentUser) {
+                setShowModal(true);
+            } else {
+                setShowModal(false);
+            }
         }
-    }, [localUser, parentUser]);
-
-    // Sync manual open/close
-    useEffect(() => {
-        if (isOpen || !parentUser) setShowModal(true);
-    }, [isOpen, parentUser]);
+    }, [loadingAuth, localUser, parentUser, isOpen]);
 
     // Update roster if prop changes
     useEffect(() => {
@@ -112,6 +117,7 @@ export default function AuthModal({ users, user: parentUser, isOpen, onClose }) 
         setShowModal(false);
     };
 
+    if (loadingAuth) return null; // don’t render modal until auth state is known
     if (!showModal) return null;
 
     // Only filter for display purposes

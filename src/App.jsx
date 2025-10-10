@@ -1,6 +1,7 @@
 import './App.css';
 import Admin from "./Admin";
 import User from "./User";
+import Profile from "./Profile";
 import { useEffect, useState } from "react";
 import { ToastContainer } from 'react-toastify';
 import { Prestige } from './Prestige';
@@ -11,7 +12,7 @@ import Navbar from "./Navbar";
 import AuthModal from "./AuthModal";
 
 function App() {
-    const [admin, setAdmin] = useState(false);
+    const [view, setView] = useState("user"); // can be "user", "admin", or "profile"
     const [leaderboard, setLeaderboard] = useState([]);
     const [quotes, setQuotes] = useState([]);
     const [users, setUsers] = useState({});
@@ -20,26 +21,34 @@ function App() {
     const [sessions, setSessions] = useState([]);
     const [gmpSpeeds, setGmpSpeeds] = useState({});
     const [user, setUser] = useState(null);
-
     const [modalOpen, setModalOpen] = useState(false);
 
-    // Track auth state
+    // Track authentication state
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
             if (currentUser) {
-                // Find the user in the users object with matching uid
-                const matchedUser = Object.values(users).find(user => user.uid === currentUser.uid);
-                setUser(matchedUser || null);
+                // Find both the username (key) and user data (value)
+                const matchedEntry = Object.entries(users).find(
+                    ([, u]) => u.uid === currentUser.uid
+                );
+
+                if (matchedEntry) {
+                    const [username, userData] = matchedEntry;
+                    // Store username and user data together
+                    setUser({ ...userData, username });
+                    console.log("Authenticated user:", username, userData);
+                } else {
+                    setUser(null);
+                }
             } else {
                 setUser(null);
             }
         });
 
         return () => unsubscribe();
-    }, [users]); // re-run if users changes
+    }, [users]);
 
-
-    // Fetch data
+    // Fetch all data on mount
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -59,10 +68,12 @@ function App() {
                 setMultipliers(lazyData[2]);
                 setQuotes(lazyData[3].quotes);
                 setUsers(sortedUsers);
-                setWorkouts({ erg: lazyData[6].erg.entries, water: lazyData[6].water.entries });
+                setWorkouts({
+                    erg: lazyData[6].erg.entries,
+                    water: lazyData[6].water.entries
+                });
                 setSessions(allSessions);
                 setGmpSpeeds(lazyData[0].speeds);
-
             } catch (e) {
                 console.error("Failed to load page documents", e);
             }
@@ -71,22 +82,17 @@ function App() {
         fetchData();
     }, []);
 
-    useEffect(() => {
-        console.log(user)
-    }, [user]);
-
     return (
         <div className="App">
-            {/* Navbar with always-visible Auth button */}
+            {/* Navbar */}
             <Navbar
-
                 user={user}
-                admin={admin}
-                setAdmin={setAdmin}
+                currentView={view}
+                setView={setView}
                 onAuthClick={() => setModalOpen(true)}
             />
 
-            {/* Auth Modal (full app overlay, 2-second fade-in) */}
+            {/* Auth Modal */}
             <AuthModal
                 users={users}
                 user={user}
@@ -94,9 +100,9 @@ function App() {
                 onClose={() => setModalOpen(false)}
             />
 
-            {/* Main content */}
+            {/* Main Content */}
             <main className="container mt-4">
-                {!admin ? (
+                {view === "user" && (
                     <User
                         leaderboard={leaderboard}
                         quotes={quotes}
@@ -106,11 +112,21 @@ function App() {
                         sessions={sessions}
                         gmpSpeeds={gmpSpeeds}
                     />
-                ) : (
-                    <Admin users={users} gmpSpeeds={gmpSpeeds}/>
+                )}
+
+                {view === "admin" && (
+                    <Admin users={users} gmpSpeeds={gmpSpeeds} />
+                )}
+
+                {view === "profile" && (
+                    <Profile
+                        user={user}          // includes username + user data
+                        sessions={sessions}
+                    />
                 )}
             </main>
 
+            {/* Toast Notifications */}
             <ToastContainer
                 pauseOnHover={false}
                 pauseOnFocusLoss={false}
@@ -119,6 +135,7 @@ function App() {
                 limit={1}
             />
 
+            {/* Prestige Widget */}
             <Prestige />
         </div>
     );

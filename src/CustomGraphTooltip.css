@@ -1,0 +1,33 @@
+.graph-tooltip {
+    background: #1e293b;
+    color: #f8f9fa;
+    padding: 0.6rem 0.9rem;
+    border-radius: 12px;
+    border: 1px solid #4ade80;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+    font-size: 0.9rem;
+    animation: tooltipFadeIn 0.2s ease-in-out;
+    pointer-events: none;
+}
+
+.graph-tooltip-label {
+    font-weight: 600;
+    color: #4ade80;
+    margin-bottom: 0.25rem;
+}
+
+.graph-tooltip-value {
+    font-weight: 500;
+    color: #e2e8f0;
+}
+
+@keyframes tooltipFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

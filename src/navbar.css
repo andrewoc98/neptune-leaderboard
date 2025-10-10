@@ -1,66 +1,152 @@
-/* Navbar Container */
+/* ============================
+   Navbar container
+============================ */
 .app-navbar {
     width: 100%;
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 0.5rem 1rem;
-    background: #0f172a; /* match app background */
-    border-bottom: 2px solid #4ade80; /* neon green accent */
+    background: #0f172a;
+    border-bottom: 2px solid #4ade80;
     position: sticky;
     top: 0;
     z-index: 50;
     backdrop-filter: blur(6px);
 }
 
-/* Navbar Left */
+/* ============================
+   Logo / app title
+============================ */
 .navbar-left .app-title {
     font-size: 1.25rem;
     font-weight: 700;
-    color: #4ade80; /* neon green title */
+    color: #4ade80;
 }
 
-/* Navbar Right */
+/* ============================
+   Navbar right (desktop)
+============================ */
 .navbar-right {
     display: flex;
-    gap: 0.75rem;
-    flex-shrink: 1; /* allow shrinking */
-    flex-wrap: wrap; /* wrap buttons if needed */
-    margin-right: 1.25rem;
+    gap: 0.5rem;
+    margin-right: 1rem;
+    align-items: flex-start;
+    flex-wrap: wrap;
 }
 
 
-/* Navbar Buttons */
+
+/* ============================
+   Navbar buttons
+============================ */
 .navbar-btn {
-    padding: 0.4rem 0.9rem;
+    padding: 0.5rem 1rem;
     font-size: 0.9rem;
     font-weight: 600;
     border-radius: 12px;
     border: 1px solid #4ade80;
     cursor: pointer;
     transition: all 0.2s ease;
-    white-space: nowrap; /* prevent text from breaking */
-    flex-shrink: 1;      /* allow button to shrink if needed */
-}
-
-/* Admin Button */
-.admin-btn {
     background: transparent;
     color: #4ade80;
+    text-align: center;
+    white-space: nowrap;
 }
 
-.admin-btn:hover {
-    background: #1e293b;
+.navbar-btn:hover {
+    background: rgba(74, 222, 128, 0.1);
     transform: translateY(-1px);
 }
 
-/* Auth Button */
-.auth-btn {
+.navbar-btn.active {
     background: #4ade80;
     color: #0f172a;
 }
 
+/* Auth button */
+.auth-btn {
+    background: #4ade80;
+    color: #0f172a;
+}
 .auth-btn:hover {
     background: #22c55e;
-    transform: translateY(-1px);
+}
+
+/* ============================
+   Hamburger (mobile toggle)
+============================ */
+.hamburger {
+    display: none;
+    width: 30px;
+    height: 24px;
+    position: relative;
+    cursor: pointer;
+}
+
+.hamburger span {
+    position: absolute;
+    height: 3px;
+    width: 100%;
+    background-color: #4ade80;
+    border-radius: 3px;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    left: 0;
+}
+
+/* Default hamburger positions */
+.hamburger span:nth-child(1) { top: 0; }
+.hamburger span:nth-child(2) { top: 50%; transform: translateY(-50%); }
+.hamburger span:nth-child(3) { bottom: 0; }
+
+/* Open state (perfect X) */
+.hamburger.open span:nth-child(1) {
+    top: 50%;
+    transform: translateY(-50%) rotate(45deg);
+}
+.hamburger.open span:nth-child(2) {
+    opacity: 0;
+}
+.hamburger.open span:nth-child(3) {
+    top: 50%;
+    bottom: auto;
+    transform: translateY(-50%) rotate(-45deg);
+}
+
+/* ============================
+   Mobile drawer
+============================ */
+@media (max-width: 768px) {
+    .hamburger {
+        display: block; /* show hamburger on mobile */
+    }
+
+    .navbar-right {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        background: #0f172a;
+        flex-direction: column;
+        width: 85%;
+        max-width: 250px;
+        gap: 0.5rem;
+        padding: 1rem;
+        border-right: 1px solid #4ade80;
+        border-bottom: 1px solid #4ade80;
+        transform: translateX(-120%);
+        transition: transform 0.3s ease-in-out;
+        box-shadow: 2px 0 5px rgba(0,0,0,0.3);
+    }
+
+    .navbar-right.open {
+        transform: translateX(0);
+    }
+
+    .navbar-btn {
+        width: 100%;
+        text-align: center;
+        padding: 1rem;
+        font-size: 1rem;
+        border-radius: 0.5rem;
+    }
 }

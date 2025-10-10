@@ -8,7 +8,7 @@ import {
     ResponsiveContainer,
     CartesianGrid,
 } from "recharts";
-import "./Profile.css";
+import "./profile.css";
 import CustomGraphTooltip from "./CustomGraphTooltip";
 
 export default function Profile({ user, sessions }) {

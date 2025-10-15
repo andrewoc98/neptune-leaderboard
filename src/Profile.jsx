@@ -192,6 +192,7 @@ export default function Profile({ user, sessions }) {
                                 content={
                                     <CustomGraphTooltip
                                         formatSplitLabel={formatYAxisLabel}
+                                        display={selectedMetric}
                                     />
                                 }
                             />
@@ -219,9 +220,11 @@ export default function Profile({ user, sessions }) {
                         <thead>
                         <tr>
                             <th>Type</th>
-                            <th>Notes</th>
-                            <th>Date</th>
                             <th>Distance</th>
+                            <th>Date</th>
+                            <th>Notes</th>
+
+
                         </tr>
                         </thead>
                         <tbody>
@@ -235,11 +238,11 @@ export default function Profile({ user, sessions }) {
                                 </td>
                                 <td
                                     onMouseEnter={(e) =>
-                                        handleMouseEnter(e, entry.notes || "-")
+                                        handleMouseEnter(e, entry.distance || "-")
                                     }
                                     onMouseLeave={handleMouseLeave}
                                 >
-                                    {entry.notes || "-"}
+                                    {entry.distance || "-"}
                                 </td>
                                 <td
                                     onMouseEnter={(e) =>
@@ -251,11 +254,11 @@ export default function Profile({ user, sessions }) {
                                 </td>
                                 <td
                                     onMouseEnter={(e) =>
-                                        handleMouseEnter(e, entry.distance || "-")
+                                        handleMouseEnter(e, entry.notes || "-")
                                     }
                                     onMouseLeave={handleMouseLeave}
                                 >
-                                    {entry.distance || "-"}
+                                    {entry.notes || "-"}
                                 </td>
                             </tr>
                         ))}

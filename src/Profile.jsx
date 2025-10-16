@@ -404,7 +404,7 @@ export default function Profile({ user, sessions }) {
                                 Cancel
                             </button>
                             <button
-                                className="modal-button submit"
+                                className="modal-button cancel"
                                 onClick={async () => {
                                     const success = await deleteUserSession(selectedEntry.id);
                                     if (success) {

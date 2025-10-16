@@ -18,6 +18,11 @@ export default function Profile({ user, sessions }) {
     const [showTooltip, setShowTooltip] = useState(false);
     const [selectedType, setSelectedType] = useState("Erg");
     const [selectedMetric, setSelectedMetric] = useState("Split");
+
+    // 🔥 NEW: date filter state
+    const [startDate, setStartDate] = useState("");
+    const [endDate, setEndDate] = useState("");
+
     const itemsPerPage = 5;
 
     if (!user) {
@@ -55,16 +60,10 @@ export default function Profile({ user, sessions }) {
     const chartData = useMemo(() => {
         return filteredArray
             .filter((entry) => {
-                // Always respect selected type
                 if (entry.type !== selectedType) return false;
 
-                // Only show intense sessions if metric is "Intensity"
                 if (selectedMetric !== "Intensity" && entry.intense) return false;
-
-                // Only show non-intense when metric is not "Intensity"
                 if (selectedMetric === "Intensity" && !entry.intense) return false;
-
-                // For "Split", skip entries with no split
                 if (selectedMetric === "Split" && !entry.split) return false;
 
                 return true;
@@ -85,27 +84,21 @@ export default function Profile({ user, sessions }) {
                             value = parseFloat(min) * 60 + parseFloat(sec);
                         }
                         break;
-
                     case "Intensity":
-                        // 👇 Show split value for intense sessions
                         if (entry.split) {
                             const [min, sec] = entry.split.split(":");
                             value = parseFloat(min) * 60 + parseFloat(sec);
                         }
                         break;
-
                     case "Distance":
                         value = parseFloat(entry.distance) || 0;
                         break;
-
                     case "Approved":
                         value = entry.approved ? 1 : 0;
                         break;
-
                     case "Weights":
                         value = entry.weights ? 1 : 0;
                         break;
-
                     default:
                         value = 0;
                 }
@@ -113,8 +106,14 @@ export default function Profile({ user, sessions }) {
                 return { id: entry.id, date, formattedDate, value };
             })
             .filter((d) => d.value !== null)
+            // 🔥 NEW: Apply date range filter
+            .filter((d) => {
+                if (startDate && d.date < new Date(startDate)) return false;
+                if (endDate && d.date > new Date(endDate)) return false;
+                return true;
+            })
             .sort((a, b) => a.date - b.date);
-    }, [filteredArray, selectedType, selectedMetric]);
+    }, [filteredArray, selectedType, selectedMetric, startDate, endDate]);
 
     // --- Format Y-axis label ---
     const formatYAxisLabel = (val) => {
@@ -126,7 +125,6 @@ export default function Profile({ user, sessions }) {
         return val;
     };
 
-    // --- Tooltip handlers for table ---
     const handleMouseEnter = (e, text) => {
         const rect = e.target.getBoundingClientRect();
         setTooltipPosition({ x: rect.left + rect.width / 2, y: rect.top - 10 });
@@ -159,6 +157,7 @@ export default function Profile({ user, sessions }) {
                         <option value="Other">Other</option>
                     </select>
                 </div>
+
                 <div className="control-group">
                     <label>Metric</label>
                     <select
@@ -169,6 +168,24 @@ export default function Profile({ user, sessions }) {
                         <option value="Distance">Distance</option>
                         <option value="Intensity">Intensity</option>
                     </select>
+                </div>
+
+                {/* 🔥 NEW: Date range filter */}
+                <div className="control-group">
+                    <label>Start Date</label>
+                    <input
+                        type="date"
+                        value={startDate}
+                        onChange={(e) => setStartDate(e.target.value)}
+                    />
+                </div>
+                <div className="control-group">
+                    <label>End Date</label>
+                    <input
+                        type="date"
+                        value={endDate}
+                        onChange={(e) => setEndDate(e.target.value)}
+                    />
                 </div>
             </div>
 
@@ -223,8 +240,6 @@ export default function Profile({ user, sessions }) {
                             <th>Distance</th>
                             <th>Date</th>
                             <th>Notes</th>
-
-
                         </tr>
                         </thead>
                         <tbody>

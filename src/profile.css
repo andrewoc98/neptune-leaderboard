@@ -210,3 +210,12 @@
     .profile-section-title { font-size: 0.95rem; }
     .profile-pagination { gap: 0.3rem; padding: 0.5rem; }
 }
+input{
+padding: 0.5rem 0.75rem;
+border-radius: 10px;
+border: 1px solid #374151;
+background: #111827;
+color: #f8f9fa;
+font-size: 1rem;
+outline: none;
+transition: border 0.2s ease, box-shadow 0.2s ease;}

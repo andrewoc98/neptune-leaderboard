@@ -10,6 +10,8 @@ import {
 } from "recharts";
 import "./profile.css";
 import CustomGraphTooltip from "./CustomGraphTooltip";
+import { doc, updateDoc, deleteDoc } from "firebase/firestore";
+import { database } from "./firebase"; // ✅ external Firebase config
 
 export default function Profile({ user, sessions }) {
     const [currentPage, setCurrentPage] = useState(1);
@@ -19,9 +21,11 @@ export default function Profile({ user, sessions }) {
     const [selectedType, setSelectedType] = useState("Erg");
     const [selectedMetric, setSelectedMetric] = useState("Split");
 
-    // 🔥 NEW: date filter state
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
+
+    const [modalOpen, setModalOpen] = useState(false);
+    const [selectedEntry, setSelectedEntry] = useState(null);
 
     const itemsPerPage = 5;
 
@@ -33,7 +37,7 @@ export default function Profile({ user, sessions }) {
         );
     }
 
-    // Filter only sessions for current user
+    // Filter only user's sessions
     const filteredArray = sessions.filter((entry) => entry.name === user.username);
 
     // Sort + paginate
@@ -44,6 +48,7 @@ export default function Profile({ user, sessions }) {
     const startIndex = (currentPage - 1) * itemsPerPage;
     const paginatedSessions = sortedArray.slice(startIndex, startIndex + itemsPerPage);
 
+    // Format timestamp to readable date
     const formatDate = (timestamp) => {
         if (!timestamp?.seconds) return "N/A";
         const date = new Date(timestamp.seconds * 1000);
@@ -56,16 +61,14 @@ export default function Profile({ user, sessions }) {
         });
     };
 
-    // --- 🔥 Chart Data Preparation ---
+    // --- Chart Data ---
     const chartData = useMemo(() => {
         return filteredArray
             .filter((entry) => {
                 if (entry.type !== selectedType) return false;
-
                 if (selectedMetric !== "Intensity" && entry.intense) return false;
                 if (selectedMetric === "Intensity" && !entry.intense) return false;
                 if (selectedMetric === "Split" && !entry.split) return false;
-
                 return true;
             })
             .map((entry) => {
@@ -76,14 +79,8 @@ export default function Profile({ user, sessions }) {
                 });
 
                 let value = null;
-
                 switch (selectedMetric) {
                     case "Split":
-                        if (entry.split) {
-                            const [min, sec] = entry.split.split(":");
-                            value = parseFloat(min) * 60 + parseFloat(sec);
-                        }
-                        break;
                     case "Intensity":
                         if (entry.split) {
                             const [min, sec] = entry.split.split(":");
@@ -93,12 +90,6 @@ export default function Profile({ user, sessions }) {
                     case "Distance":
                         value = parseFloat(entry.distance) || 0;
                         break;
-                    case "Approved":
-                        value = entry.approved ? 1 : 0;
-                        break;
-                    case "Weights":
-                        value = entry.weights ? 1 : 0;
-                        break;
                     default:
                         value = 0;
                 }
@@ -106,7 +97,6 @@ export default function Profile({ user, sessions }) {
                 return { id: entry.id, date, formattedDate, value };
             })
             .filter((d) => d.value !== null)
-            // 🔥 NEW: Apply date range filter
             .filter((d) => {
                 if (startDate && d.date < new Date(startDate)) return false;
                 if (endDate && d.date > new Date(endDate)) return false;
@@ -115,7 +105,7 @@ export default function Profile({ user, sessions }) {
             .sort((a, b) => a.date - b.date);
     }, [filteredArray, selectedType, selectedMetric, startDate, endDate]);
 
-    // --- Format Y-axis label ---
+    // Format Y-axis labels
     const formatYAxisLabel = (val) => {
         if ((selectedMetric === "Split" || selectedMetric === "Intensity") && !isNaN(val)) {
             const min = Math.floor(val / 60);
@@ -125,6 +115,7 @@ export default function Profile({ user, sessions }) {
         return val;
     };
 
+    // Hover Tooltip
     const handleMouseEnter = (e, text) => {
         const rect = e.target.getBoundingClientRect();
         setTooltipPosition({ x: rect.left + rect.width / 2, y: rect.top - 10 });
@@ -136,13 +127,73 @@ export default function Profile({ user, sessions }) {
         setHoveredText("");
     };
 
+    // Modal Logic
+    const openModal = (entry) => {
+        setSelectedEntry({ ...entry });
+        setModalOpen(true);
+    };
+
+    const closeModal = () => {
+        setModalOpen(false);
+        setSelectedEntry(null);
+    };
+
+    const handleModalChange = (field, value) => {
+        setSelectedEntry((prev) => ({ ...prev, [field]: value }));
+    };
+
+    const formatDateForInput = (timestamp) => {
+        if (timestamp?.seconds) {
+            const date = new Date(timestamp.seconds * 1000);
+            return date.toISOString().split("T")[0];
+        }
+        return "";
+    };
+
+    // Update Session
+    const updateUserSession = async (entry) => {
+        try {
+            const ref = doc(database, "sessions", entry.id);
+            await updateDoc(ref, {
+                split: entry.split || "",
+                notes: entry.notes || "",
+                intense: !!entry.intense,
+                date:
+                    entry.date instanceof Date
+                        ? entry.date
+                        : new Date(entry.date.seconds * 1000),
+            });
+            return true;
+        } catch (error) {
+            console.error("Error updating session:", error);
+            return false;
+        }
+    };
+
+    // Delete Session
+    const deleteUserSession = async (id) => {
+        const confirmDelete = window.confirm(
+            "Are you sure you want to delete this session? This action cannot be undone."
+        );
+        if (!confirmDelete) return false;
+
+        try {
+            const ref = doc(database, "sessions", id);
+            await deleteDoc(ref);
+            return true;
+        } catch (error) {
+            console.error("Error deleting session:", error);
+            return false;
+        }
+    };
+
     return (
         <div className="profile-container">
             <div className="profile-header">
                 <h1 className="profile-title">Welcome, {user.username}</h1>
             </div>
 
-            {/* --- Filter Controls --- */}
+            {/* --- Filters --- */}
             <div className="profile-controls">
                 <div className="control-group">
                     <label>Session Type</label>
@@ -170,7 +221,6 @@ export default function Profile({ user, sessions }) {
                     </select>
                 </div>
 
-                {/* 🔥 NEW: Date range filter */}
                 <div className="control-group">
                     <label>Start Date</label>
                     <input
@@ -189,7 +239,7 @@ export default function Profile({ user, sessions }) {
                 </div>
             </div>
 
-            {/* --- Chart Section --- */}
+            {/* --- Chart --- */}
             {chartData.length > 0 ? (
                 <div className="profile-card">
                     <h2 className="profile-section-title">
@@ -228,7 +278,7 @@ export default function Profile({ user, sessions }) {
                 <p className="profile-empty">No data for this selection.</p>
             )}
 
-            {/* --- Table Section (unchanged) --- */}
+            {/* --- Table --- */}
             {paginatedSessions.length === 0 ? (
                 <p className="profile-empty">No sessions found.</p>
             ) : (
@@ -244,37 +294,15 @@ export default function Profile({ user, sessions }) {
                         </thead>
                         <tbody>
                         {paginatedSessions.map((entry) => (
-                            <tr key={entry.id}>
-                                <td
-                                    onMouseEnter={(e) => handleMouseEnter(e, entry.type)}
-                                    onMouseLeave={handleMouseLeave}
-                                >
-                                    {entry.type}
-                                </td>
-                                <td
-                                    onMouseEnter={(e) =>
-                                        handleMouseEnter(e, entry.distance || "-")
-                                    }
-                                    onMouseLeave={handleMouseLeave}
-                                >
-                                    {entry.distance || "-"}
-                                </td>
-                                <td
-                                    onMouseEnter={(e) =>
-                                        handleMouseEnter(e, formatDate(entry.date))
-                                    }
-                                    onMouseLeave={handleMouseLeave}
-                                >
-                                    {formatDate(entry.date)}
-                                </td>
-                                <td
-                                    onMouseEnter={(e) =>
-                                        handleMouseEnter(e, entry.notes || "-")
-                                    }
-                                    onMouseLeave={handleMouseLeave}
-                                >
-                                    {entry.notes || "-"}
-                                </td>
+                            <tr
+                                key={entry.id}
+                                onClick={() => openModal(entry)} // ✅ click to edit
+                                className="clickable-row"
+                            >
+                                <td>{entry.type}</td>
+                                <td>{entry.distance || "-"}</td>
+                                <td>{formatDate(entry.date)}</td>
+                                <td>{entry.notes || "-"}</td>
                             </tr>
                         ))}
                         </tbody>
@@ -304,7 +332,7 @@ export default function Profile({ user, sessions }) {
                 </div>
             )}
 
-            {/* Hover Tooltip for Table */}
+            {/* Hover Tooltip */}
             {showTooltip && (
                 <div
                     className="profile-tooltip"
@@ -314,6 +342,93 @@ export default function Profile({ user, sessions }) {
                     }}
                 >
                     {hoveredText}
+                </div>
+            )}
+
+            {/* --- Modal --- */}
+            {modalOpen && selectedEntry && (
+                <div className="modal-overlay">
+                    <div className="modal-content">
+                        <h2 className="modal-title">Edit Session</h2>
+
+                        <div className="modal-body">
+                            <div className="modal-field">
+                                <label>Split</label>
+                                <input
+                                    type="text"
+                                    value={selectedEntry.split || ""}
+                                    placeholder="mm:ss"
+                                    onChange={(e) =>
+                                        handleModalChange("split", e.target.value)
+                                    }
+                                />
+                            </div>
+
+                            <div className="modal-field">
+                                <label>Notes</label>
+                                <textarea
+                                    value={selectedEntry.notes || ""}
+                                    onChange={(e) =>
+                                        handleModalChange("notes", e.target.value)
+                                    }
+                                />
+                            </div>
+
+                            <div className="modal-field">
+                                <label>Date</label>
+                                <input
+                                    type="date"
+                                    value={formatDateForInput(selectedEntry.date)}
+                                    onChange={(e) =>
+                                        handleModalChange("date", new Date(e.target.value))
+                                    }
+                                />
+                            </div>
+
+                            <div className="modal-field checkbox-field">
+                                <label>
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedEntry.intense || false}
+                                        onChange={(e) =>
+                                            handleModalChange("intense", e.target.checked)
+                                        }
+                                    />
+                                    Intense session
+                                </label>
+                            </div>
+                        </div>
+
+                        <div className="modal-footer">
+                            <button className="modal-button cancel" onClick={closeModal}>
+                                Cancel
+                            </button>
+                            <button
+                                className="modal-button submit"
+                                onClick={async () => {
+                                    const success = await deleteUserSession(selectedEntry.id);
+                                    if (success) {
+                                        closeModal();
+                                        window.location.reload();
+                                    }
+                                }}
+                            >
+                                Delete
+                            </button>
+                            <button
+                                className="modal-button submit"
+                                onClick={async () => {
+                                    const success = await updateUserSession(selectedEntry);
+                                    if (success) {
+                                        closeModal();
+                                        window.location.reload();
+                                    }
+                                }}
+                            >
+                                Save Changes
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>

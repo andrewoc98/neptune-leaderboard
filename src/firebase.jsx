@@ -170,6 +170,22 @@ export function getWorkouts(workout) {
 
 }
 
+export const updateUserSession = async (entry) => {
+    try {
+        const ref = doc(database, "sessions", entry.id);
+        await updateDoc(ref, {
+            split: entry.split || "",
+            notes: entry.notes || "",
+            intense: !!entry.intense,
+            date: entry.date instanceof Date ? entry.date : new Date(entry.date.seconds * 1000),
+        });
+        return true;
+    } catch (error) {
+        console.error("Error updating session:", error);
+        return false;
+    }
+};
+
 export async function updateOrAppendWorkout(newEntry) {
     // Determine reference field based on type
     const refId = newEntry.type === 'Erg' ? 'erg' :

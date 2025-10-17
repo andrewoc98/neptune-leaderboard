@@ -55,7 +55,7 @@ function App() {
                 const lazyData = await loadAllDocuments();
                 const allSessions = await getAllSessionHistory();
 
-                const unsortedUsers = lazyData[5];
+                const unsortedUsers = lazyData[6];
                 const sortedUsers = Object.keys(unsortedUsers)
                     .filter(key => key !== "id")
                     .sort((a, b) => a.localeCompare(b))
@@ -69,8 +69,8 @@ function App() {
                 setQuotes(lazyData[3].quotes);
                 setUsers(sortedUsers);
                 setWorkouts({
-                    erg: lazyData[6].erg.entries,
-                    water: lazyData[6].water.entries
+                    erg: lazyData[7].erg.entries,
+                    water: lazyData[7].water.entries
                 });
                 setSessions(allSessions);
                 setGmpSpeeds(lazyData[0].speeds);

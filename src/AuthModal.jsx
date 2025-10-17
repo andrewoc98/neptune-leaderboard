@@ -24,16 +24,10 @@ export default function AuthModal({ users, user: parentUser, isOpen, onClose }) 
 
     // Sync manual open/close & auth state
     useEffect(() => {
-        if (!loadingAuth) {
             if (isOpen) {
                 setShowModal(true);
-            } else if (!localUser || !parentUser) {
-                setShowModal(true);
-            } else {
-                setShowModal(false);
             }
-        }
-    }, [loadingAuth, localUser, parentUser, isOpen]);
+    }, [isOpen]);
 
     // Update roster if prop changes
     useEffect(() => {

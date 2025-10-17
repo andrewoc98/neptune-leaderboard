@@ -22,6 +22,7 @@ function App() {
     const [gmpSpeeds, setGmpSpeeds] = useState({});
     const [user, setUser] = useState(null);
     const [modalOpen, setModalOpen] = useState(false);
+    const [tags, setTags] = useState([])
 
     // Track authentication state
     useEffect(() => {
@@ -36,7 +37,6 @@ function App() {
                     const [username, userData] = matchedEntry;
                     // Store username and user data together
                     setUser({ ...userData, username });
-                    console.log("Authenticated user:", username, userData);
                 } else {
                     setUser(null);
                 }
@@ -74,6 +74,7 @@ function App() {
                 });
                 setSessions(allSessions);
                 setGmpSpeeds(lazyData[0].speeds);
+                setTags(lazyData[5].entries)
             } catch (e) {
                 console.error("Failed to load page documents", e);
             }
@@ -81,6 +82,7 @@ function App() {
 
         fetchData();
     }, []);
+
 
     return (
         <div className="App">
@@ -111,6 +113,7 @@ function App() {
                         multipliers={multipliers}
                         sessions={sessions}
                         gmpSpeeds={gmpSpeeds}
+                        tags={tags}
                     />
                 )}
 
@@ -122,6 +125,7 @@ function App() {
                     <Profile
                         user={user}          // includes username + user data
                         sessions={sessions}
+                        tags={tags}
                     />
                 )}
             </main>

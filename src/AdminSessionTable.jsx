@@ -6,7 +6,7 @@ import { sortByDate } from "./Util";
 import FilterModal from "./FilterModal";
 import { ListFilter, Download } from "lucide-react";
 
-function AdminSessionTable({users}) {
+export default function AdminSessionTable({ users }) {
     const [data, setData] = useState([]);
     const [filters, setFilters] = useState({
         name: "",
@@ -17,6 +17,10 @@ function AdminSessionTable({users}) {
         weights: ""
     });
     const [isModalOpen, setIsModalOpen] = useState(false);
+
+    // --- Pagination ---
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
 
     const handleUnapprove = async (id) => {
         try {
@@ -30,7 +34,6 @@ function AdminSessionTable({users}) {
 
     useEffect(() => {
         const usersRef = collection(database, "sessionHistory");
-
         const unsubscribe = onSnapshot(usersRef, (snapshot) => {
             const sessions = snapshot.docs
                 .map((doc) => {
@@ -40,25 +43,19 @@ function AdminSessionTable({users}) {
                     if (data.date instanceof Date) {
                         dateVal = data.date;
                     } else if (data.date?.toDate) {
-                        dateVal = data.date.toDate(); // Firestore Timestamp
+                        dateVal = data.date.toDate();
                     } else if (typeof data.date === "string") {
-                        // handle dd/mm/yyyy
                         if (/^\d{2}\/\d{2}\/\d{4}$/.test(data.date)) {
                             const [day, month, year] = data.date.split("/").map(Number);
                             dateVal = new Date(year, month - 1, day);
                         } else {
-                            // fallback for ISO strings or other formats
                             dateVal = new Date(data.date);
                         }
                     } else {
-                        dateVal = new Date(); // fallback to now
+                        dateVal = new Date();
                     }
 
-                    return {
-                        id: doc.id,
-                        ...data,
-                        date: dateVal
-                    };
+                    return { id: doc.id, ...data, date: dateVal };
                 })
                 .filter((session) => session.approved === true);
 
@@ -69,8 +66,9 @@ function AdminSessionTable({users}) {
     }, []);
 
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // normalize time for comparison
+    today.setHours(0, 0, 0, 0);
 
+    // --- Filter + Sort ---
     const filteredData = data
         .filter((session) => (filters.name ? session.name === filters.name : true))
         .filter((session) => (filters.type ? session.type === filters.type : true))
@@ -86,8 +84,12 @@ function AdminSessionTable({users}) {
             return filters.order === "desc" ? -result : result;
         });
 
+    // --- Pagination Logic ---
+    const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const paginatedData = filteredData.slice(startIndex, startIndex + itemsPerPage);
+
     const handleDownload = () => {
-        // Filter the users prop down to only the ones in filteredData
         const filteredUsers = {};
         filteredData.forEach((session) => {
             if (session.name && users[session.name]) {
@@ -95,7 +97,6 @@ function AdminSessionTable({users}) {
             }
         });
 
-        // Build final JSON structure
         const jsonOutput = {
             users: filteredUsers,
             sessions: filteredData,
@@ -126,8 +127,11 @@ function AdminSessionTable({users}) {
                     isOpen={isModalOpen}
                     onClose={() => setIsModalOpen(false)}
                     filters={filters}
-                    onSubmit={(newFilters) => setFilters(newFilters)}
-                    onReset={() =>
+                    onSubmit={(newFilters) => {
+                        setFilters(newFilters);
+                        setCurrentPage(1);
+                    }}
+                    onReset={() => {
                         setFilters({
                             name: "",
                             type: "",
@@ -135,17 +139,19 @@ function AdminSessionTable({users}) {
                             order: "asc",
                             intense: "",
                             weights: ""
-                        })
-                    }
+                        });
+                        setCurrentPage(1);
+                    }}
                 />
 
+                {/* --- Top Controls --- */}
                 <div style={{ display: "flex", gap: "0.5rem" }}>
                     <button
                         className="btn"
                         style={{ margin: "0.5rem", padding: "0.3rem 0.6rem" }}
                         onClick={() => setIsModalOpen(true)}
                     >
-                        <ListFilter/>
+                        <ListFilter />
                     </button>
 
                     <button
@@ -163,8 +169,9 @@ function AdminSessionTable({users}) {
                     </p>
                 </div>
 
-                <table>
-                    <thead style={{ padding: "0" }}>
+                {/* --- Table --- */}
+                <table className="admin-table">
+                    <thead>
                     <tr>
                         <th>Name</th>
                         <th>Date</th>
@@ -174,40 +181,71 @@ function AdminSessionTable({users}) {
                     </tr>
                     </thead>
                     <tbody>
-                    {filteredData.map((session) => {
-                        const sessionDate = new Date(session.date);
-                        sessionDate.setHours(0, 0, 0, 0); // normalize
-                        const isToday = sessionDate.getTime() === today.getTime();
+                    {paginatedData.length > 0 ? (
+                        paginatedData.map((session) => {
+                            const sessionDate = new Date(session.date);
+                            sessionDate.setHours(0, 0, 0, 0);
+                            const isToday = sessionDate.getTime() === today.getTime();
 
-                        return (
-                            <tr
-                                key={session.id}
-                                className="hover-row"
-                                style={{
-                                    cursor: "pointer",
-                                    backgroundColor: isToday ? "rgba(255, 255, 255, 0.1)" : "transparent"
-                                }}
-                            >
-                                <td>{session.name || "N/A"}</td>
-                                <td>{session.date ? session.date.toLocaleDateString("en-GB") : "N/A"}</td>
-                                <td>{session.type || "N/A"}</td>
-                                <td>{session.distance || "N/A"}</td>
-                                <td>
-                                    <button
-                                        className="unapprove-button"
-                                        onClick={() => handleUnapprove(session.id)}
-                                    >
-                                        X
-                                    </button>
-                                </td>
-                            </tr>
-                        );
-                    })}
+                            return (
+                                <tr
+                                    key={session.id}
+                                    className="hover-row"
+                                    style={{
+                                        cursor: "pointer",
+                                        backgroundColor: isToday
+                                            ? "rgba(255, 255, 255, 0.1)"
+                                            : "transparent"
+                                    }}
+                                >
+                                    <td>{session.name || "N/A"}</td>
+                                    <td>{session.date ? session.date.toLocaleDateString("en-GB") : "N/A"}</td>
+                                    <td>{session.type || "N/A"}</td>
+                                    <td>{session.distance || "N/A"}</td>
+                                    <td>
+                                        <button
+                                            className="unapprove-button"
+                                            onClick={() => handleUnapprove(session.id)}
+                                        >
+                                            X
+                                        </button>
+                                    </td>
+                                </tr>
+                            );
+                        })
+                    ) : (
+                        <tr>
+                            <td colSpan="5" style={{ textAlign: "center", color: "gray" }}>
+                                No sessions found.
+                            </td>
+                        </tr>
+                    )}
                     </tbody>
                 </table>
+
+                {/* --- Pagination --- */}
+                {totalPages > 1 && (
+                    <div className="pagination-controls">
+                        <button
+                            className="btn"
+                            onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                            disabled={currentPage === 1}
+                        >
+                            Prev
+                        </button>
+                        <span>
+                            Page {currentPage} of {totalPages}
+                        </span>
+                        <button
+                            className="btn"
+                            onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+                            disabled={currentPage === totalPages}
+                        >
+                            Next
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     );
 }
-
-export default AdminSessionTable;

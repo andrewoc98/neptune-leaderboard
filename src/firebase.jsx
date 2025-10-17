@@ -2,7 +2,7 @@
 import { initializeApp } from "firebase/app";
 import {collection, getDocs, getFirestore, arrayUnion, query, where, onSnapshot} from "firebase/firestore";
 import { doc, setDoc, deleteDoc } from "firebase/firestore";
-import { getDoc, updateDoc } from "firebase/firestore";
+import { getDoc, updateDoc, addDoc } from "firebase/firestore";
 import { v4 as uuidv4 } from 'uuid';
 import { getPreviousSunday, getISOWeek } from "./Util";
 import axios from "axios";
@@ -470,3 +470,21 @@ export async function updateUserWeight(name, weight) {
         console.error("Error updating user weight:", error);
     }
 }
+
+export const addTagToFirebase = async (newTag) => {
+    try {
+        const tagRef = doc(database, "page-data", "tags");
+        const docSnap = await getDoc(tagRef);
+
+        if (docSnap.exists()) {
+            // ✅ Update existing entries array
+            await updateDoc(tagRef, {
+                entries: arrayUnion(newTag.toLowerCase()),
+            });
+        } else {
+            console.error("⚠️ Tags document not found at 'page-data/tags'");
+        }
+    } catch (error) {
+        console.error("Error adding tag to Firebase:", error);
+    }
+};

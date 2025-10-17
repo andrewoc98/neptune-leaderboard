@@ -11,21 +11,21 @@ import {
 import "./profile.css";
 import CustomGraphTooltip from "./CustomGraphTooltip";
 import { doc, updateDoc, deleteDoc } from "firebase/firestore";
-import { database } from "./firebase"; // ✅ external Firebase config
+import { database, addTagToFirebase } from "./firebase";
 
-export default function Profile({ user, sessions }) {
+export default function Profile({ user, sessions: initialSessions, tags }) {
     const [currentPage, setCurrentPage] = useState(1);
-    const [hoveredText, setHoveredText] = useState("");
-    const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
-    const [showTooltip, setShowTooltip] = useState(false);
     const [selectedType, setSelectedType] = useState("Erg");
     const [selectedMetric, setSelectedMetric] = useState("Split");
-
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
+    const [selectedTagFilter, setSelectedTagFilter] = useState("");
+    const [sessions, setSessions] = useState(initialSessions);
 
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedEntry, setSelectedEntry] = useState(null);
+    const [tagInput, setTagInput] = useState("");
+    const [filteredTags, setFilteredTags] = useState([]);
 
     const itemsPerPage = 5;
 
@@ -37,8 +37,12 @@ export default function Profile({ user, sessions }) {
         );
     }
 
-    // Filter only user's sessions
-    const filteredArray = sessions.filter((entry) => entry.name === user.username);
+    // Filter user's sessions
+    const filteredArray = sessions.filter(
+        (entry) =>
+            entry.name === user.username &&
+            (selectedTagFilter ? entry.tags?.includes(selectedTagFilter) : true)
+    );
 
     // Sort + paginate
     const sortedArray = [...filteredArray].sort(
@@ -46,9 +50,12 @@ export default function Profile({ user, sessions }) {
     );
     const totalPages = Math.ceil(sortedArray.length / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
-    const paginatedSessions = sortedArray.slice(startIndex, startIndex + itemsPerPage);
+    const paginatedSessions = sortedArray.slice(
+        startIndex,
+        startIndex + itemsPerPage
+    );
 
-    // Format timestamp to readable date
+    // Format timestamp
     const formatDate = (timestamp) => {
         if (!timestamp?.seconds) return "N/A";
         const date = new Date(timestamp.seconds * 1000);
@@ -61,13 +68,11 @@ export default function Profile({ user, sessions }) {
         });
     };
 
-    // --- Chart Data ---
+    // Chart Data
     const chartData = useMemo(() => {
         return filteredArray
             .filter((entry) => {
                 if (entry.type !== selectedType) return false;
-                if (selectedMetric !== "Intensity" && entry.intense) return false;
-                if (selectedMetric === "Intensity" && !entry.intense) return false;
                 if (selectedMetric === "Split" && !entry.split) return false;
                 return true;
             })
@@ -81,7 +86,6 @@ export default function Profile({ user, sessions }) {
                 let value = null;
                 switch (selectedMetric) {
                     case "Split":
-                    case "Intensity":
                         if (entry.split) {
                             const [min, sec] = entry.split.split(":");
                             value = parseFloat(min) * 60 + parseFloat(sec);
@@ -105,9 +109,8 @@ export default function Profile({ user, sessions }) {
             .sort((a, b) => a.date - b.date);
     }, [filteredArray, selectedType, selectedMetric, startDate, endDate]);
 
-    // Format Y-axis labels
     const formatYAxisLabel = (val) => {
-        if ((selectedMetric === "Split" || selectedMetric === "Intensity") && !isNaN(val)) {
+        if (selectedMetric === "Split" && !isNaN(val)) {
             const min = Math.floor(val / 60);
             const sec = (val % 60).toFixed(1).padStart(4, "0");
             return `${min}:${sec}`;
@@ -115,19 +118,7 @@ export default function Profile({ user, sessions }) {
         return val;
     };
 
-    // Hover Tooltip
-    const handleMouseEnter = (e, text) => {
-        const rect = e.target.getBoundingClientRect();
-        setTooltipPosition({ x: rect.left + rect.width / 2, y: rect.top - 10 });
-        setHoveredText(text);
-        setShowTooltip(true);
-    };
-    const handleMouseLeave = () => {
-        setShowTooltip(false);
-        setHoveredText("");
-    };
-
-    // Modal Logic
+    // Modal
     const openModal = (entry) => {
         setSelectedEntry({ ...entry });
         setModalOpen(true);
@@ -139,30 +130,82 @@ export default function Profile({ user, sessions }) {
     };
 
     const handleModalChange = (field, value) => {
-        setSelectedEntry((prev) => ({ ...prev, [field]: value }));
+        setSelectedEntry((prev) => {
+            const updated = { ...prev, [field]: value };
+
+            // ✅ Update session in table live for tags and other fields
+            if (field === "tags") {
+                setSessions((prevSessions) =>
+                    prevSessions.map((s) => (s.id === updated.id ? updated : s))
+                );
+            }
+
+            return updated;
+        });
     };
 
     const formatDateForInput = (timestamp) => {
         if (timestamp?.seconds) {
             const date = new Date(timestamp.seconds * 1000);
             return date.toISOString().split("T")[0];
+        } else if (timestamp instanceof Date) {
+            return timestamp.toISOString().split("T")[0];
         }
         return "";
     };
 
-    // Update Session
+    // Tag handlers
+    const handleTagChange = (e) => {
+        const input = e.target.value.toLowerCase();
+        setTagInput(input);
+        if (input.trim().length > 0) {
+            const filtered = tags.filter(
+                (t) => t.toLowerCase().includes(input) && !selectedEntry.tags?.includes(t)
+            );
+            setFilteredTags(filtered);
+        } else {
+            setFilteredTags([]);
+        }
+    };
+
+    const handleAddTag = async (tag) => {
+        const trimmed = tag.trim().toLowerCase();
+        if (!trimmed) return;
+
+        const isNew = !tags.map((t) => t.toLowerCase()).includes(trimmed);
+        const updatedTags = [...(selectedEntry.tags || []), trimmed];
+
+        // Update modal and table immediately
+        handleModalChange("tags", updatedTags);
+
+        setTagInput("");
+        setFilteredTags([]);
+
+        if (isNew) await addTagToFirebase(trimmed);
+    };
+
+    const handleRemoveTag = (tag) => {
+        const updatedTags = selectedEntry.tags.filter((t) => t !== tag);
+
+        // Update modal and table immediately
+        handleModalChange("tags", updatedTags);
+    };
+
+    // Update / Delete with local state update
     const updateUserSession = async (entry) => {
         try {
-            const ref = doc(database, "sessions", entry.id);
+            const ref = doc(database, "sessionHistory", entry.id);
             await updateDoc(ref, {
                 split: entry.split || "",
                 notes: entry.notes || "",
                 intense: !!entry.intense,
-                date:
-                    entry.date instanceof Date
-                        ? entry.date
-                        : new Date(entry.date.seconds * 1000),
+                tags: entry.tags || [],
+                date: entry.date instanceof Date ? entry.date : new Date(entry.date.seconds * 1000),
             });
+
+            setSessions((prev) =>
+                prev.map((s) => (s.id === entry.id ? { ...s, ...entry } : s))
+            );
             return true;
         } catch (error) {
             console.error("Error updating session:", error);
@@ -170,16 +213,16 @@ export default function Profile({ user, sessions }) {
         }
     };
 
-    // Delete Session
     const deleteUserSession = async (id) => {
         const confirmDelete = window.confirm(
-            "Are you sure you want to delete this session? This action cannot be undone."
+            "Are you sure you want to delete this session?"
         );
         if (!confirmDelete) return false;
 
         try {
-            const ref = doc(database, "sessions", id);
+            const ref = doc(database, "sessionHistory", id);
             await deleteDoc(ref);
+            setSessions((prev) => prev.filter((s) => s.id !== id));
             return true;
         } catch (error) {
             console.error("Error deleting session:", error);
@@ -193,10 +236,10 @@ export default function Profile({ user, sessions }) {
                 <h1 className="profile-title">Welcome, {user.username}</h1>
             </div>
 
-            {/* --- Filters --- */}
+            {/* Filters */}
             <div className="profile-controls">
                 <div className="control-group">
-                    <label>Session Type</label>
+                    <label>Type</label>
                     <select
                         value={selectedType}
                         onChange={(e) => setSelectedType(e.target.value)}
@@ -217,7 +260,21 @@ export default function Profile({ user, sessions }) {
                     >
                         <option value="Split">Split</option>
                         <option value="Distance">Distance</option>
-                        <option value="Intensity">Intensity</option>
+                    </select>
+                </div>
+
+                <div className="control-group">
+                    <label>Tag</label>
+                    <select
+                        value={selectedTagFilter}
+                        onChange={(e) => setSelectedTagFilter(e.target.value)}
+                    >
+                        <option value="">All Tags</option>
+                        {tags.map((t) => (
+                            <option key={t} value={t}>
+                                {t}
+                            </option>
+                        ))}
                     </select>
                 </div>
 
@@ -239,7 +296,7 @@ export default function Profile({ user, sessions }) {
                 </div>
             </div>
 
-            {/* --- Chart --- */}
+            {/* Chart */}
             {chartData.length > 0 ? (
                 <div className="profile-card">
                     <h2 className="profile-section-title">
@@ -253,7 +310,7 @@ export default function Profile({ user, sessions }) {
                                 domain={["auto", "auto"]}
                                 tickFormatter={formatYAxisLabel}
                                 width={70}
-                                reversed={["Split", "Intensity"].includes(selectedMetric)}
+                                reversed={["Split"].includes(selectedMetric)}
                             />
                             <Tooltip
                                 content={
@@ -278,7 +335,7 @@ export default function Profile({ user, sessions }) {
                 <p className="profile-empty">No data for this selection.</p>
             )}
 
-            {/* --- Table --- */}
+            {/* Table */}
             {paginatedSessions.length === 0 ? (
                 <p className="profile-empty">No sessions found.</p>
             ) : (
@@ -289,6 +346,7 @@ export default function Profile({ user, sessions }) {
                             <th>Type</th>
                             <th>Distance</th>
                             <th>Date</th>
+                            <th>Tags</th>
                             <th>Notes</th>
                         </tr>
                         </thead>
@@ -296,12 +354,13 @@ export default function Profile({ user, sessions }) {
                         {paginatedSessions.map((entry) => (
                             <tr
                                 key={entry.id}
-                                onClick={() => openModal(entry)} // ✅ click to edit
+                                onClick={() => openModal(entry)}
                                 className="clickable-row"
                             >
                                 <td>{entry.type}</td>
                                 <td>{entry.distance || "-"}</td>
                                 <td>{formatDate(entry.date)}</td>
+                                <td>{entry.tags?.join(", ") || "-"}</td>
                                 <td>{entry.notes || "-"}</td>
                             </tr>
                         ))}
@@ -317,8 +376,8 @@ export default function Profile({ user, sessions }) {
                                 Prev
                             </button>
                             <span>
-                                Page {currentPage} of {totalPages}
-                            </span>
+                Page {currentPage} of {totalPages}
+              </span>
                             <button
                                 onClick={() =>
                                     setCurrentPage((p) => Math.min(p + 1, totalPages))
@@ -332,20 +391,7 @@ export default function Profile({ user, sessions }) {
                 </div>
             )}
 
-            {/* Hover Tooltip */}
-            {showTooltip && (
-                <div
-                    className="profile-tooltip"
-                    style={{
-                        left: tooltipPosition.x,
-                        top: tooltipPosition.y,
-                    }}
-                >
-                    {hoveredText}
-                </div>
-            )}
-
-            {/* --- Modal --- */}
+            {/* Modal */}
             {modalOpen && selectedEntry && (
                 <div className="modal-overlay">
                     <div className="modal-content">
@@ -358,9 +404,7 @@ export default function Profile({ user, sessions }) {
                                     type="text"
                                     value={selectedEntry.split || ""}
                                     placeholder="mm:ss"
-                                    onChange={(e) =>
-                                        handleModalChange("split", e.target.value)
-                                    }
+                                    onChange={(e) => handleModalChange("split", e.target.value)}
                                 />
                             </div>
 
@@ -368,9 +412,7 @@ export default function Profile({ user, sessions }) {
                                 <label>Notes</label>
                                 <textarea
                                     value={selectedEntry.notes || ""}
-                                    onChange={(e) =>
-                                        handleModalChange("notes", e.target.value)
-                                    }
+                                    onChange={(e) => handleModalChange("notes", e.target.value)}
                                 />
                             </div>
 
@@ -397,6 +439,44 @@ export default function Profile({ user, sessions }) {
                                     Intense session
                                 </label>
                             </div>
+
+                            {/* Tags */}
+                            <div className="modal-field">
+                                <label>Tags</label>
+                                <div className="dropdown-container tag-input-wrapper">
+                                    <input
+                                        type="text"
+                                        value={tagInput}
+                                        onChange={handleTagChange}
+                                        onKeyDown={(e) => e.key === "Enter" && handleAddTag(tagInput)}
+                                        placeholder="Search or add a tag"
+                                    />
+                                    {filteredTags.length > 0 && (
+                                        <ul className="tag-suggestions">
+                                            {filteredTags.map((t) => (
+                                                <li key={t} onClick={() => handleAddTag(t)}>
+                                                    {t}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
+                                </div>
+
+                                <div className="selected-names">
+                                    {(selectedEntry.tags || []).map((tag) => (
+                                        <span key={tag} className="chip">
+                      {tag}
+                                            <button
+                                                type="button"
+                                                className="remove-chip"
+                                                onClick={() => handleRemoveTag(tag)}
+                                            >
+                        ×
+                      </button>
+                    </span>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
 
                         <div className="modal-footer">
@@ -407,10 +487,7 @@ export default function Profile({ user, sessions }) {
                                 className="modal-button cancel"
                                 onClick={async () => {
                                     const success = await deleteUserSession(selectedEntry.id);
-                                    if (success) {
-                                        closeModal();
-                                        window.location.reload();
-                                    }
+                                    if (success) closeModal();
                                 }}
                             >
                                 Delete
@@ -419,10 +496,7 @@ export default function Profile({ user, sessions }) {
                                 className="modal-button submit"
                                 onClick={async () => {
                                     const success = await updateUserSession(selectedEntry);
-                                    if (success) {
-                                        closeModal();
-                                        window.location.reload();
-                                    }
+                                    if (success) closeModal();
                                 }}
                             >
                                 Save Changes

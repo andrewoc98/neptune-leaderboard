@@ -9,7 +9,7 @@ import {loadAllDocuments} from "./firebase";
 import {getAllSessionHistory} from "./Util"
 import ConnectStravaButton from "./ConnectStravaButton";
 
-export default function User({leaderboard, quotes, users, workouts, multipliers, sessions, gmpSpeeds}) {
+export default function User({leaderboard, quotes, users, workouts, multipliers, sessions, gmpSpeeds, tags}) {
 
   const [openModal, setOpenModal] = useState(false)
 
@@ -38,6 +38,6 @@ export default function User({leaderboard, quotes, users, workouts, multipliers,
         <QuoteModal/>
 
       </div>
-      <SessionModal isOpen={openModal} onClose={onClose} onSubmit={onSubmit} setOpen users={users}/>
+      <SessionModal isOpen={openModal} onClose={onClose} onSubmit={onSubmit} setOpen users={users} tags={tags}/>
     </>);
 }

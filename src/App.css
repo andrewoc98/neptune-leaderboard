@@ -296,7 +296,6 @@ th.sortable:hover {
   align-items: center;
   margin-bottom: 1rem;
 }
-
 /* styles.css */
 /* Give the icon a metallic fill + a subtle glow */
 .gold-fill path {
@@ -433,6 +432,11 @@ tr:hover {
     width: 100%;
     height: 16rem; /* ~256px; scales with font size */
     margin-top: 0.5rem;
+}
+
+.btn{
+    margin-left:1rem;
+    margin-right:0.5rem;
 }
 
 

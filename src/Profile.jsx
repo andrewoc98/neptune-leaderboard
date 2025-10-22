@@ -448,7 +448,11 @@ export default function Profile({ user, sessions: initialSessions, tags }) {
                                         type="text"
                                         value={tagInput}
                                         onChange={handleTagChange}
-                                        onKeyDown={(e) => e.key === "Enter" && handleAddTag(tagInput)}
+                                        onKeyDown={(e) => {
+                                            const key = e.key?.toLowerCase();
+                                            if (key === "enter" || key === "return" || key === "go") {
+                                                handleAddTag(tagInput);
+                                            }}}
                                         placeholder="Search or add a tag"
                                     />
                                     {filteredTags.length > 0 && (
